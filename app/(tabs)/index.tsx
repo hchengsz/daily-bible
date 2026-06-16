@@ -1,98 +1,184 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, Text, View } from "react-native";
+import readingPlan from "../../src/raw/day146.json";
+import { getVerse, getVerseRange } from "../../src/types/scripture";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Reference = {
+  book: string;
+  chapter: number;
+  verse: string;
+};
 
-export default function HomeScreen() {
+type Paragraph = {
+  title: string;
+  references: Reference[];
+};
+
+type Section = {
+  title: string;
+  introduction?: string;
+  paragraphs: Paragraph[];
+};
+
+type Day = {
+  id: number;
+  title: string;
+  introduction: string;
+  sections: Section[];
+};
+
+const FONT = 20;
+const LINE_HEIGHT = 30;
+
+export default function Home() {
+  const today = readingPlan[0] as Day;
+
+  const extractVerseNumber = (verse: string) =>
+    Number(verse.replace(/[^\d]/g, ""));
+
+  const renderReference = (ref: Reference) => {
+    const { book, chapter, verse } = ref;
+
+    if (verse.includes("-")) {
+      const [startRaw, endRaw] = verse.split("-");
+      const start = extractVerseNumber(startRaw);
+      const end = extractVerseNumber(endRaw);
+
+      const verses = getVerseRange(book, chapter, start, end);
+
+      return verses
+        .map((v, i) => `${start + i}. ${v ?? "[missing]"}`)
+        .join("\n");
+    }
+
+    const verseNum = extractVerseNumber(verse);
+    const text = getVerse(book, chapter, verseNum);
+
+    return `${verseNum}. ${text ?? "[missing]"}`;
+  };
+
+  // 今日日期
+  const todayDate = new Date();
+  const dateString = `${todayDate.getFullYear()}-${String(
+    todayDate.getMonth() + 1,
+  ).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
+
+  const handlePlay = () => {
+    // 以后接 TTS（先留接口）
+    console.log("play reading...");
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* ===== Header（80px） ===== */}
+      <View
+        style={{
+          height: 80,
+          paddingHorizontal: 20,
+          flexDirection: "row",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          paddingBottom: 10,
+          borderBottomWidth: 0.5,
+          borderColor: "#ddd",
+        }}
+      >
+        {/* 左侧：日期 */}
+        <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* 右侧：朗读按钮 */}
+        <Pressable onPress={handlePlay}>
+          <Text style={{ fontSize: 18 }}>🔊</Text>
+        </Pressable>
+      </View>
+
+      {/* ===== 内容区域 ===== */}
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 80,
+        }}
+      >
+        {/* Title */}
+        <Text style={{ fontSize: 24, fontWeight: "700" }}>{today.title}</Text>
+
+        {/* Introduction */}
+        <Text
+          style={{
+            fontSize: FONT,
+            lineHeight: LINE_HEIGHT,
+            marginTop: 12,
+          }}
+        >
+          {today.introduction}
+        </Text>
+
+        {/* Sections */}
+        <View style={{ marginTop: 24, gap: 28 }}>
+          {today.sections.map((section, sectionIndex) => (
+            <View key={sectionIndex}>
+              <Text
+                style={{
+                  fontSize: 22,
+                  fontWeight: "600",
+                  marginBottom: 8,
+                }}
+              >
+                {section.title}
+              </Text>
+
+              {section.introduction && (
+                <Text
+                  style={{
+                    fontSize: FONT,
+                    lineHeight: LINE_HEIGHT,
+                    marginBottom: 16,
+                  }}
+                >
+                  {section.introduction}
+                </Text>
+              )}
+
+              {section.paragraphs.map((paragraph, paragraphIndex) => (
+                <View key={paragraphIndex} style={{ marginBottom: 18 }}>
+                  <Text
+                    style={{
+                      fontSize: FONT,
+                      fontWeight: "500",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {paragraph.title}
+                  </Text>
+
+                  {paragraph.references.map((ref, refIndex) => (
+                    <View key={refIndex} style={{ marginBottom: 10 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          color: "#666",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {ref.book} {ref.chapter}:{ref.verse}
+                      </Text>
+
+                      <Text
+                        style={{
+                          fontSize: FONT,
+                          lineHeight: LINE_HEIGHT,
+                        }}
+                      >
+                        {renderReference(ref)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
