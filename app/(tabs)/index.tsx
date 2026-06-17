@@ -1,4 +1,5 @@
-import { ScrollView, Text, View } from "react-native";
+import * as Speech from "expo-speech";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import readingPlan from "../../src/raw/day146.json";
 import { getVerse, getVerseRange } from "../../src/types/scripture";
 
@@ -56,20 +57,53 @@ export default function Home() {
     return `${verseNum}. ${text ?? "[missing]"}`;
   };
 
-  // 今日日期
-  const todayDate = new Date();
-  const dateString = `${todayDate.getFullYear()}-${String(
-    todayDate.getMonth() + 1,
-  ).padStart(2, "0")}-${String(todayDate.getDate()).padStart(2, "0")}`;
-
+  // 🔊 朗读（真正读经文内容）
   const handlePlay = () => {
-    // 以后接 TTS（先留接口）
-    console.log("play reading...");
+    const textToSpeak = today.sections
+      .flatMap((section) =>
+        section.paragraphs.flatMap((p) =>
+          p.references.flatMap((ref) => {
+            const { book, chapter, verse } = ref;
+
+            // range
+            if (verse.includes("-")) {
+              const [startRaw, endRaw] = verse.split("-");
+              const start = extractVerseNumber(startRaw);
+              const end = extractVerseNumber(endRaw);
+
+              return getVerseRange(book, chapter, start, end);
+            }
+
+            // single verse
+            const verseNum = extractVerseNumber(verse);
+            const v = getVerse(book, chapter, verseNum);
+
+            return v ? [v] : [];
+          }),
+        ),
+      )
+      .join(". ");
+
+    if (!textToSpeak) return;
+
+    Speech.stop(); // 防止重复叠读
+
+    Speech.speak(textToSpeak, {
+      language: "en-US",
+      rate: 0.95,
+      pitch: 1.0,
+    });
   };
+
+  // 📅 日期
+  const now = new Date();
+  const dateString = `${now.getFullYear()}-${String(
+    now.getMonth() + 1,
+  ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* ===== Header（80px） ===== */}
+      {/* ===== Header ===== */}
       <View
         style={{
           height: 80,
@@ -82,16 +116,14 @@ export default function Home() {
           borderColor: "#ddd",
         }}
       >
-        {/* 左侧：日期 */}
         <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
 
-        {/* 右侧：朗读按钮 */}
-        <Pressable onPress={handlePlay}>
-          <Text style={{ fontSize: 18 }}>🔊</Text>
+        <Pressable onPress={handlePlay} style={{ padding: 6 }}>
+          <Text style={{ fontSize: 20 }}>🔊</Text>
         </Pressable>
       </View>
 
-      {/* ===== 内容区域 ===== */}
+      {/* ===== Content ===== */}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -103,20 +135,33 @@ export default function Home() {
         <Text style={{ fontSize: 24, fontWeight: "700" }}>{today.title}</Text>
 
         {/* Introduction */}
-        <Text
+        <View
           style={{
-            fontSize: FONT,
-            lineHeight: LINE_HEIGHT,
             marginTop: 12,
+            backgroundColor: "#f5f5f5",
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderRadius: 10,
+            borderLeftWidth: 4,
+            borderLeftColor: "#999",
           }}
         >
-          {today.introduction}
-        </Text>
+          <Text
+            style={{
+              fontSize: FONT,
+              lineHeight: LINE_HEIGHT,
+              color: "#333",
+            }}
+          >
+            {today.introduction}
+          </Text>
+        </View>
 
         {/* Sections */}
         <View style={{ marginTop: 24, gap: 28 }}>
           {today.sections.map((section, sectionIndex) => (
             <View key={sectionIndex}>
+              {/* Section title */}
               <Text
                 style={{
                   fontSize: 22,
@@ -127,20 +172,34 @@ export default function Home() {
                 {section.title}
               </Text>
 
+              {/* Section intro */}
               {section.introduction && (
-                <Text
+                <View
                   style={{
-                    fontSize: FONT,
-                    lineHeight: LINE_HEIGHT,
-                    marginBottom: 16,
+                    marginTop: 12,
+                    backgroundColor: "#f5f5f5",
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    borderRadius: 10,
+                    borderLeftWidth: 4,
+                    borderLeftColor: "#999",
                   }}
                 >
-                  {section.introduction}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: FONT,
+                      lineHeight: LINE_HEIGHT,
+                      color: "#333",
+                    }}
+                  >
+                    {section.introduction}
+                  </Text>
+                </View>
               )}
 
-              {section.paragraphs.map((paragraph, paragraphIndex) => (
-                <View key={paragraphIndex} style={{ marginBottom: 18 }}>
+              {/* Paragraphs */}
+              {section.paragraphs.map((p, pIndex) => (
+                <View key={pIndex} style={{ marginBottom: 18 }}>
                   <Text
                     style={{
                       fontSize: FONT,
@@ -148,11 +207,11 @@ export default function Home() {
                       marginBottom: 6,
                     }}
                   >
-                    {paragraph.title}
+                    {p.title}
                   </Text>
 
-                  {paragraph.references.map((ref, refIndex) => (
-                    <View key={refIndex} style={{ marginBottom: 10 }}>
+                  {p.references.map((ref, rIndex) => (
+                    <View key={rIndex} style={{ marginBottom: 10 }}>
                       <Text
                         style={{
                           fontSize: 16,

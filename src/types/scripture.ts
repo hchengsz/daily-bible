@@ -1,11 +1,35 @@
+import englishData from "../data/bible/en_kjv.json";
 import chineseData from "../data/bible/zh_cuv.json";
 
-export function getVerse(bookName: string, chapter: number, verse: number) {
-  const book = chineseData.find((b) => b.name === bookName);
+export interface BibleBook {
+  abbrev: string;
+  name: string;
+  chapters: string[][];
+}
 
-  if (!book) return null;
+const bible = chineseData as BibleBook[];
+const bible2 = englishData as BibleBook[];
 
-  return book.chapters[chapter - 1]?.[verse - 1];
+export function getVerse(
+  bookName: string,
+  chapter: number,
+  verse: number,
+): string | null {
+  const book = bible.find((b) => b.name === bookName);
+
+  if (!book) {
+    console.warn(`Book not found: ${bookName}`);
+    return null;
+  }
+
+  const chapterData = book.chapters[chapter - 1];
+
+  if (!chapterData) {
+    console.warn(`Chapter not found: ${bookName} ${chapter}`);
+    return null;
+  }
+
+  return chapterData[verse - 1] ?? null;
 }
 
 export function getVerseRange(
@@ -13,12 +37,20 @@ export function getVerseRange(
   chapter: number,
   startVerse: number,
   endVerse: number,
-) {
-  const book = chineseData.find((b) => b.name === bookName);
+): string[] {
+  const book = bible2.find((b) => b.name === bookName);
 
-  if (!book) return [];
+  if (!book) {
+    console.warn(`Book not found: ${bookName}`);
+    return [];
+  }
 
-  const verses = book.chapters[chapter - 1];
+  const chapterData = book.chapters[chapter - 1];
 
-  return verses.slice(startVerse - 1, endVerse);
+  if (!chapterData) {
+    console.warn(`Chapter not found: ${bookName} ${chapter}`);
+    return [];
+  }
+
+  return chapterData.slice(startVerse - 1, endVerse);
 }
