@@ -1,6 +1,6 @@
 import * as Speech from "expo-speech";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import readingPlan from "../../src/raw/day146.json";
+import readingPlan from "../../src/raw/day148.json";
 import { getVerse, getVerseRange } from "../../src/types/scripture";
 
 type Reference = {

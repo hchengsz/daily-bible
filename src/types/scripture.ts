@@ -38,7 +38,7 @@ export function getVerseRange(
   startVerse: number,
   endVerse: number,
 ): string[] {
-  const book = bible2.find((b) => b.name === bookName);
+  const book = bible.find((b) => b.name === bookName);
 
   if (!book) {
     console.warn(`Book not found: ${bookName}`);
