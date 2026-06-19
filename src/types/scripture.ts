@@ -1,5 +1,4 @@
 import englishData from "../data/bible/en_kjv.json";
-import chineseData from "../data/bible/zh_cuv.json";
 
 export interface BibleBook {
   abbrev: string;
@@ -7,7 +6,7 @@ export interface BibleBook {
   chapters: string[][];
 }
 
-const bible = chineseData as BibleBook[];
+const bible = englishData as BibleBook[];
 const bible2 = englishData as BibleBook[];
 
 export function getVerse(
