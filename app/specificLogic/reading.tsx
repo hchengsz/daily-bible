@@ -1,6 +1,6 @@
 import * as Speech from "expo-speech";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
-import readingPlan from "../../src/data/raw/day148.json";
+import readingPlan from "../../src/data/raw/day147.json";
 import { getVerse, getVerseRange } from "../../src/types/scripture";
 
 type Reference = {
@@ -54,7 +54,10 @@ export default function Reading() {
     const verseNum = extractVerseNumber(verse);
     const text = getVerse(book, chapter, verseNum);
 
-    return `${verseNum}. ${text ?? "[missing]"}`;
+    console.log(verseNum);
+    console.log(text);
+
+    return `${text ?? "[missing]"}`;
   };
 
   // 🔊 朗读（真正读经文内容）
@@ -100,6 +103,7 @@ export default function Reading() {
   const dateString = `${now.getFullYear()}-${String(
     now.getMonth() + 1,
   ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* ===== Header ===== */}
@@ -110,14 +114,14 @@ export default function Reading() {
           flexDirection: "row",
           alignItems: "flex-end",
           justifyContent: "space-between",
-          paddingBottom: 10,
+          paddingBottom: 5,
           borderBottomWidth: 0.5,
           borderColor: "#ddd",
         }}
       >
         <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
 
-        <Pressable onPress={handlePlay} style={{ padding: 6 }}>
+        <Pressable onPress={handlePlay}>
           <Image
             source={require("../image/outline_speaker_icon.svg")}
             style={{ width: 24, height: 24 }}
@@ -137,27 +141,28 @@ export default function Reading() {
         <Text style={{ fontSize: 24, fontWeight: "700" }}>{today.title}</Text>
 
         {/* Introduction */}
-        <View
-          style={{
-            marginTop: 12,
-            backgroundColor: "#f5f5f5",
-            paddingHorizontal: 16,
-            paddingVertical: 14,
-            borderRadius: 10,
-            borderLeftWidth: 4,
-            borderLeftColor: "#999",
-          }}
-        >
-          <Text
+        {!!today.introduction?.trim() && (
+          <View
             style={{
-              fontSize: FONT,
-              lineHeight: LINE_HEIGHT,
-              color: "#333",
+              marginTop: 12,
+              backgroundColor: "#f5f5f5",
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              borderRadius: 0,
+              borderLeftColor: "#999",
             }}
           >
-            {today.introduction}
-          </Text>
-        </View>
+            <Text
+              style={{
+                fontSize: FONT,
+                lineHeight: LINE_HEIGHT,
+                color: "#333",
+              }}
+            >
+              {today.introduction}
+            </Text>
+          </View>
+        )}
 
         {/* Sections */}
         <View style={{ marginTop: 24, gap: 28 }}>
