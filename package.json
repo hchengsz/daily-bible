@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "start:proxy": "powershell -ExecutionPolicy Bypass -File ./scripts/start-expo-with-proxy.ps1",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -16,6 +17,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.34",
+    "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.8",

@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { getVerse, getVerseRange } from "../../data/bible";
@@ -40,9 +42,14 @@ type TranslationResponse = {
   error?: string;
 };
 
+type PlaybackStatus = "idle" | "playing" | "paused";
+
 const FONT = 20;
 const LINE_HEIGHT = 30;
-const TARGET_LANGUAGE = "Simplified Chinese";
+const MIN_SPEECH_RATE = 0.6;
+const MAX_SPEECH_RATE = 1.4;
+const SPEECH_RATE_STEP = 0.1;
+const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
 const TRANSLATE_API_ORIGIN = (
   process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
@@ -198,6 +205,9 @@ const translateChunks = async (
   );
 };
 
+const clampSpeechRate = (rate: number) =>
+  Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, rate));
+
 export default function ReadingScreen() {
   const today = readingPlan[0] as Day;
   const translationChunks = useMemo(() => buildTranslationChunks(today), [today]);
@@ -205,6 +215,65 @@ export default function ReadingScreen() {
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [playbackStatus, setPlaybackStatus] =
+    useState<PlaybackStatus>("idle");
+  const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
+  const [speechRate, setSpeechRate] = useState(0.95);
+  const speechChunksRef = useRef<string[]>([]);
+  const currentSpeechIndexRef = useRef(0);
+  const speechRateRef = useRef(speechRate);
+  const speechLanguageRef = useRef(isTranslated ? "zh-CN" : "en-US");
+  const playbackRunRef = useRef(0);
+  const isPausedInEngineRef = useRef(false);
+
+  useEffect(() => {
+    speechRateRef.current = speechRate;
+  }, [speechRate]);
+
+  useEffect(() => {
+    speechLanguageRef.current = isTranslated ? "zh-CN" : "en-US";
+  }, [isTranslated]);
+
+  useEffect(
+    () => () => {
+      playbackRunRef.current += 1;
+      Speech.stop();
+    },
+    [],
+  );
+
+  const speakFromIndex = useCallback((index: number, runId: number) => {
+    const chunks = speechChunksRef.current;
+    const text = chunks[index];
+
+    if (!text || index >= chunks.length) {
+      setPlaybackStatus("idle");
+      setCurrentSpeechIndex(0);
+      currentSpeechIndexRef.current = 0;
+      setIsPlayerVisible(false);
+      return;
+    }
+
+    currentSpeechIndexRef.current = index;
+    isPausedInEngineRef.current = false;
+    setCurrentSpeechIndex(index);
+    setPlaybackStatus("playing");
+
+    Speech.speak(text, {
+      language: speechLanguageRef.current,
+      rate: speechRateRef.current,
+      pitch: 1.0,
+      onDone: () => {
+        if (runId !== playbackRunRef.current) {
+          return;
+        }
+
+        speakFromIndex(index + 1, runId);
+      },
+      onStopped: () => undefined,
+    });
+  }, []);
 
   const handlePlay = () => {
     const chunks = getSpeechChunks(
@@ -215,22 +284,96 @@ export default function ReadingScreen() {
 
     if (!chunks.length) return;
 
+    playbackRunRef.current += 1;
+    const runId = playbackRunRef.current;
+
+    speechChunksRef.current = chunks;
+    currentSpeechIndexRef.current = 0;
+    isPausedInEngineRef.current = false;
+    setCurrentSpeechIndex(0);
+    setIsPlayerVisible(true);
     Speech.stop();
+    speakFromIndex(0, runId);
+  };
 
-    const speakChunk = (index: number) => {
-      const text = chunks[index];
+  const handlePauseResume = async () => {
+    if (playbackStatus === "playing") {
+      try {
+        await Speech.pause();
+        isPausedInEngineRef.current = true;
+        setPlaybackStatus("paused");
+      } catch {
+        playbackRunRef.current += 1;
+        isPausedInEngineRef.current = false;
+        Speech.stop();
+        setPlaybackStatus("paused");
+      }
 
-      if (!text) return;
+      return;
+    }
 
-      Speech.speak(text, {
-        language: isTranslated ? "zh-CN" : "en-US",
-        rate: 0.95,
-        pitch: 1.0,
-        onDone: () => speakChunk(index + 1),
-      });
-    };
+    if (playbackStatus === "paused") {
+      if (isPausedInEngineRef.current) {
+        try {
+          await Speech.resume();
+          isPausedInEngineRef.current = false;
+          setPlaybackStatus("playing");
+          return;
+        } catch {
+          isPausedInEngineRef.current = false;
+        }
+      }
 
-    speakChunk(0);
+      const runId = playbackRunRef.current + 1;
+
+      playbackRunRef.current = runId;
+      Speech.stop();
+      speakFromIndex(currentSpeechIndexRef.current, runId);
+    }
+  };
+
+  const handleSkipForward = () => {
+    const chunks = speechChunksRef.current;
+    const nextIndex = Math.min(currentSpeechIndexRef.current + 1, chunks.length);
+    const runId = playbackRunRef.current + 1;
+
+    playbackRunRef.current = runId;
+    isPausedInEngineRef.current = false;
+    Speech.stop();
+    speakFromIndex(nextIndex, runId);
+  };
+
+  const handleStopPlayback = () => {
+    playbackRunRef.current += 1;
+    isPausedInEngineRef.current = false;
+    Speech.stop();
+    setPlaybackStatus("idle");
+    setIsPlayerVisible(false);
+    setCurrentSpeechIndex(0);
+    currentSpeechIndexRef.current = 0;
+  };
+
+  const updateSpeechRate = (nextRate: number) => {
+    const rate = Number(clampSpeechRate(nextRate).toFixed(2));
+
+    speechRateRef.current = rate;
+    setSpeechRate(rate);
+
+    if (playbackStatus === "paused") {
+      playbackRunRef.current += 1;
+      isPausedInEngineRef.current = false;
+      Speech.stop();
+      return;
+    }
+
+    if (playbackStatus === "playing") {
+      const runId = playbackRunRef.current + 1;
+
+      playbackRunRef.current = runId;
+      isPausedInEngineRef.current = false;
+      Speech.stop();
+      speakFromIndex(currentSpeechIndexRef.current, runId);
+    }
   };
 
   const handleTranslate = async () => {
@@ -315,7 +458,11 @@ export default function ReadingScreen() {
             </Text>
           </Pressable>
 
-          <Pressable accessibilityRole="button" onPress={handlePlay}>
+          <Pressable
+            accessibilityLabel="开始朗读"
+            accessibilityRole="button"
+            onPress={handlePlay}
+          >
             <Image
               source={require("../../../assets/images/outline_speaker_icon.svg")}
               style={{ width: 24, height: 24 }}
@@ -328,7 +475,7 @@ export default function ReadingScreen() {
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 20,
-          paddingBottom: 80,
+          paddingBottom: isPlayerVisible ? 240 : 80,
         }}
       >
         {!!translationError && (
@@ -483,6 +630,173 @@ export default function ReadingScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {isPlayerVisible && (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        >
+          <BlurView
+            experimentalBlurMethod="dimezisBlurView"
+            intensity={70}
+            pointerEvents="auto"
+            tint="light"
+            style={{
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+              overflow: "hidden",
+              backgroundColor: "rgba(255, 255, 255, 0.62)",
+              paddingHorizontal: 20,
+              paddingTop: 14,
+              paddingBottom: 28,
+              borderTopWidth: 1,
+              borderColor: "rgba(255, 255, 255, 0.72)",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 14,
+              }}
+            >
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                  {playbackStatus === "paused" ? "已暂停" : "正在朗读"}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    color: "#666",
+                    fontSize: 13,
+                    lineHeight: 18,
+                    marginTop: 2,
+                  }}
+                >
+                  {speechChunksRef.current[currentSpeechIndex] ?? ""}
+                </Text>
+              </View>
+
+              <Pressable
+                accessibilityLabel="关闭朗读控制"
+                accessibilityRole="button"
+                onPress={handleStopPlayback}
+                style={{
+                  width: 36,
+                  height: 36,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons name="close" size={24} color="#222" />
+              </Pressable>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 22,
+                marginBottom: 18,
+              }}
+            >
+              <Pressable
+                accessibilityLabel={
+                  playbackStatus === "paused" ? "继续朗读" : "暂停朗读"
+                }
+                accessibilityRole="button"
+                onPress={handlePauseResume}
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#111",
+                }}
+              >
+                <MaterialIcons
+                  name={
+                    playbackStatus === "paused" ? "play-arrow" : "pause"
+                  }
+                  size={30}
+                  color="#fff"
+                />
+              </Pressable>
+
+              <Pressable
+                accessibilityLabel="快进到下一段"
+                accessibilityRole="button"
+                onPress={handleSkipForward}
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderWidth: 1,
+                  borderColor: "#bbb",
+                }}
+              >
+                <MaterialIcons name="skip-next" size={30} color="#222" />
+              </Pressable>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text style={{ fontSize: 15, fontWeight: "600" }}>
+                速度 {speechRate.toFixed(1)}x
+              </Text>
+
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Pressable
+                  accessibilityLabel="降低朗读速度"
+                  accessibilityRole="button"
+                  onPress={() => updateSpeechRate(speechRate - SPEECH_RATE_STEP)}
+                  style={{
+                    width: 42,
+                    height: 36,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: "#bbb",
+                  }}
+                >
+                  <MaterialIcons name="remove" size={22} color="#222" />
+                </Pressable>
+
+                <Pressable
+                  accessibilityLabel="提高朗读速度"
+                  accessibilityRole="button"
+                  onPress={() => updateSpeechRate(speechRate + SPEECH_RATE_STEP)}
+                  style={{
+                    width: 42,
+                    height: 36,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: "#bbb",
+                  }}
+                >
+                  <MaterialIcons name="add" size={22} color="#222" />
+                </Pressable>
+              </View>
+            </View>
+          </BlurView>
+        </View>
+      )}
     </View>
   );
 }

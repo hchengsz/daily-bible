@@ -8,66 +8,30 @@ type TranslationRequest = {
   chunks?: TranslationChunk[];
 };
 
-type ResponsesContent = {
-  type?: string;
-  text?: string;
+type GoogleTranslateItem = {
+  translatedText: string;
+  detectedSourceLanguage?: string;
 };
 
-type ResponsesOutput = {
-  type?: string;
-  content?: ResponsesContent[];
-};
-
-type ResponsesPayload = {
-  error?: {
-    message?: string;
+type GoogleTranslatePayload = {
+  data?: {
+    translations?: GoogleTranslateItem[];
   };
-  output_text?: string;
-  output?: ResponsesOutput[];
+  error?: {
+    code?: number;
+    message?: string;
+    status?: string;
+  };
 };
 
-const OPENAI_BASE_URL = (
-  process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1"
+const GOOGLE_TRANSLATE_URL = (
+  process.env.GOOGLE_TRANSLATE_BASE_URL ??
+  "https://translation.googleapis.com/language/translate/v2"
 ).replace(/\/$/, "");
-const OPENAI_RESPONSES_URL = `${OPENAI_BASE_URL}/responses`;
-const DEFAULT_TARGET_LANGUAGE = "Simplified Chinese";
-const DEFAULT_MODEL = "gpt-5.4-mini";
+const DEFAULT_TARGET_LANGUAGE =
+  process.env.GOOGLE_TRANSLATE_TARGET_LANGUAGE || "zh-CN";
 const MAX_CHUNKS = 120;
 const MAX_CHARACTERS = 50000;
-
-const translationSchema = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    translations: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          id: { type: "string" },
-          text: { type: "string" },
-        },
-        required: ["id", "text"],
-      },
-    },
-  },
-  required: ["translations"],
-};
-
-const readOutputText = (payload: ResponsesPayload) => {
-  if (payload.output_text) {
-    return payload.output_text;
-  }
-
-  return (
-    payload.output
-      ?.flatMap((item) => item.content ?? [])
-      .filter((item) => item.type === "output_text")
-      .map((item) => item.text ?? "")
-      .join("") ?? ""
-  );
-};
 
 const isTranslationChunk = (value: unknown): value is TranslationChunk => {
   if (!value || typeof value !== "object") {
@@ -87,6 +51,20 @@ const readRequestBody = async (request: Request): Promise<TranslationRequest> =>
   }
 };
 
+const readJsonResponse = async <T,>(response: Response): Promise<T | null> => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+};
+
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) {
     const cause =
@@ -102,32 +80,60 @@ const getErrorMessage = (error: unknown) => {
   return String(error);
 };
 
-const readJsonResponse = async <T,>(response: Response): Promise<T | null> => {
-  const text = await response.text();
+const normalizeTargetLanguage = (targetLanguage?: string) => {
+  const normalized = targetLanguage?.trim().toLowerCase();
 
-  if (!text) {
-    return null;
+  if (!normalized || normalized === "simplified chinese") {
+    return DEFAULT_TARGET_LANGUAGE;
   }
 
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
+  return targetLanguage?.trim() || DEFAULT_TARGET_LANGUAGE;
+};
+
+const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
+  const message = payload?.error?.message;
+
+  if (!message) {
+    return "Google Translate request failed.";
   }
+
+  if (
+    message.includes("API key not valid") ||
+    message.includes("API_KEY_INVALID")
+  ) {
+    return "Google Translate API key 无效。请检查 GOOGLE_TRANSLATE_API_KEY。";
+  }
+
+  if (
+    message.includes("has not been used") ||
+    message.includes("is disabled") ||
+    message.includes("SERVICE_DISABLED")
+  ) {
+    return "Google Cloud Translation API 尚未启用。请在 Google Cloud Console 为当前项目启用 Cloud Translation API。";
+  }
+
+  if (
+    message.toLowerCase().includes("billing") ||
+    message.includes("BILLING_DISABLED")
+  ) {
+    return "Google Cloud 项目尚未启用 Billing，Cloud Translation API 需要绑定 Billing 后才能使用。";
+  }
+
+  return message;
 };
 
 export async function POST(request: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
 
   if (!apiKey) {
     return Response.json(
-      { error: "OPENAI_API_KEY is not configured." },
+      { error: "GOOGLE_TRANSLATE_API_KEY is not configured." },
       { status: 500 },
     );
   }
 
   const body = await readRequestBody(request);
-  const targetLanguage = body.targetLanguage?.trim() || DEFAULT_TARGET_LANGUAGE;
+  const targetLanguage = normalizeTargetLanguage(body.targetLanguage);
   const chunks = body.chunks?.filter(isTranslationChunk) ?? [];
   const characterCount = chunks.reduce((sum, chunk) => sum + chunk.text.length, 0);
 
@@ -142,38 +148,27 @@ export async function POST(request: Request) {
     );
   }
 
-  let openaiResponse: Response;
+  let googleResponse: Response;
 
   try {
-    openaiResponse = await fetch(OPENAI_RESPONSES_URL, {
+    const url = new URL(GOOGLE_TRANSLATE_URL);
+    url.searchParams.set("key", apiKey);
+
+    googleResponse = await fetch(url.toString(), {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_TRANSLATION_MODEL || DEFAULT_MODEL,
-        reasoning: { effort: "low" },
-        instructions: [
-          `Translate each chunk into ${targetLanguage}.`,
-          "Preserve the meaning, paragraph breaks, punctuation, quotation marks, names, and Bible references.",
-          "Return exactly one translation object for each input id. Do not add commentary.",
-        ].join(" "),
-        input: JSON.stringify({ targetLanguage, chunks }),
-        text: {
-          format: {
-            type: "json_schema",
-            name: "reading_translation",
-            strict: true,
-            schema: translationSchema,
-          },
-        },
+        q: chunks.map((chunk) => chunk.text),
+        target: targetLanguage,
+        format: "text",
       }),
     });
   } catch (error) {
     return Response.json(
       {
-        error: `Unable to reach OpenAI API. Check your network, VPN/proxy, or OPENAI_BASE_URL. ${getErrorMessage(
+        error: `Expo server 无法连接 Google Translate API。如果 VPN 是本地代理/浏览器代理，请停止当前 Expo server 后使用 npm run start:proxy 启动。${getErrorMessage(
           error,
         )}`,
       },
@@ -181,38 +176,28 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = await readJsonResponse<ResponsesPayload>(openaiResponse);
+  const payload = await readJsonResponse<GoogleTranslatePayload>(googleResponse);
 
-  if (!openaiResponse.ok) {
+  if (!googleResponse.ok) {
     return Response.json(
-      {
-        error:
-          payload?.error?.message ||
-          `OpenAI request failed with status ${openaiResponse.status}.`,
-      },
-      { status: openaiResponse.status },
+      { error: translateGoogleError(payload) },
+      { status: googleResponse.status },
     );
   }
 
-  if (!payload) {
+  const translatedItems = payload?.data?.translations;
+
+  if (!translatedItems) {
     return Response.json(
-      { error: "OpenAI returned a non-JSON response." },
+      { error: "Google Translate returned an invalid response." },
       { status: 502 },
     );
   }
 
-  const outputText = readOutputText(payload);
-
-  try {
-    const parsed = JSON.parse(outputText) as { translations?: TranslationChunk[] };
-
-    return Response.json({
-      translations: parsed.translations?.filter(isTranslationChunk) ?? [],
-    });
-  } catch {
-    return Response.json(
-      { error: "OpenAI returned an invalid translation payload." },
-      { status: 502 },
-    );
-  }
+  return Response.json({
+    translations: chunks.map((chunk, index) => ({
+      id: chunk.id,
+      text: translatedItems[index]?.translatedText ?? chunk.text,
+    })),
+  });
 }
