@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { getVerse, getVerseRange } from "../../data/bible";
-import readingPlan from "../../data/raw/day147.json";
+import readingPlan from "../../data/raw/day150.json";
 
 type Reference = {
   book: string;
@@ -13,21 +13,21 @@ type Reference = {
 };
 
 type Paragraph = {
-  title: string;
-  references: Reference[];
+  title?: string;
+  references?: Reference[];
 };
 
 type Section = {
   title?: string;
   introduction?: string;
-  paragraphs: Paragraph[];
+  paragraphs?: Paragraph[];
 };
 
 type Day = {
   id: number;
-  title: string;
-  introduction: string;
-  sections: Section[];
+  title?: string;
+  introduction?: string;
+  sections?: Section[];
 };
 
 type TranslationChunk = {
@@ -64,6 +64,8 @@ const extractVerseNumber = (verse: string) =>
 const normalizeText = (text?: string | null) =>
   text?.replace(/\s+/g, " ").trim() ?? "";
 
+const safeText = (text?: string | null) => text ?? "";
+
 const getReferenceLabel = (ref: Reference) =>
   `${ref.book} ${ref.chapter}:${ref.verse}`;
 
@@ -84,10 +86,10 @@ const getReferenceText = (ref: Reference) => {
 };
 
 const getParagraphReferenceLabel = (paragraph: Paragraph) =>
-  paragraph.references.map(getReferenceLabel).join("; ");
+  (paragraph.references ?? []).map(getReferenceLabel).join("; ");
 
 const getParagraphScripture = (paragraph: Paragraph) =>
-  paragraph.references.map(getReferenceText).filter(Boolean).join("");
+  (paragraph.references ?? []).map(getReferenceText).filter(Boolean).join("");
 
 const getDayTitleId = () => "day.title";
 
@@ -102,23 +104,25 @@ const getSectionIntroductionId = (sectionIndex: number) =>
 const getParagraphTitleId = (sectionIndex: number, paragraphIndex: number) =>
   `section.${sectionIndex}.paragraph.${paragraphIndex}.title`;
 
-const getParagraphScriptureId = (sectionIndex: number, paragraphIndex: number) =>
-  `section.${sectionIndex}.paragraph.${paragraphIndex}.scripture`;
+const getParagraphScriptureId = (
+  sectionIndex: number,
+  paragraphIndex: number,
+) => `section.${sectionIndex}.paragraph.${paragraphIndex}.scripture`;
 
 const buildTranslationChunks = (day: Day): TranslationChunk[] =>
   [
-    { id: getDayTitleId(), text: day.title },
-    { id: getDayIntroductionId(), text: day.introduction },
-    ...day.sections.flatMap((section, sectionIndex) => [
-      { id: getSectionTitleId(sectionIndex), text: section.title ?? "" },
+    { id: getDayTitleId(), text: safeText(day.title) },
+    { id: getDayIntroductionId(), text: safeText(day.introduction) },
+    ...(day.sections ?? []).flatMap((section, sectionIndex) => [
+      { id: getSectionTitleId(sectionIndex), text: safeText(section.title) },
       {
         id: getSectionIntroductionId(sectionIndex),
-        text: section.introduction ?? "",
+        text: safeText(section.introduction),
       },
-      ...section.paragraphs.flatMap((paragraph, paragraphIndex) => [
+      ...(section.paragraphs ?? []).flatMap((paragraph, paragraphIndex) => [
         {
           id: getParagraphTitleId(sectionIndex, paragraphIndex),
-          text: paragraph.title,
+          text: safeText(paragraph.title),
         },
         {
           id: getParagraphScriptureId(sectionIndex, paragraphIndex),
@@ -210,14 +214,16 @@ const clampSpeechRate = (rate: number) =>
 
 export default function ReadingScreen() {
   const today = readingPlan[0] as Day;
-  const translationChunks = useMemo(() => buildTranslationChunks(today), [today]);
+  const translationChunks = useMemo(
+    () => buildTranslationChunks(today),
+    [today],
+  );
   const [translations, setTranslations] = useState<TranslationMap>({});
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
   const [isPlayerVisible, setIsPlayerVisible] = useState(false);
-  const [playbackStatus, setPlaybackStatus] =
-    useState<PlaybackStatus>("idle");
+  const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>("idle");
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
   const speechChunksRef = useRef<string[]>([]);
@@ -334,7 +340,10 @@ export default function ReadingScreen() {
 
   const handleSkipForward = () => {
     const chunks = speechChunksRef.current;
-    const nextIndex = Math.min(currentSpeechIndexRef.current + 1, chunks.length);
+    const nextIndex = Math.min(
+      currentSpeechIndexRef.current + 1,
+      chunks.length,
+    );
     const runId = playbackRunRef.current + 1;
 
     playbackRunRef.current = runId;
@@ -410,13 +419,13 @@ export default function ReadingScreen() {
   ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const dayTitle = getDisplayText(
     getDayTitleId(),
-    today.title,
+    safeText(today.title),
     translations,
     isTranslated,
   );
   const dayIntroduction = getDisplayText(
     getDayIntroductionId(),
-    today.introduction,
+    safeText(today.introduction),
     translations,
     isTranslated,
   );
@@ -491,7 +500,9 @@ export default function ReadingScreen() {
           </Text>
         )}
 
-        <Text style={{ fontSize: 24, fontWeight: "700" }}>{dayTitle}</Text>
+        {!!dayTitle.trim() && (
+          <Text style={{ fontSize: 24, fontWeight: "700" }}>{dayTitle}</Text>
+        )}
 
         {!!dayIntroduction.trim() && (
           <View
@@ -517,7 +528,7 @@ export default function ReadingScreen() {
         )}
 
         <View style={{ marginTop: 24, gap: 28 }}>
-          {today.sections.map((section, sectionIndex) => (
+          {(today.sections ?? []).map((section, sectionIndex) => (
             <View key={sectionIndex}>
               {(() => {
                 const sectionTitle = getDisplayText(
@@ -577,10 +588,10 @@ export default function ReadingScreen() {
                 );
               })()}
 
-              {section.paragraphs.map((p, pIndex) => {
+              {(section.paragraphs ?? []).map((p, pIndex) => {
                 const paragraphTitle = getDisplayText(
                   getParagraphTitleId(sectionIndex, pIndex),
-                  p.title,
+                  safeText(p.title),
                   translations,
                   isTranslated,
                 );
@@ -723,9 +734,7 @@ export default function ReadingScreen() {
                 }}
               >
                 <MaterialIcons
-                  name={
-                    playbackStatus === "paused" ? "play-arrow" : "pause"
-                  }
+                  name={playbackStatus === "paused" ? "play-arrow" : "pause"}
                   size={30}
                   color="#fff"
                 />
@@ -764,7 +773,9 @@ export default function ReadingScreen() {
                 <Pressable
                   accessibilityLabel="降低朗读速度"
                   accessibilityRole="button"
-                  onPress={() => updateSpeechRate(speechRate - SPEECH_RATE_STEP)}
+                  onPress={() =>
+                    updateSpeechRate(speechRate - SPEECH_RATE_STEP)
+                  }
                   style={{
                     width: 42,
                     height: 36,
@@ -780,7 +791,9 @@ export default function ReadingScreen() {
                 <Pressable
                   accessibilityLabel="提高朗读速度"
                   accessibilityRole="button"
-                  onPress={() => updateSpeechRate(speechRate + SPEECH_RATE_STEP)}
+                  onPress={() =>
+                    updateSpeechRate(speechRate + SPEECH_RATE_STEP)
+                  }
                   style={{
                     width: 42,
                     height: 36,
