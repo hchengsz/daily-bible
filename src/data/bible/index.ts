@@ -69,6 +69,13 @@ import type { BibleBook, BibleChapter } from "./types";
 
 export type { BibleBook, BibleChapter, BibleVerse } from "./types";
 
+type VersePart = "a" | "b";
+
+type VerseToken = {
+  verse: number;
+  part?: VersePart;
+};
+
 const bibleBooks = [
   genesis,
   exodus,
@@ -148,6 +155,8 @@ const aliases: Record<string, string> = {
   "songs of solomon": "song of solomon",
 };
 
+const FIRST_SENTENCE_PATTERN = /[.!?][”"’'`)\]]*/;
+
 const bibleByBookName = new Map<string, BibleBook>();
 
 for (const book of bibleBooks) {
@@ -210,6 +219,134 @@ export function getVerse(
   return (
     chapterData.verses.find((item) => Number(item.verse) === verse)?.text ?? null
   );
+}
+
+const parseVerseToken = (value: string): VerseToken | null => {
+  const match = value.trim().match(/^(\d+)([ab])?$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    verse: Number(match[1]),
+    part: match[2]?.toLowerCase() as VersePart | undefined,
+  };
+};
+
+const splitVerseParts = (text: string) => {
+  const match = FIRST_SENTENCE_PATTERN.exec(text);
+
+  if (!match) {
+    return { first: text, rest: "" };
+  }
+
+  const firstSentenceEnd = match.index + match[0].length;
+
+  return {
+    first: text.slice(0, firstSentenceEnd),
+    rest: text.slice(firstSentenceEnd).trimStart(),
+  };
+};
+
+const getSingleVerseText = (
+  bookName: string,
+  chapter: number,
+  token: VerseToken,
+): string => {
+  const text = getVerse(bookName, chapter, token.verse) ?? "";
+
+  if (!token.part) {
+    return text;
+  }
+
+  const { first, rest } = splitVerseParts(text);
+
+  return token.part === "a" ? first : rest;
+};
+
+const getRangeStartText = (
+  bookName: string,
+  chapter: number,
+  token: VerseToken,
+): string => {
+  if (token.part !== "b") {
+    return getVerse(bookName, chapter, token.verse) ?? "";
+  }
+
+  return getSingleVerseText(bookName, chapter, token);
+};
+
+const getRangeEndText = (
+  bookName: string,
+  chapter: number,
+  token: VerseToken,
+): string => {
+  if (token.part !== "a") {
+    return getVerse(bookName, chapter, token.verse) ?? "";
+  }
+
+  return getSingleVerseText(bookName, chapter, token);
+};
+
+const getSameVerseRangeText = (
+  bookName: string,
+  chapter: number,
+  start: VerseToken,
+  end: VerseToken,
+): string => {
+  const text = getVerse(bookName, chapter, start.verse) ?? "";
+  const startPartIndex = start.part === "b" ? 1 : 0;
+  const endPartIndex = end.part === "a" ? 0 : 1;
+
+  if (startPartIndex > endPartIndex) {
+    return "";
+  }
+
+  if (startPartIndex === 0 && endPartIndex === 1) {
+    return text;
+  }
+
+  const { first, rest } = splitVerseParts(text);
+
+  return startPartIndex === 0 ? first : rest;
+};
+
+export function getScriptureText(
+  bookName: string,
+  chapter: number,
+  verseReference: string,
+): string {
+  const [startRaw, endRaw] = verseReference.split("-");
+  const start = parseVerseToken(startRaw ?? "");
+
+  if (!start) {
+    return "";
+  }
+
+  if (!endRaw) {
+    return getSingleVerseText(bookName, chapter, start);
+  }
+
+  const end = parseVerseToken(endRaw);
+
+  if (!end || start.verse > end.verse) {
+    return "";
+  }
+
+  if (start.verse === end.verse) {
+    return getSameVerseRangeText(bookName, chapter, start, end);
+  }
+
+  const pieces = [getRangeStartText(bookName, chapter, start)];
+
+  for (let verse = start.verse + 1; verse < end.verse; verse += 1) {
+    pieces.push(getVerse(bookName, chapter, verse) ?? "");
+  }
+
+  pieces.push(getRangeEndText(bookName, chapter, end));
+
+  return pieces.filter(Boolean).join("");
 }
 
 export function getVerseRange(
