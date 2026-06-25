@@ -72,6 +72,7 @@ export type { BibleBook, BibleChapter, BibleVerse } from "./types";
 type VersePart = "a" | "b";
 
 type VerseToken = {
+  chapter?: number;
   verse: number;
   part?: VersePart;
 };
@@ -157,6 +158,12 @@ const aliases: Record<string, string> = {
 
 const FIRST_SENTENCE_PATTERN = /[.!?][”"’'`)\]]*/;
 
+const joinScriptureTexts = (texts: string[]) =>
+  texts
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .join(" ");
+
 const bibleByBookName = new Map<string, BibleBook>();
 
 for (const book of bibleBooks) {
@@ -222,15 +229,16 @@ export function getVerse(
 }
 
 const parseVerseToken = (value: string): VerseToken | null => {
-  const match = value.trim().match(/^(\d+)([ab])?$/i);
+  const match = value.trim().match(/^(?:(\d+)\s*:\s*)?(\d+)([ab])?$/i);
 
   if (!match) {
     return null;
   }
 
   return {
-    verse: Number(match[1]),
-    part: match[2]?.toLowerCase() as VersePart | undefined,
+    chapter: match[1] ? Number(match[1]) : undefined,
+    verse: Number(match[2]),
+    part: match[3]?.toLowerCase() as VersePart | undefined,
   };
 };
 
@@ -312,6 +320,36 @@ const getSameVerseRangeText = (
   return startPartIndex === 0 ? first : rest;
 };
 
+const getChapterVerseRangeTexts = (
+  bookName: string,
+  chapter: number,
+  startVerse: number,
+  endVerse?: number,
+): string[] => {
+  const book = getBibleBook(bookName);
+
+  if (!book) {
+    return [];
+  }
+
+  const chapterData = getBibleChapter(book, chapter);
+
+  if (!chapterData) {
+    return [];
+  }
+
+  return chapterData.verses
+    .filter((item) => {
+      const verseNumber = Number(item.verse);
+
+      return (
+        verseNumber >= startVerse &&
+        (endVerse === undefined || verseNumber <= endVerse)
+      );
+    })
+    .map((item) => item.text);
+};
+
 export function getScriptureText(
   bookName: string,
   chapter: number,
@@ -324,29 +362,58 @@ export function getScriptureText(
     return "";
   }
 
+  const startChapter = start.chapter ?? chapter;
+
   if (!endRaw) {
-    return getSingleVerseText(bookName, chapter, start);
+    return getSingleVerseText(bookName, startChapter, start);
   }
 
   const end = parseVerseToken(endRaw);
+  const endChapter = end?.chapter ?? startChapter;
 
-  if (!end || start.verse > end.verse) {
+  if (
+    !end ||
+    startChapter > endChapter ||
+    (startChapter === endChapter && start.verse > end.verse)
+  ) {
     return "";
   }
 
-  if (start.verse === end.verse) {
-    return getSameVerseRangeText(bookName, chapter, start, end);
+  if (startChapter === endChapter) {
+    if (start.verse === end.verse) {
+      return getSameVerseRangeText(bookName, startChapter, start, end);
+    }
+
+    const pieces = [getRangeStartText(bookName, startChapter, start)];
+
+    for (let verse = start.verse + 1; verse < end.verse; verse += 1) {
+      pieces.push(getVerse(bookName, startChapter, verse) ?? "");
+    }
+
+    pieces.push(getRangeEndText(bookName, startChapter, end));
+
+    return joinScriptureTexts(pieces);
   }
 
-  const pieces = [getRangeStartText(bookName, chapter, start)];
+  const pieces = [
+    getRangeStartText(bookName, startChapter, start),
+    ...getChapterVerseRangeTexts(bookName, startChapter, start.verse + 1),
+  ];
 
-  for (let verse = start.verse + 1; verse < end.verse; verse += 1) {
-    pieces.push(getVerse(bookName, chapter, verse) ?? "");
+  for (
+    let chapterNumber = startChapter + 1;
+    chapterNumber < endChapter;
+    chapterNumber += 1
+  ) {
+    pieces.push(...getChapterVerseRangeTexts(bookName, chapterNumber, 1));
   }
 
-  pieces.push(getRangeEndText(bookName, chapter, end));
+  pieces.push(
+    ...getChapterVerseRangeTexts(bookName, endChapter, 1, end.verse - 1),
+    getRangeEndText(bookName, endChapter, end),
+  );
 
-  return pieces.filter(Boolean).join("");
+  return joinScriptureTexts(pieces);
 }
 
 export function getVerseRange(

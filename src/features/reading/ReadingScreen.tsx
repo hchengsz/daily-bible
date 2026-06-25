@@ -4,7 +4,7 @@ import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { getScriptureText } from "../../data/bible";
-import readingPlan from "../../data/raw/day151.json";
+import readingPlan from "../../data/raw/day154.json";
 
 type Reference = {
   book: string;
@@ -45,9 +45,9 @@ type TranslationResponse = {
 type PlaybackStatus = "idle" | "playing" | "paused";
 
 const DEFAULT_DAY: Day = { id: 0, sections: [] };
-const readingDays = (
-  Array.isArray(readingPlan) ? readingPlan : [readingPlan]
-) as unknown as Day[];
+const readingDays = (Array.isArray(readingPlan)
+  ? readingPlan
+  : [readingPlan]) as unknown as Day[];
 
 const FONT = 20;
 const LINE_HEIGHT = 30;
@@ -96,7 +96,11 @@ const getParagraphReferenceLabel = (paragraph: Paragraph) =>
   getReferences(paragraph).map(getReferenceLabel).join("; ");
 
 const getParagraphScripture = (paragraph: Paragraph) =>
-  getReferences(paragraph).map(getReferenceText).filter(Boolean).join("");
+  getReferences(paragraph)
+    .map(getReferenceText)
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .join(" ");
 
 const getDayTitleId = () => "day.title";
 
@@ -236,7 +240,7 @@ export default function ReadingScreen() {
   const speechChunksRef = useRef<string[]>([]);
   const currentSpeechIndexRef = useRef(0);
   const speechRateRef = useRef(speechRate);
-  const speechLanguageRef = useRef(isTranslated ? "zh-CN" : "en-US");
+  const speechLanguageRef = useRef(isTranslated ? "en-US" : "en-US");
   const playbackRunRef = useRef(0);
   const isPausedInEngineRef = useRef(false);
 
@@ -245,7 +249,7 @@ export default function ReadingScreen() {
   }, [speechRate]);
 
   useEffect(() => {
-    speechLanguageRef.current = isTranslated ? "zh-CN" : "en-US";
+    speechLanguageRef.current = isTranslated ? "en-US" : "en-US";
   }, [isTranslated]);
 
   useEffect(
