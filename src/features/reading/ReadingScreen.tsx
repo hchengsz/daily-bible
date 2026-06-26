@@ -4,7 +4,7 @@ import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { getScriptureText } from "../../data/bible";
-import readingPlan from "../../data/raw/day154.json";
+import { readingPlanDays } from "../../data/raw";
 
 type Reference = {
   book: string;
@@ -45,9 +45,8 @@ type TranslationResponse = {
 type PlaybackStatus = "idle" | "playing" | "paused";
 
 const DEFAULT_DAY: Day = { id: 0, sections: [] };
-const readingDays = (Array.isArray(readingPlan)
-  ? readingPlan
-  : [readingPlan]) as unknown as Day[];
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const readingDays = readingPlanDays as unknown as Day[];
 
 const FONT = 20;
 const LINE_HEIGHT = 30;
@@ -223,8 +222,28 @@ const translateChunks = async (
 const clampSpeechRate = (rate: number) =>
   Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, rate));
 
+const getDayOfYear = (date: Date) => {
+  const startOfYear = Date.UTC(date.getFullYear(), 0, 1);
+  const startOfDay = Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+
+  return Math.floor((startOfDay - startOfYear) / DAY_IN_MS) + 1;
+};
+
+const getReadingDayForDate = (date: Date) => {
+  const dayOfYear = getDayOfYear(date);
+
+  return (
+    readingDays.find((readingDay) => Number(readingDay.id) === dayOfYear) ??
+    DEFAULT_DAY
+  );
+};
+
 export default function ReadingScreen() {
-  const today = readingDays[0] ?? DEFAULT_DAY;
+  const today = useMemo(() => getReadingDayForDate(new Date()), []);
   const translationChunks = useMemo(
     () => buildTranslationChunks(today),
     [today],

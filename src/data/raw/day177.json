@@ -1,0 +1,73 @@
+[
+  {
+    "id": 177,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Third Discourse",
+        "paragraphs": [
+          {
+            "title": "God's Charge Against Judah",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 6,
+                "verse": "1-5"
+              }
+            ]
+          },
+          {
+            "title": "What God Really Wants",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 6,
+                "verse": "6-8"
+              }
+            ]
+          },
+          {
+            "title": "Judah's Sin and Punishment",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 6,
+                "verse": "9-16"
+              }
+            ]
+          },
+          {
+            "title": "Misery of Judah's Sin",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 7,
+                "verse": "1-7"
+              }
+            ]
+          },
+          {
+            "title": "The Renewal of Israel",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 7,
+                "verse": "8-13"
+              }
+            ]
+          },
+          {
+            "title": "Prayer and Praise",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 7,
+                "verse": "14-20"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
