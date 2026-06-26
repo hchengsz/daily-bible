@@ -14,6 +14,7 @@ import day178 from "./day178.json";
 import day179 from "./day179.json";
 import day180 from "./day180.json";
 import day181 from "./day181.json";
+import day182 from "./day182.json";
 
 const rawReadingDays = [
   day166,
@@ -32,6 +33,7 @@ const rawReadingDays = [
   day179,
   day180,
   day181,
+  day182,
 ] as unknown[];
 
 export const readingPlanDays = rawReadingDays.flatMap((day) =>

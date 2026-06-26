@@ -4,114 +4,109 @@
     "introduction": "",
     "sections": [
       {
-        "title": "",
-        "introduction": "",
-        "paragraphs": [
-          {
-            "title": "Anger Against Injustice",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 10,
-                "verse": "1-4"
-              }
-            ]
-          },
-          {
-            "title": "Assyria's Punishment",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 10,
-                "verse": "5-19"
-              }
-            ]
-          },
-          {
-            "title": "Remnant to Be Saved",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 10,
-                "verse": "20-23"
-              }
-            ]
-          },
-          {
-            "title": "Captivity Will Be Overcome",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 10,
-                "verse": "24-34"
-              }
-            ]
-          },
-          {
-            "title": "Savior's Lineage from David",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 11,
-                "verse": "1-9"
-              }
-            ]
-          },
-          {
-            "title": "Savior to Gather Remnant",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 11,
-                "verse": "10-16"
-              }
-            ]
-          },
-          {
-            "title": "Praise for Deliverance",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 12,
-                "verse": "1-6"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "introduction": "Ahaz must surely consider Isaiah a crazy dreamer. He probably does not even begin to understand Isaiah's message regarding the coming Messiah. Moreover, he does not have enough faith in God to believe that he could actually defeat Israel and Syria (and even Assyria, if necessary) simply by trusting God. Foolishly, Ahaz will trust his own military strength instead.\n\nSo having rejected God's support and having ignored Isaiah's warnings, Ahaz joins in battle against Pekah and Rezin. The historical account records the predictable results."
+        "title": "Isaiah Prophesies About a Savior",
+        "introduction": "Isaiah records the challenge made to Ahaz by King Rezin of Aram and King Pekah of Israel, and then relates his own peculiar exchange with Ahaz. God is ready to defend Judah despite her wickedness, and tells Ahaz to request a sign. This he arrogantly refuses to do. Isaiah then says that the Lord himself will give Ahaz a sign, whether he likes it or not. The sign evidently has nothing to do with the pending battle, but rather with the coming Messiah, or Savior. At first it appears that Isaiah is merely telling of impending political and military events: Assyria is bringing destruction and, after some time, Syria and Israel will be captured. Assyria herself will then be destroyed, and a remnant of God's people will be brought back reestablish a Jewish nation.\n\nLaced throughout that narrative, however, are messianic prophecies. The Savior will be called Immanuel at his birth. He will be a descendant of King David, whose father's name was Jesse. He will establish a kingdom and draw to himself a remnant of those who love God. And in the last days there will be justice, peace, and rejoicing in the Savior's kingdom."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "Judah Defeated by Allies",
+            "title": "Ahaz Learns of Alliance",
             "references": [
               {
-                "book": "2 Chronicles",
-                "chapter": 28,
-                "verse": "5-8"
+                "book": "Isaiah",
+                "chapter": 7,
+                "verse": "1-2"
               }
             ]
           },
           {
-            "title": "Captives' Release Secured",
+            "title": "God's Message to Ahaz",
             "references": [
               {
-                "book": "2 Chronicles",
-                "chapter": 28,
-                "verse": "9-15"
+                "book": "Isaiah",
+                "chapter": 7,
+                "verse": "3-9"
               }
             ]
           },
           {
-            "title": "Ahaz Seeks Assyrian Support",
+            "title": "Ahaz Refuses a Sign",
             "references": [
               {
-                "book": "2 Chronicles",
-                "chapter": 28,
-                "verse": "16-21"
+                "book": "Isaiah",
+                "chapter": 7,
+                "verse": "10-12"
+              }
+            ]
+          },
+          {
+            "title": "Savior to Be Immanuel",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 7,
+                "verse": "13-15"
+              }
+            ]
+          },
+          {
+            "title": "Assyria to Destroy",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 7,
+                "verse": "16-25"
+              }
+            ]
+          },
+          {
+            "title": "Syria and Israel to Fall",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 8,
+                "verse": "1-10"
+              }
+            ]
+          },
+          {
+            "title": "Call to Trust God",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 8,
+                "verse": "11-18"
+              }
+            ]
+          },
+          {
+            "title": "Others Cannot Be Trusted",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 8,
+                "verse": "19-22"
+              }
+            ]
+          },
+          {
+            "title": "Savior's Kingdom Coming",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 9,
+                "verse": "1-7"
+              }
+            ]
+          },
+          {
+            "title": "God's Wrath Against Israel",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 9,
+                "verse": "8-21"
               }
             ]
           }

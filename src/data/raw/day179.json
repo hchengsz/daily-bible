@@ -4,109 +4,128 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Isaiah Prophesies About a Savior",
-        "introduction": "Isaiah records the challenge made to Ahaz by King Rezin of Aram and King Pekah of Israel, and then relates his own peculiar exchange with Ahaz. God is ready to defend Judah despite her wickedness, and tells Ahaz to request a sign. This he arrogantly refuses to do. Isaiah then says that the Lord himself will give Ahaz a sign, whether he likes it or not. The sign evidently has nothing to do with the pending battle, but rather with the coming Messiah, or Savior. At first it appears that Isaiah is merely telling of impending political and military events: Assyria is bringing destruction and, after some time, Syria and Israel will be captured. Assyria herself will then be destroyed, and a remnant of God's people will be brought back reestablish a Jewish nation.\n\nLaced throughout that narrative, however, are messianic prophecies. The Savior will be called Immanuel at his birth. He will be a descendant of King David, whose father's name was Jesse. He will establish a kingdom and draw to himself a remnant of those who love God. And in the last days there will be justice, peace, and rejoicing in the Savior's kingdom."
+        "title": "Early Beginnings of Captivity",
+        "introduction": "The warnings of the prophets that Israel would fall into Assyrian captivity are already starting to come true. It will be several more years before total collapse takes place, but the record indicates that even now, during Pekah's reign, many of the people of Reuben, Gad, and Manasseh are taken captive by Tiglath-Pileser (King Pul)."
       },
       {
-        "title": "",
+        "title": "In Israel",
         "paragraphs": [
           {
-            "title": "Ahaz Learns of Alliance",
+            "title": "First Captives Taken",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 7,
-                "verse": "1-2"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "29"
+              },
+              {
+                "book": "1 Chronicles",
+                "chapter": 5,
+                "verse": "23-26"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "War Between Syria, Israel, and Judah",
+        "introduction": "This shocking turn of events causes both Israel and Syria to fear the Assyrians. They draw together in an unusual alliance and even call upon Judah to join them. When Judah refuses to become involved, Syria and Israel turn against Judah in an effort to force her support. This strange conflict begins when Jotham is in power, and continues during the reign of his son Ahaz, who has apparently been a co-regent for nine years."
+      },
+      {
+        "title": "In Judah",
+        "paragraphs": [
+          {
+            "title": "Syria and Israel Threaten",
+            "references": [
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "37"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "In Israel",
+        "paragraphs": [
+          {
+            "title": "Pekah Assassinated",
+            "references": [
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "31"
+              },
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "30"
               }
             ]
           },
           {
-            "title": "God's Message to Ahaz",
+            "title": "Hoshea King of Israel",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 7,
-                "verse": "3-9"
+                "book": "2 Kings",
+                "chapter": 17,
+                "verse": "1"
               }
             ]
           },
           {
-            "title": "Ahaz Refuses a Sign",
+            "title": "Hoshea's Character",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 7,
-                "verse": "10-12"
+                "book": "2 Kings",
+                "chapter": 17,
+                "verse": "2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "In Judah",
+        "paragraphs": [
+          {
+            "title": "Death of Jotham",
+            "references": [
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "36"
+              },
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "38a"
               }
             ]
           },
           {
-            "title": "Savior to Be Immanuel",
+            "title": "Ahaz Begins Sole Reign",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 7,
-                "verse": "13-15"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "38a"
+              },
+              {
+                "book": "2 Kings",
+                "chapter": 16,
+                "verse": "1-2a"
               }
             ]
           },
           {
-            "title": "Assyria to Destroy",
+            "title": "Character of Ahaz",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 7,
-                "verse": "16-25"
-              }
-            ]
-          },
-          {
-            "title": "Syria and Israel to Fall",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 8,
-                "verse": "1-10"
-              }
-            ]
-          },
-          {
-            "title": "Call to Trust God",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 8,
-                "verse": "11-18"
-              }
-            ]
-          },
-          {
-            "title": "Others Cannot Be Trusted",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 8,
-                "verse": "19-22"
-              }
-            ]
-          },
-          {
-            "title": "Savior's Kingdom Coming",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 9,
-                "verse": "1-7"
-              }
-            ]
-          },
-          {
-            "title": "God's Wrath Against Israel",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 9,
-                "verse": "8-21"
+                "book": "2 Chronicles",
+                "chapter": 28,
+                "verse": "1b-4"
               }
             ]
           }

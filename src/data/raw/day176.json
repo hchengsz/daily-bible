@@ -4,95 +4,84 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Second Discourse",
+        "title": "The Prophecies of Micah",
+        "introduction": "As Amos went to the people of the north, so the prophet Micah comes to the people of Judah, and the message is the same: God does not appreciate empty worship from those whose lives are morally and ethically bankrupt. He desires righteous thoughts and deeds, and not just a show of traditional formal worship. This is also the message of Micah's contemporary, Isaiah, whose writings are often strikingly similar in content. God's message through all of his prophets is unmistakably the same message--of sin, destruction, exile, restoration, and the coming of a Messiah to save the world.\nMicah's predictions of future events are more numerous and specific than those of other prophets. For example, Micah predicts the fall of Samaria, the invasion of Judah by Sennacherib, the fall of Jerusalem, the destruction of the temple, the exile in Babylon, the return from captivity to peace and prosperity, and the birth of the Messiah in the city of Bethlehem.\nThe three major discourses which follow are representative of Micah's preaching to the people of Judah."
+      },
+      {
+        "title": "",
         "paragraphs": [
           {
-            "title": "Leaders Rebuked",
+            "title": "Preface",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 3,
-                "verse": "1-4"
+                "chapter": 1,
+                "verse": "1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "First Discourse",
+        "paragraphs": [
+          {
+            "title": "Judgment Against Israel",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 1,
+                "verse": "2-7"
               }
             ]
           },
           {
-            "title": "False Prophets Rebuked",
+            "title": "Judah Like Israel",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 3,
-                "verse": "5-7"
+                "chapter": 1,
+                "verse": "8-16"
               }
             ]
           },
           {
-            "title": "Micah Has God's Spirit",
+            "title": "Sin of Covetousness",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 3,
-                "verse": "8"
+                "chapter": 2,
+                "verse": "1-2"
               }
             ]
           },
           {
-            "title": "Sin of the Rulers",
+            "title": "Reward of Greed",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 3,
-                "verse": "9-12"
+                "chapter": 2,
+                "verse": "3-5"
               }
             ]
           },
           {
-            "title": "Coming of Messiah",
+            "title": "Desire for False Prophets",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 4,
-                "verse": "1-5"
+                "chapter": 2,
+                "verse": "6-11"
               }
             ]
           },
           {
-            "title": "Restoration of Remnant",
+            "title": "Deliverance Promised",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 4,
-                "verse": "6-13"
-              }
-            ]
-          },
-          {
-            "title": "Birthplace of Messiah",
-            "references": [
-              {
-                "book": "Micah",
-                "chapter": 5,
-                "verse": "1-5a"
-              }
-            ]
-          },
-          {
-            "title": "Judgment Against Assyria",
-            "references": [
-              {
-                "book": "Micah",
-                "chapter": 5,
-                "verse": "5b-9"
-              }
-            ]
-          },
-          {
-            "title": "Paganism to Be Destroyed",
-            "references": [
-              {
-                "book": "Micah",
-                "chapter": 5,
-                "verse": "10-15"
+                "chapter": 2,
+                "verse": "12-13"
               }
             ]
           }

@@ -4,165 +4,153 @@
     "introduction": "",
     "sections": [
       {
-        "title": "The Prophecies of Isaiah",
-        "introduction": "During Uzziah's reign, and in the year immediately following his death, perhaps the greatest evangelistic prophet ever known to God's people begins an active ministry which will last some 40 years. Isaiah will do for Judah what Joel, Hosea, and Amos have done for Israel: he will tell the people about God's judgment against religious formalism, idolatry, oppression, immorality, and pride, and also warn them of the captivity they are about to face. Throughout his prophecies Isaiah repeatedly refers to the final day of the Lord, when all people will face judgment like that being brought against Israel and Judah. The imagery is exciting and visionary. Isaiah also looks forward to the coming of the Messiah and Savior, who will redeem all mankind from their sins. For this reason, much of what Isaiah has to say will be as meaningful to future generations as it is to those who live in Judah at this time. Isaiah's message begins with a condemnation of Judah's many sins. He insists that Judah's sins will bring severe punishment, from which neither Judah's idols nor its leaders can save the people. He challenges the people to come to their senses before it is too late, and to look forward to the last days, when there will be a spiritual renewal and everlasting peace."
-      },
-      {
         "title": "",
         "introduction": "",
         "paragraphs": [
           {
-            "title": "Preface",
+            "title": "Priest's Angry Response",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 1,
-                "verse": "1"
+                "book": "Amos",
+                "chapter": 7,
+                "verse": "10-13"
               }
             ]
           },
           {
-            "title": "Judah's Sinful State",
+            "title": "Amos' Answer",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 1,
-                "verse": "2-9"
+                "book": "Amos",
+                "chapter": 7,
+                "verse": "14-17"
               }
             ]
-          },
+          }
+        ]
+      },
+      {
+        "introduction": "The wickedness against which Amos speaks is also seen in the political chaos which comes following Jeroboam's death."
+      },
+      {
+        "title": "In Israel",
+        "paragraphs": [
           {
-            "title": "Parable of Vineyard",
+            "title": "Death of Jeroboam II",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "1-7"
-              }
-            ]
-          },
-          {
-            "title": "Sin of Religious Formalism",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 1,
-                "verse": "10-17"
-              }
-            ]
-          },
-          {
-            "title": "Sin of Injustice",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 1,
-                "verse": "21-26"
-              }
-            ]
-          },
-          {
-            "title": "Sin of Idolatry",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 2,
-                "verse": "6-9"
-              }
-            ]
-          },
-          {
-            "title": "Sin of Pride",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 2,
-                "verse": "10-18"
-              }
-            ]
-          },
-          {
-            "title": "Sin of the Leaders",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 3,
-                "verse": "8-15"
-              }
-            ]
-          },
-          {
-            "title": "Sin of the Women",
-            "references": [
-              {
-                "book": "Isaiah",
-                "chapter": 3,
-                "verse": "16-4:1"
+                "book": "2 Kings",
+                "chapter": 14,
+                "verse": "28"
               },
               {
-                "book": "Isaiah",
-                "chapter": 32,
-                "verse": "9-11"
+                "book": "2 Kings",
+                "chapter": 14,
+                "verse": "29a"
               }
             ]
           },
           {
-            "title": "Sin of Greed",
+            "title": "Zechariah King of Israel",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "8-10"
+                "book": "2 Kings",
+                "chapter": 14,
+                "verse": "29b"
+              },
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "8"
               }
             ]
           },
           {
-            "title": "Sin of Revelry",
+            "title": "Zechariah's Character",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "11-14"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "9"
               }
             ]
           },
           {
-            "title": "Sin of Arrogance",
+            "title": "Zechariah Assassinated",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "15-17"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "10-11"
               }
             ]
           },
           {
-            "title": "Sin of Rationalization",
+            "title": "Promise to Jehu Fulfilled",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "18-21"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "12"
               }
             ]
           },
           {
-            "title": "Sin of Drunkenness",
+            "title": "Shallum Assassinated",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "22"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "13-15"
               }
             ]
           },
           {
-            "title": "Sin of Injustice",
+            "title": "Menahem King of Israel",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 5,
-                "verse": "23"
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "16-17"
+              }
+            ]
+          },
+          {
+            "title": "Menahem's Character",
+            "references": [
+              {
+                "book": "2 Kings",
+                "chapter": 15,
+                "verse": "18"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "End of Uzziah and Jotham in Judah",
+        "introduction": "Since at least 767 B.C., King Uzziah, also known as Azariah, has reigned over Judah with great success. But his good fortune is about to go to his head, and he will suffer serious illness for his presumptuousness. Uzziah's illness will necessitate a co-regent to run the day-to-day affairs of state. In filling that role, Uzziah's son Jotham is a good leader. But he is not the religious man needed by this materialistic, immoral, unjust, and complacent people."
+      },
+      {
+        "title": "In Judah",
+        "paragraphs": [
+          {
+            "title": "Sin Makes Uzziah Leprous",
+            "references": [
+              {
+                "book": "2 Chronicles",
+                "chapter": 26,
+                "verse": "16-21a"
+              }
+            ]
+          },
+          {
+            "title": "Jotham Co-Regent",
+            "references": [
+              {
+                "book": "2 Chronicles",
+                "chapter": 26,
+                "verse": "21b"
               }
             ]
           }

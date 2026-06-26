@@ -4,69 +4,114 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Isaiah Prophesies Against Nations",
-        "introduction": "Under Ahaz, Judah has become a vassal to Assyria, paying tribute and doing in effect whatever Assyria demands. Dependence upon Assyria has become necessary because Judah is once again vulnerable to the Edomites and Philistines. Although Isaiah knows that invasions by foreign nations are part of God's plan for punishing Judah, he is also aware that these nations are acting from their own wicked motivations, and that God will ultimately bring about their destruction as well. Therefore Isaiah pronounces God's judgement against several nations at this and later times. Here are some of those pronouncements."
-      },
-      {
         "title": "",
+        "introduction": "",
         "paragraphs": [
           {
-            "title": "Wrath Against Nations",
+            "title": "Anger Against Injustice",
             "references": [
               {
                 "book": "Isaiah",
-                "chapter": 34,
+                "chapter": 10,
                 "verse": "1-4"
               }
             ]
           },
           {
-            "title": "Judgement Against Assyria",
+            "title": "Assyria's Punishment",
             "references": [
               {
                 "book": "Isaiah",
-                "chapter": 14,
-                "verse": "24-27"
+                "chapter": 10,
+                "verse": "5-19"
               }
             ]
           },
           {
-            "title": "Judgement Against Moab",
+            "title": "Remnant to Be Saved",
             "references": [
               {
                 "book": "Isaiah",
-                "chapter": 15,
+                "chapter": 10,
+                "verse": "20-23"
+              }
+            ]
+          },
+          {
+            "title": "Captivity Will Be Overcome",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 10,
+                "verse": "24-34"
+              }
+            ]
+          },
+          {
+            "title": "Savior's Lineage from David",
+            "references": [
+              {
+                "book": "Isaiah",
+                "chapter": 11,
                 "verse": "1-9"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Savior to Gather Remnant",
             "references": [
               {
                 "book": "Isaiah",
-                "chapter": 16,
-                "verse": "1-5"
+                "chapter": 11,
+                "verse": "10-16"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Praise for Deliverance",
             "references": [
               {
                 "book": "Isaiah",
-                "chapter": 16,
-                "verse": "6-14"
+                "chapter": 12,
+                "verse": "1-6"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "introduction": "Ahaz must surely consider Isaiah a crazy dreamer. He probably does not even begin to understand Isaiah's message regarding the coming Messiah. Moreover, he does not have enough faith in God to believe that he could actually defeat Israel and Syria (and even Assyria, if necessary) simply by trusting God. Foolishly, Ahaz will trust his own military strength instead.\n\nSo having rejected God's support and having ignored Isaiah's warnings, Ahaz joins in battle against Pekah and Rezin. The historical account records the predictable results."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "Judah Defeated by Allies",
+            "references": [
+              {
+                "book": "2 Chronicles",
+                "chapter": 28,
+                "verse": "5-8"
               }
             ]
           },
           {
-            "title": "Judgement Against Damascus",
+            "title": "Captives' Release Secured",
             "references": [
               {
-                "book": "Isaiah",
-                "chapter": 17,
-                "verse": "1-14"
+                "book": "2 Chronicles",
+                "chapter": 28,
+                "verse": "9-15"
+              }
+            ]
+          },
+          {
+            "title": "Ahaz Seeks Assyrian Support",
+            "references": [
+              {
+                "book": "2 Chronicles",
+                "chapter": 28,
+                "verse": "16-21"
               }
             ]
           }

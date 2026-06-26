@@ -4,65 +4,95 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Third Discourse",
+        "title": "Second Discourse",
         "paragraphs": [
           {
-            "title": "God's Charge Against Judah",
+            "title": "Leaders Rebuked",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 6,
+                "chapter": 3,
+                "verse": "1-4"
+              }
+            ]
+          },
+          {
+            "title": "False Prophets Rebuked",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 3,
+                "verse": "5-7"
+              }
+            ]
+          },
+          {
+            "title": "Micah Has God's Spirit",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 3,
+                "verse": "8"
+              }
+            ]
+          },
+          {
+            "title": "Sin of the Rulers",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 3,
+                "verse": "9-12"
+              }
+            ]
+          },
+          {
+            "title": "Coming of Messiah",
+            "references": [
+              {
+                "book": "Micah",
+                "chapter": 4,
                 "verse": "1-5"
               }
             ]
           },
           {
-            "title": "What God Really Wants",
+            "title": "Restoration of Remnant",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 6,
-                "verse": "6-8"
+                "chapter": 4,
+                "verse": "6-13"
               }
             ]
           },
           {
-            "title": "Judah's Sin and Punishment",
+            "title": "Birthplace of Messiah",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 6,
-                "verse": "9-16"
+                "chapter": 5,
+                "verse": "1-5a"
               }
             ]
           },
           {
-            "title": "Misery of Judah's Sin",
+            "title": "Judgment Against Assyria",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 7,
-                "verse": "1-7"
+                "chapter": 5,
+                "verse": "5b-9"
               }
             ]
           },
           {
-            "title": "The Renewal of Israel",
+            "title": "Paganism to Be Destroyed",
             "references": [
               {
                 "book": "Micah",
-                "chapter": 7,
-                "verse": "8-13"
-              }
-            ]
-          },
-          {
-            "title": "Prayer and Praise",
-            "references": [
-              {
-                "book": "Micah",
-                "chapter": 7,
-                "verse": "14-20"
+                "chapter": 5,
+                "verse": "10-15"
               }
             ]
           }

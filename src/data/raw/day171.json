@@ -1,151 +1,157 @@
 [
-  {
-    "id": 171,
-    "sections": [
-      {
-        "paragraphs": [
-          {
-            "title": "Cry Against Injustice",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 5,
-                "verse": "1-15"
-              }
-            ]
-          },
-          {
-            "title": "Day of the Lord",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 5,
-                "verse": "16-20"
-              }
-            ]
-          },
-          {
-            "title": "Emptiness of Ritual",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 5,
-                "verse": "21-26"
-              }
-            ]
-          },
-          {
-            "title": "Prediction of Captivity",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 5,
-                "verse": "27"
-              }
-            ]
-          },
-          {
-            "title": "Rebuke for Complacency",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 6,
-                "verse": "1-7"
-              }
-            ]
-          },
-          {
-            "title": "Rebuke for Pride",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 6,
-                "verse": "8-14"
-              }
-            ]
-          },
-          {
-            "title": "Vision of Locusts",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 7,
-                "verse": "1-3"
-              }
-            ]
-          },
-          {
-            "title": "Vision of Fire",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 7,
-                "verse": "4-6"
-              }
-            ]
-          },
-          {
-            "title": "Vision of Plumb Line",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 7,
-                "verse": "7-9"
-              }
-            ]
-          },
-          {
-            "title": "Vision of Ripe Fruit",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 8,
-                "verse": "1-3"
-              }
-            ]
-          },
-          {
-            "title": "Unethical Religion",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 8,
-                "verse": "4-6"
-              }
-            ]
-          },
-          {
-            "title": "Promise of Punishment",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 8,
-                "verse": "7-14"
-              }
-            ]
-          },
-          {
-            "title": "Vision of the Altar",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 9,
-                "verse": "1-10"
-              }
-            ]
-          },
-          {
-            "title": "Promise of Restoration",
-            "references": [
-              {
-                "book": "Amos",
-                "chapter": 9,
-                "verse": "11-15"
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+{
+"id": 171,
+"introduction": "",
+"sections": [
+{
+"title": "The Prophecies of Amos",
+"introduction": "In the days of Uzziah and Jeroboam II, God calls a lowly shepherd from Tekoa, near Bethlehem in Judah, to prophesy against several nations, but principally against Israel. Amos comes to Israel at a time when Jeroboam's great military successes have brought unparalleled prosperity, and with it selfishness, greed, and immorality. Although he comes to the center of calf worship at Bethel, he does not attack idolatry as such (as does his contemporary, Hosea). He concentrates instead on rebuking both Israel and Judah for the meaninglessness of their worship, whatever its form. He calls for consistency in one's religious exercises and daily ethical conduct, and cries out against a people who honor deity with their many sacrifices yet refuse justice and mercy to the oppressed and needy.\n\nAmos' message comes first in the form of eight \"burdens\" against various nations. Three sermons of judgment then follow, and an oracle containing five visions: of locusts, fire, a plumb line, ripe fruit, and the altar. Amos ends his writing with a message of hope and a promise of restoration.\n\nIt is not at all surprising that Amos is rebuked by Amaziah, the high priest, for it is, after all, the selfish religious establishment which has led the people into this institutionalized and meaningless form of religion."
+},
+{
+"title": "",
+"paragraphs": [
+{
+"title": "Preface",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "1"
+}
+]
+},
+{
+"title": "Judgment Against Nations",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "2"
+}
+]
+},
+{
+"title": "Against Syrians",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "3-5"
+}
+]
+},
+{
+"title": "Against Philistines",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "6-8"
+}
+]
+},
+{
+"title": "Against Tyre",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "9-10"
+}
+]
+},
+{
+"title": "Against Edomites",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "11-12"
+}
+]
+},
+{
+"title": "Against Ammonites",
+"references": [
+{
+"book": "Amos",
+"chapter": 1,
+"verse": "13-15"
+}
+]
+},
+{
+"title": "Against Moabites",
+"references": [
+{
+"book": "Amos",
+"chapter": 2,
+"verse": "1-3"
+}
+]
+},
+{
+"title": "Against Judah",
+"references": [
+{
+"book": "Amos",
+"chapter": 2,
+"verse": "4-5"
+}
+]
+},
+{
+"title": "Against Israel",
+"references": [
+{
+"book": "Amos",
+"chapter": 2,
+"verse": "6-16"
+}
+]
+},
+{
+"title": "God's Plans Revealed",
+"references": [
+{
+"book": "Amos",
+"chapter": 3,
+"verse": "1-10"
+}
+]
+},
+{
+"title": "Promise of Punishment",
+"references": [
+{
+"book": "Amos",
+"chapter": 3,
+"verse": "11-15"
+}
+]
+},
+{
+"title": "God's Many Warnings",
+"references": [
+{
+"book": "Amos",
+"chapter": 4,
+"verse": "1-11"
+}
+]
+},
+{
+"title": "Need to Prepare",
+"references": [
+{
+"book": "Amos",
+"chapter": 4,
+"verse": "12-13"
+}
+]
+}
+]
+}
+]
+}
 ]
