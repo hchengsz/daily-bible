@@ -3,6 +3,7 @@ import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
 import { readingPlanDays } from "../../data/raw";
 
@@ -243,6 +244,7 @@ const getReadingDayForDate = (date: Date) => {
 };
 
 export default function ReadingScreen() {
+  const insets = useSafeAreaInsets();
   const today = useMemo(() => getReadingDayForDate(new Date()), []);
   const translationChunks = useMemo(
     () => buildTranslationChunks(today),
@@ -380,6 +382,16 @@ export default function ReadingScreen() {
     isPausedInEngineRef.current = false;
     Speech.stop();
     speakFromIndex(nextIndex, runId);
+  };
+
+  const handleSkipBackward = () => {
+    const previousIndex = Math.max(currentSpeechIndexRef.current - 1, 0);
+    const runId = playbackRunRef.current + 1;
+
+    playbackRunRef.current = runId;
+    isPausedInEngineRef.current = false;
+    Speech.stop();
+    speakFromIndex(previousIndex, runId);
   };
 
   const handleStopPlayback = () => {
@@ -676,26 +688,30 @@ export default function ReadingScreen() {
           pointerEvents="box-none"
           style={{
             position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
+            left: 16,
+            right: 16,
+            bottom: Math.max(18, insets.bottom + 12),
+            alignItems: "center",
           }}
         >
           <BlurView
             experimentalBlurMethod="dimezisBlurView"
-            intensity={70}
+            intensity={88}
             pointerEvents="auto"
-            tint="light"
+            tint="systemMaterial"
             style={{
-              borderTopLeftRadius: 8,
-              borderTopRightRadius: 8,
+              width: "100%",
+              maxWidth: 620,
+              borderRadius: 28,
+              borderCurve: "continuous",
               overflow: "hidden",
-              backgroundColor: "rgba(255, 255, 255, 0.62)",
-              paddingHorizontal: 20,
-              paddingTop: 14,
-              paddingBottom: 28,
-              borderTopWidth: 1,
+              backgroundColor: "rgba(255, 255, 255, 0.68)",
+              paddingHorizontal: 18,
+              paddingTop: 16,
+              paddingBottom: 18,
+              borderWidth: 1,
               borderColor: "rgba(255, 255, 255, 0.72)",
+              boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
             }}
           >
             <View
@@ -743,10 +759,28 @@ export default function ReadingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 22,
+                gap: 18,
                 marginBottom: 18,
               }}
             >
+              <Pressable
+                accessibilityLabel="后退到上一段"
+                accessibilityRole="button"
+                onPress={handleSkipBackward}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 26,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.44)",
+                  borderWidth: 1,
+                  borderColor: "rgba(0, 0, 0, 0.12)",
+                }}
+              >
+                <MaterialIcons name="skip-previous" size={30} color="#222" />
+              </Pressable>
+
               <Pressable
                 accessibilityLabel={
                   playbackStatus === "paused" ? "继续朗读" : "暂停朗读"
@@ -774,13 +808,14 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handleSkipForward}
                 style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: 27,
+                  width: 52,
+                  height: 52,
+                  borderRadius: 26,
                   alignItems: "center",
                   justifyContent: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.44)",
                   borderWidth: 1,
-                  borderColor: "#bbb",
+                  borderColor: "rgba(0, 0, 0, 0.12)",
                 }}
               >
                 <MaterialIcons name="skip-next" size={30} color="#222" />
