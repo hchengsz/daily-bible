@@ -1,8 +1,19 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  Image,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
 import { readingPlanDays } from "../../data/raw";
@@ -56,6 +67,30 @@ const MAX_SPEECH_RATE = 1.4;
 const SPEECH_RATE_STEP = 0.1;
 const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
+const SWIPE_THRESHOLD = 76;
+const CONFETTI_COLORS = [
+  "#d9480f",
+  "#f08c00",
+  "#2f9e44",
+  "#1971c2",
+  "#7048e8",
+  "#c2255c",
+];
+const CONFETTI_PIECES = Array.from({ length: 42 }, (_, index) => ({
+  color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+  delay: (index % 7) * 0.045,
+  drift: ((index % 9) - 4) * 18,
+  leftRatio: ((index * 37) % 100) / 100,
+  rotate: (index % 2 === 0 ? 1 : -1) * (140 + (index % 5) * 38),
+  size: 7 + (index % 4) * 2,
+  travel: 380 + (index % 6) * 38,
+}));
+const FIREWORK_SPARKS = Array.from({ length: 18 }, (_, index) => ({
+  angle: (Math.PI * 2 * index) / 18,
+  color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
+  distance: 76 + (index % 3) * 24,
+  size: 5 + (index % 3),
+}));
 const TRANSLATE_API_ORIGIN = (
   process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
 ).replace(/\/$/, "");
@@ -234,6 +269,35 @@ const getDayOfYear = (date: Date) => {
   return Math.floor((startOfDay - startOfYear) / DAY_IN_MS) + 1;
 };
 
+const getDateKey = (date: Date) =>
+  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+
+const addDays = (date: Date, amount: number) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
+
+const formatDate = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+
+const getRelativeDateLabel = (date: Date, currentDate: Date) => {
+  const distance = Math.round((getDateKey(currentDate) - getDateKey(date)) / DAY_IN_MS);
+
+  if (distance === 0) {
+    return "今日";
+  }
+
+  if (distance === 1) {
+    return "昨日";
+  }
+
+  if (distance === 2) {
+    return "前日";
+  }
+
+  return `第 ${getDayOfYear(date)} 天`;
+};
+
 const getReadingDayForDate = (date: Date) => {
   const dayOfYear = getDayOfYear(date);
 
@@ -243,21 +307,58 @@ const getReadingDayForDate = (date: Date) => {
   );
 };
 
+const hasReadingDayForDate = (date: Date) => {
+  const dayOfYear = getDayOfYear(date);
+
+  return readingDays.some((readingDay) => Number(readingDay.id) === dayOfYear);
+};
+
+const getCompleteButtonLabel = (isCompleted: boolean, isSelectedToday: boolean) => {
+  if (isCompleted) {
+    return isSelectedToday ? "今日经文已完成" : "这日经文已完成";
+  }
+
+  return isSelectedToday ? "完成今日经文" : "标记这日完成";
+};
+
+const getCompletionMessage = (isSelectedToday: boolean) =>
+  isSelectedToday ? "明天继续回来，一天一点也很好。" : "这一天也补上了，继续保持。";
+
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
-  const today = useMemo(() => getReadingDayForDate(new Date()), []);
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const currentDate = useMemo(() => new Date(), []);
+  const [selectedDate, setSelectedDate] = useState(() => currentDate);
+  const selectedDay = useMemo(
+    () => getReadingDayForDate(selectedDate),
+    [selectedDate],
+  );
+  const selectedDayOfYear = useMemo(
+    () => getDayOfYear(selectedDate),
+    [selectedDate],
+  );
+  const isSelectedToday = getDateKey(selectedDate) === getDateKey(currentDate);
+  const canGoPreviousDay = hasReadingDayForDate(addDays(selectedDate, -1));
+  const canGoNextDay =
+    getDateKey(selectedDate) < getDateKey(currentDate) &&
+    hasReadingDayForDate(addDays(selectedDate, 1));
   const translationChunks = useMemo(
-    () => buildTranslationChunks(today),
-    [today],
+    () => buildTranslationChunks(selectedDay),
+    [selectedDay],
   );
   const [translations, setTranslations] = useState<TranslationMap>({});
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const [completedDayIds, setCompletedDayIds] = useState<
+    Record<number, boolean>
+  >({});
+  const [isCelebrating, setIsCelebrating] = useState(false);
   const [isPlayerVisible, setIsPlayerVisible] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>("idle");
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
+  const confettiProgress = useRef(new Animated.Value(0)).current;
   const speechChunksRef = useRef<string[]>([]);
   const currentSpeechIndexRef = useRef(0);
   const speechRateRef = useRef(speechRate);
@@ -280,6 +381,24 @@ export default function ReadingScreen() {
     },
     [],
   );
+
+  const stopSpeechPlayback = useCallback(() => {
+    playbackRunRef.current += 1;
+    isPausedInEngineRef.current = false;
+    Speech.stop();
+    setPlaybackStatus("idle");
+    setIsPlayerVisible(false);
+    setCurrentSpeechIndex(0);
+    currentSpeechIndexRef.current = 0;
+  }, []);
+
+  useEffect(() => {
+    stopSpeechPlayback();
+    setTranslations({});
+    setIsTranslated(false);
+    setIsTranslating(false);
+    setTranslationError(null);
+  }, [selectedDayOfYear, stopSpeechPlayback]);
 
   const speakFromIndex = useCallback((index: number, runId: number) => {
     const chunks = speechChunksRef.current;
@@ -395,13 +514,65 @@ export default function ReadingScreen() {
   };
 
   const handleStopPlayback = () => {
-    playbackRunRef.current += 1;
-    isPausedInEngineRef.current = false;
-    Speech.stop();
-    setPlaybackStatus("idle");
-    setIsPlayerVisible(false);
-    setCurrentSpeechIndex(0);
-    currentSpeechIndexRef.current = 0;
+    stopSpeechPlayback();
+  };
+
+  const handlePreviousDay = useCallback(() => {
+    if (!canGoPreviousDay) {
+      return;
+    }
+
+    setSelectedDate((date) => addDays(date, -1));
+  }, [canGoPreviousDay]);
+
+  const handleNextDay = useCallback(() => {
+    if (!canGoNextDay) {
+      return;
+    }
+
+    setSelectedDate((date) => addDays(date, 1));
+  }, [canGoNextDay]);
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          Math.abs(gestureState.dx) > 24 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.4,
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx > SWIPE_THRESHOLD) {
+            handlePreviousDay();
+            return;
+          }
+
+          if (gestureState.dx < -SWIPE_THRESHOLD) {
+            handleNextDay();
+          }
+        },
+      }),
+    [handleNextDay, handlePreviousDay],
+  );
+
+  const handleCompleteReading = () => {
+    if (!selectedDay.id) {
+      return;
+    }
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+      () => undefined,
+    );
+    setCompletedDayIds((current) => ({
+      ...current,
+      [selectedDay.id]: true,
+    }));
+    setIsCelebrating(true);
+    confettiProgress.setValue(0);
+    Animated.timing(confettiProgress, {
+      duration: 1900,
+      easing: Easing.out(Easing.cubic),
+      toValue: 1,
+      useNativeDriver: true,
+    }).start(() => setIsCelebrating(false));
   };
 
   const updateSpeechRate = (nextRate: number) => {
@@ -455,19 +626,23 @@ export default function ReadingScreen() {
     }
   };
 
-  const now = new Date();
-  const dateString = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const dateString = formatDate(selectedDate);
+  const relativeDateLabel = getRelativeDateLabel(selectedDate, currentDate);
+  const isCompleted = Boolean(completedDayIds[selectedDay.id]);
+  const completeButtonLabel = getCompleteButtonLabel(
+    isCompleted,
+    isSelectedToday,
+  );
+  const completionMessage = getCompletionMessage(isSelectedToday);
   const dayTitle = getDisplayText(
     getDayTitleId(),
-    safeText(today.title),
+    safeText(selectedDay.title),
     translations,
     isTranslated,
   );
   const dayIntroduction = getDisplayText(
     getDayIntroductionId(),
-    safeText(today.introduction),
+    safeText(selectedDay.introduction),
     translations,
     isTranslated,
   );
@@ -486,7 +661,46 @@ export default function ReadingScreen() {
           borderColor: "#ddd",
         }}
       >
-        <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+          <Pressable
+            accessibilityLabel="查看前一日经文"
+            accessibilityRole="button"
+            disabled={!canGoPreviousDay}
+            onPress={handlePreviousDay}
+            style={{
+              width: 34,
+              height: 34,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: canGoPreviousDay ? 1 : 0.26,
+            }}
+          >
+            <MaterialIcons name="chevron-left" size={28} color="#222" />
+          </Pressable>
+
+          <View style={{ minWidth: 132 }}>
+            <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
+            <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
+              {relativeDateLabel}
+            </Text>
+          </View>
+
+          <Pressable
+            accessibilityLabel="查看后一日经文"
+            accessibilityRole="button"
+            disabled={!canGoNextDay}
+            onPress={handleNextDay}
+            style={{
+              width: 34,
+              height: 34,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: canGoNextDay ? 1 : 0.26,
+            }}
+          >
+            <MaterialIcons name="chevron-right" size={28} color="#222" />
+          </Pressable>
+        </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
           <Pressable
@@ -523,6 +737,7 @@ export default function ReadingScreen() {
       </View>
 
       <ScrollView
+        {...panResponder.panHandlers}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 20,
@@ -570,7 +785,7 @@ export default function ReadingScreen() {
         )}
 
         <View style={{ marginTop: 24, gap: 28 }}>
-          {getSections(today).map((section, sectionIndex) => (
+          {getSections(selectedDay).map((section, sectionIndex) => (
             <View key={sectionIndex}>
               {(() => {
                 const sectionTitle = getDisplayText(
@@ -681,7 +896,146 @@ export default function ReadingScreen() {
             </View>
           ))}
         </View>
+
+        {!!selectedDay.id && (
+          <View
+            style={{
+              marginTop: 12,
+              paddingTop: 8,
+              gap: 12,
+            }}
+          >
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleCompleteReading}
+              style={{
+                minHeight: 56,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: isCompleted ? "#f1f8f4" : "#111",
+                borderRadius: 18,
+                borderCurve: "continuous",
+                borderWidth: 1,
+                borderColor: isCompleted ? "#9bd8ad" : "#111",
+                paddingHorizontal: 18,
+              }}
+            >
+              <Text
+                style={{
+                  color: isCompleted ? "#1f7a3a" : "#fff",
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                {completeButtonLabel}
+              </Text>
+            </Pressable>
+
+            {isCompleted && (
+              <Text
+                style={{
+                  color: "#777",
+                  fontSize: 14,
+                  lineHeight: 20,
+                  textAlign: "center",
+                }}
+              >
+                {completionMessage}
+              </Text>
+            )}
+          </View>
+        )}
       </ScrollView>
+
+      {isCelebrating && (
+        <View
+          pointerEvents="none"
+          style={{
+            bottom: 0,
+            left: 0,
+            position: "absolute",
+            right: 0,
+            top: 0,
+            zIndex: 5,
+          }}
+        >
+          {FIREWORK_SPARKS.map((spark, index) => {
+            const translateX = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, 0.12, 0.52],
+              outputRange: [0, 0, Math.cos(spark.angle) * spark.distance],
+            });
+            const translateY = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, 0.12, 0.52],
+              outputRange: [0, 0, Math.sin(spark.angle) * spark.distance],
+            });
+            const opacity = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, 0.1, 0.5, 0.82],
+              outputRange: [0, 1, 1, 0],
+            });
+
+            return (
+              <Animated.View
+                key={`spark-${index}`}
+                style={{
+                  backgroundColor: spark.color,
+                  borderRadius: spark.size / 2,
+                  height: spark.size,
+                  left: windowWidth / 2,
+                  opacity,
+                  position: "absolute",
+                  top: Math.max(150, windowHeight * 0.28),
+                  transform: [{ translateX }, { translateY }],
+                  width: spark.size,
+                }}
+              />
+            );
+          })}
+
+          {CONFETTI_PIECES.map((piece, index) => {
+            const start = Math.max(piece.delay, 0.01);
+            const translateX = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, start, 1],
+              outputRange: [0, 0, piece.drift],
+            });
+            const translateY = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, start, 1],
+              outputRange: [-24, -24, piece.travel],
+            });
+            const rotate = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, start, 1],
+              outputRange: ["0deg", "0deg", `${piece.rotate}deg`],
+            });
+            const opacity = confettiProgress.interpolate({
+              extrapolate: "clamp",
+              inputRange: [0, start, Math.min(start + 0.16, 0.82), 1],
+              outputRange: [0, 0, 1, 0],
+            });
+
+            return (
+              <Animated.View
+                key={`confetti-${index}`}
+                style={{
+                  backgroundColor: piece.color,
+                  borderRadius: 2,
+                  height: piece.size,
+                  left: piece.leftRatio * windowWidth,
+                  opacity,
+                  position: "absolute",
+                  top: 80,
+                  transform: [{ translateX }, { translateY }, { rotate }],
+                  width: piece.size * 0.62,
+                }}
+              />
+            );
+          })}
+        </View>
+      )}
 
       {isPlayerVisible && (
         <View
