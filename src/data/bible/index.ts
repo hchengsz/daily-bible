@@ -60,7 +60,7 @@ import psalms from "./Psalms.json";
 import revelation from "./Revelation.json";
 import romans from "./Romans.json";
 import ruth from "./Ruth.json";
-import songOfSolomon from "./Song Of Solomon.json";
+import songOfSongs from "./Song of Songs.json";
 import titus from "./Titus.json";
 import zechariah from "./Zechariah.json";
 import zephaniah from "./Zephaniah.json";
@@ -99,7 +99,7 @@ const bibleBooks = [
   psalms,
   proverbs,
   ecclesiastes,
-  songOfSolomon,
+  songOfSongs,
   isaiah,
   jeremiah,
   lamentations,
@@ -151,9 +151,9 @@ const normalizeBookName = (bookName: string) =>
 
 const aliases: Record<string, string> = {
   psalm: "psalms",
-  "song of songs": "song of solomon",
-  "song of solomons": "song of solomon",
-  "songs of solomon": "song of solomon",
+  "song of solomon": "song of songs",
+  "song of solomons": "song of songs",
+  "songs of solomon": "song of songs",
 };
 
 const FIRST_SENTENCE_PATTERN = /[.!?][”"’'`)\]]*/;

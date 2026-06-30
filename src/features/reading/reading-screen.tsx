@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
-import { readingPlanDays } from "../../data/raw";
+import { readingPlanDays } from "../../data/reading-plan";
 
 type Reference = {
   book: string;
@@ -281,7 +281,9 @@ const formatDate = (date: Date) =>
   ).padStart(2, "0")}`;
 
 const getRelativeDateLabel = (date: Date, currentDate: Date) => {
-  const distance = Math.round((getDateKey(currentDate) - getDateKey(date)) / DAY_IN_MS);
+  const distance = Math.round(
+    (getDateKey(currentDate) - getDateKey(date)) / DAY_IN_MS,
+  );
 
   if (distance === 0) {
     return "今日";
@@ -313,7 +315,10 @@ const hasReadingDayForDate = (date: Date) => {
   return readingDays.some((readingDay) => Number(readingDay.id) === dayOfYear);
 };
 
-const getCompleteButtonLabel = (isCompleted: boolean, isSelectedToday: boolean) => {
+const getCompleteButtonLabel = (
+  isCompleted: boolean,
+  isSelectedToday: boolean,
+) => {
   if (isCompleted) {
     return isSelectedToday ? "今日经文已完成" : "这日经文已完成";
   }
@@ -322,7 +327,9 @@ const getCompleteButtonLabel = (isCompleted: boolean, isSelectedToday: boolean) 
 };
 
 const getCompletionMessage = (isSelectedToday: boolean) =>
-  isSelectedToday ? "明天继续回来，一天一点也很好。" : "这一天也补上了，继续保持。";
+  isSelectedToday
+    ? "明天继续回来，一天一点也很好。"
+    : "这一天也补上了，继续保持。";
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
@@ -362,7 +369,7 @@ export default function ReadingScreen() {
   const speechChunksRef = useRef<string[]>([]);
   const currentSpeechIndexRef = useRef(0);
   const speechRateRef = useRef(speechRate);
-  const speechLanguageRef = useRef(isTranslated ? "en-US" : "en-US");
+  const speechLanguageRef = useRef(isTranslated ? "zh-CN" : "en-US");
   const playbackRunRef = useRef(0);
   const isPausedInEngineRef = useRef(false);
 
@@ -371,7 +378,7 @@ export default function ReadingScreen() {
   }, [speechRate]);
 
   useEffect(() => {
-    speechLanguageRef.current = isTranslated ? "en-US" : "en-US";
+    speechLanguageRef.current = isTranslated ? "zh-CN" : "en-US";
   }, [isTranslated]);
 
   useEffect(
@@ -679,7 +686,9 @@ export default function ReadingScreen() {
           </Pressable>
 
           <View style={{ minWidth: 132 }}>
-            <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
+            <Text style={{ fontSize: 18, fontWeight: "600" }}>
+              {dateString}
+            </Text>
             <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
               {relativeDateLabel}
             </Text>
@@ -949,10 +958,10 @@ export default function ReadingScreen() {
 
       {isCelebrating && (
         <View
-          pointerEvents="none"
           style={{
             bottom: 0,
             left: 0,
+            pointerEvents: "none",
             position: "absolute",
             right: 0,
             top: 0,
@@ -1039,33 +1048,33 @@ export default function ReadingScreen() {
 
       {isPlayerVisible && (
         <View
-          pointerEvents="box-none"
           style={{
-            position: "absolute",
+            alignItems: "center",
             left: 16,
+            pointerEvents: "box-none",
+            position: "absolute",
             right: 16,
             bottom: Math.max(18, insets.bottom + 12),
-            alignItems: "center",
           }}
         >
           <BlurView
             experimentalBlurMethod="dimezisBlurView"
             intensity={88}
-            pointerEvents="auto"
             tint="systemMaterial"
             style={{
-              width: "100%",
-              maxWidth: 620,
+              backgroundColor: "rgba(255, 255, 255, 0.68)",
               borderRadius: 28,
               borderCurve: "continuous",
+              borderColor: "rgba(255, 255, 255, 0.72)",
+              borderWidth: 1,
+              boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
+              maxWidth: 620,
               overflow: "hidden",
-              backgroundColor: "rgba(255, 255, 255, 0.68)",
+              paddingBottom: 18,
               paddingHorizontal: 18,
               paddingTop: 16,
-              paddingBottom: 18,
-              borderWidth: 1,
-              borderColor: "rgba(255, 255, 255, 0.72)",
-              boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
+              pointerEvents: "auto",
+              width: "100%",
             }}
           >
             <View

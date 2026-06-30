@@ -16,7 +16,7 @@ import day180 from "./day180.json";
 import day181 from "./day181.json";
 import day182 from "./day182.json";
 
-const rawReadingDays = [
+const readingPlanModules = [
   day166,
   day167,
   day168,
@@ -36,6 +36,6 @@ const rawReadingDays = [
   day182,
 ] as unknown[];
 
-export const readingPlanDays = rawReadingDays.flatMap((day) =>
+export const readingPlanDays = readingPlanModules.flatMap((day) =>
   Array.isArray(day) ? day : [day],
 );
