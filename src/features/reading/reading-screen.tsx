@@ -71,6 +71,7 @@ const SWIPE_THRESHOLD = 76;
 const CONFETTI_COLORS = [
   "#d9480f",
   "#f08c00",
+  "#f2c94c",
   "#2f9e44",
   "#1971c2",
   "#7048e8",
