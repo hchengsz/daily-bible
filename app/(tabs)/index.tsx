@@ -1,5 +1,5 @@
-import ReadingScreen from "../../src/features/reading/reading-screen";
+import HomeScreen from "../../src/features/home/home-screen";
 
 export default function Home() {
-  return <ReadingScreen />;
+  return <HomeScreen />;
 }
