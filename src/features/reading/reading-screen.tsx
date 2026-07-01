@@ -3,13 +3,13 @@ import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Image,
   PanResponder,
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
 import {
@@ -59,6 +59,9 @@ const SPEECH_RATE_STEP = 0.1;
 const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
 const SWIPE_THRESHOLD = 76;
+const HEADER_EXPANDED_HEIGHT = 100;
+const HEADER_COMPACT_HEIGHT = 80;
+const HEADER_EXPAND_SCROLL_Y = 4;
 const TRANSLATE_API_ORIGIN = (
   process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
 ).replace(/\/$/, "");
@@ -241,10 +244,43 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
     ? "明天继续回来，一天一点也很好。"
     : "这一天也补上了，继续保持。";
 
+const getActionButtonStyle = ({
+  completed = false,
+  disabled = false,
+  minWidth,
+}: {
+  completed?: boolean;
+  disabled?: boolean;
+  minWidth?: number;
+} = {}) => ({
+  ...(minWidth ? { minWidth } : {}),
+  alignItems: "center" as const,
+  backgroundColor: completed ? "#f1f8f4" : "#111",
+  borderColor: completed ? "#9bd8ad" : "#111",
+  borderCurve: "continuous" as const,
+  borderRadius: 18,
+  borderWidth: 1,
+  justifyContent: "center" as const,
+  minHeight: 56,
+  opacity: disabled ? 0.5 : 1,
+  paddingHorizontal: 18,
+});
+
+const getActionButtonTextStyle = (completed = false) => ({
+  color: completed ? "#1f7a3a" : "#fff",
+  fontSize: 16,
+  fontWeight: "700" as const,
+});
+
+const getActionButtonIconColor = (completed = false) =>
+  completed ? "#1f7a3a" : "#fff";
+
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(() => currentDate);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true);
   const selectedDateKey = getDateKey(selectedDate);
   const selectedDay = useMemo(
     () => getReadingDayForDate(selectedDate),
@@ -314,6 +350,8 @@ export default function ReadingScreen() {
     setIsTranslated(false);
     setIsTranslating(false);
     setTranslationError(null);
+    setIsHeaderExpanded(true);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   }, [selectedDayOfYear, stopSpeechPlayback]);
 
   const speakFromIndex = useCallback((index: number, runId: number) => {
@@ -449,6 +487,17 @@ export default function ReadingScreen() {
     setSelectedDate((date) => addDays(date, 1));
   }, [canGoNextDay]);
 
+  const handleReadingScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const isAtTop = event.nativeEvent.contentOffset.y <= HEADER_EXPAND_SCROLL_Y;
+
+      setIsHeaderExpanded((current) =>
+        current === isAtTop ? current : isAtTop,
+      );
+    },
+    [],
+  );
+
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -553,95 +602,110 @@ export default function ReadingScreen() {
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
         style={{
-          height: 80,
-          paddingHorizontal: 20,
-          flexDirection: "row",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          paddingBottom: 5,
           borderBottomWidth: 0.5,
           borderColor: "#ddd",
+          flexDirection: "row",
+          height: isHeaderExpanded
+            ? HEADER_EXPANDED_HEIGHT
+            : HEADER_COMPACT_HEIGHT,
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          paddingBottom: 10,
+          paddingHorizontal: 20,
         }}
       >
-        <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
-          <Pressable
-            accessibilityLabel="查看前一日经文"
-            accessibilityRole="button"
-            disabled={!canGoPreviousDay}
-            onPress={handlePreviousDay}
-            style={{
-              width: 34,
-              height: 34,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: canGoPreviousDay ? 1 : 0.26,
-            }}
-          >
-            <MaterialIcons name="chevron-left" size={28} color="#222" />
-          </Pressable>
+        {isHeaderExpanded ? (
+          <>
+            <View
+              style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+            >
+              <Pressable
+                accessibilityLabel="查看前一日经文"
+                accessibilityRole="button"
+                disabled={!canGoPreviousDay}
+                onPress={handlePreviousDay}
+                style={{
+                  width: 34,
+                  height: 56,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: canGoPreviousDay ? 1 : 0.26,
+                }}
+              >
+                <MaterialIcons name="chevron-left" size={28} color="#222" />
+              </Pressable>
 
-          <View style={{ minWidth: 132 }}>
+              <View style={{ minWidth: 108 }}>
+                <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                  {dateString}
+                </Text>
+                <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
+                  {relativeDateLabel}
+                </Text>
+              </View>
+
+              <Pressable
+                accessibilityLabel="查看后一日经文"
+                accessibilityRole="button"
+                disabled={!canGoNextDay}
+                onPress={handleNextDay}
+                style={{
+                  width: 34,
+                  height: 56,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: canGoNextDay ? 1 : 0.26,
+                }}
+              >
+                <MaterialIcons name="chevron-right" size={28} color="#222" />
+              </Pressable>
+            </View>
+
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                disabled={isTranslating}
+                onPress={handleTranslate}
+                style={getActionButtonStyle({
+                  disabled: isTranslating,
+                  minWidth: 74,
+                })}
+              >
+                <Text style={getActionButtonTextStyle()}>
+                  {isTranslating ? "翻译中" : isTranslated ? "原文" : "翻译"}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityLabel="开始朗读"
+                accessibilityRole="button"
+                onPress={handlePlay}
+                style={getActionButtonStyle({ minWidth: 56 })}
+              >
+                <MaterialIcons
+                  name="volume-up"
+                  size={24}
+                  color={getActionButtonIconColor()}
+                />
+              </Pressable>
+            </View>
+          </>
+        ) : (
+          <View style={{ minHeight: 56, justifyContent: "center" }}>
             <Text style={{ fontSize: 18, fontWeight: "600" }}>
               {dateString}
             </Text>
-            <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
-              {relativeDateLabel}
-            </Text>
           </View>
-
-          <Pressable
-            accessibilityLabel="查看后一日经文"
-            accessibilityRole="button"
-            disabled={!canGoNextDay}
-            onPress={handleNextDay}
-            style={{
-              width: 34,
-              height: 34,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: canGoNextDay ? 1 : 0.26,
-            }}
-          >
-            <MaterialIcons name="chevron-right" size={28} color="#222" />
-          </Pressable>
-        </View>
-
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={isTranslating}
-            onPress={handleTranslate}
-            style={{
-              minWidth: 64,
-              height: 32,
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "#333",
-              opacity: isTranslating ? 0.5 : 1,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: "600" }}>
-              {isTranslating ? "翻译中" : isTranslated ? "原文" : "翻译"}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityLabel="开始朗读"
-            accessibilityRole="button"
-            onPress={handlePlay}
-          >
-            <Image
-              source={require("../../../assets/images/outline_speaker_icon.svg")}
-              style={{ width: 24, height: 24 }}
-            />
-          </Pressable>
-        </View>
+        )}
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         {...panResponder.panHandlers}
+        onScroll={handleReadingScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 20,
@@ -812,25 +876,9 @@ export default function ReadingScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={handleCompleteReading}
-              style={{
-                minHeight: 56,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: isCompleted ? "#f1f8f4" : "#111",
-                borderRadius: 18,
-                borderCurve: "continuous",
-                borderWidth: 1,
-                borderColor: isCompleted ? "#9bd8ad" : "#111",
-                paddingHorizontal: 18,
-              }}
+              style={getActionButtonStyle({ completed: isCompleted })}
             >
-              <Text
-                style={{
-                  color: isCompleted ? "#1f7a3a" : "#fff",
-                  fontSize: 16,
-                  fontWeight: "700",
-                }}
-              >
+              <Text style={getActionButtonTextStyle(isCompleted)}>
                 {completeButtonLabel}
               </Text>
             </Pressable>
@@ -1014,15 +1062,15 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate - SPEECH_RATE_STEP)
                   }
                   style={{
-                    width: 42,
-                    height: 36,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "#bbb",
+                    ...getActionButtonStyle({ minWidth: 56 }),
+                    paddingHorizontal: 0,
                   }}
                 >
-                  <MaterialIcons name="remove" size={22} color="#222" />
+                  <MaterialIcons
+                    name="remove"
+                    size={22}
+                    color={getActionButtonIconColor()}
+                  />
                 </Pressable>
 
                 <Pressable
@@ -1032,15 +1080,15 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate + SPEECH_RATE_STEP)
                   }
                   style={{
-                    width: 42,
-                    height: 36,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "#bbb",
+                    ...getActionButtonStyle({ minWidth: 56 }),
+                    paddingHorizontal: 0,
                   }}
                 >
-                  <MaterialIcons name="add" size={22} color="#222" />
+                  <MaterialIcons
+                    name="add"
+                    size={22}
+                    color={getActionButtonIconColor()}
+                  />
                 </Pressable>
               </View>
             </View>
