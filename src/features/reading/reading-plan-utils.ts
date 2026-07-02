@@ -52,7 +52,9 @@ export const getParagraphReferenceLabel = (paragraph: Paragraph) =>
 
 export const getReadingReferenceSummary = (day: Day) =>
   getSections(day)
-    .flatMap((section) => getParagraphs(section).map(getParagraphReferenceLabel))
+    .flatMap((section) =>
+      getParagraphs(section).map(getParagraphReferenceLabel),
+    )
     .filter(Boolean)
     .join("; ");
 

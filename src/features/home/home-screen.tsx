@@ -2,7 +2,10 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { getCatechismIndexForDate, getCatechismItemForDate } from "../catechism/catechism-data";
+import {
+  getCatechismIndexForDate,
+  getCatechismItemForDate,
+} from "../catechism/catechism-data";
 import { useTaskCompletion } from "../progress/daily-progress-store";
 import {
   formatDate,
@@ -19,7 +22,13 @@ type TodoItemProps = {
   meta: string;
 };
 
-function TodoItem({ completed, description, href, label, meta }: TodoItemProps) {
+function TodoItem({
+  completed,
+  description,
+  href,
+  label,
+  meta,
+}: TodoItemProps) {
   return (
     <Link href={href} asChild>
       <Pressable

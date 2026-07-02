@@ -1,15 +1,16 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
+import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  PanResponder,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import { PanResponder, Pressable, Text, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
 import {
@@ -61,7 +62,7 @@ const TRANSLATE_PATH = "/api/translate";
 const SWIPE_THRESHOLD = 76;
 const HEADER_EXPANDED_HEIGHT = 100;
 const HEADER_COMPACT_HEIGHT = 80;
-const HEADER_EXPAND_SCROLL_Y = 4;
+const HEADER_COLLAPSE_DISTANCE = 72;
 const TRANSLATE_API_ORIGIN = (
   process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
 ).replace(/\/$/, "");
@@ -248,18 +249,32 @@ const getActionButtonStyle = ({
   completed = false,
   disabled = false,
   minWidth,
+  tone = "primary",
 }: {
   completed?: boolean;
   disabled?: boolean;
   minWidth?: number;
+  tone?: "primary" | "glass";
 } = {}) => ({
   ...(minWidth ? { minWidth } : {}),
   alignItems: "center" as const,
-  backgroundColor: completed ? "#f1f8f4" : "#111",
-  borderColor: completed ? "#9bd8ad" : "#111",
+  backgroundColor: completed
+    ? "rgba(42, 145, 75, 0.12)"
+    : tone === "glass"
+      ? "rgba(255, 255, 255, 0.58)"
+      : "rgba(17, 17, 17, 0.88)",
+  borderColor: completed
+    ? "rgba(42, 145, 75, 0.24)"
+    : tone === "glass"
+      ? "rgba(0, 0, 0, 0.09)"
+      : "rgba(255, 255, 255, 0.48)",
   borderCurve: "continuous" as const,
   borderRadius: 18,
   borderWidth: 1,
+  boxShadow:
+    tone === "glass"
+      ? "inset 0 1px 0 rgba(255, 255, 255, 0.62)"
+      : "0 8px 18px rgba(0, 0, 0, 0.12)",
   justifyContent: "center" as const,
   minHeight: 56,
   opacity: disabled ? 0.5 : 1,
@@ -267,20 +282,44 @@ const getActionButtonStyle = ({
 });
 
 const getActionButtonTextStyle = (completed = false) => ({
-  color: completed ? "#1f7a3a" : "#fff",
+  color: completed ? "#1f7a3a" : "#000000",
   fontSize: 16,
   fontWeight: "700" as const,
 });
 
 const getActionButtonIconColor = (completed = false) =>
-  completed ? "#1f7a3a" : "#fff";
+  completed ? "#1f7a3a" : "#000000";
+
+const getHeaderToolStyle = (disabled = false) => ({
+  alignItems: "center" as const,
+  flexDirection: "row" as const,
+  gap: 5,
+  justifyContent: "center" as const,
+  minHeight: 44,
+  opacity: disabled ? 0.45 : 1,
+  paddingHorizontal: 6,
+});
+
+const getGlassIconButtonStyle = () => ({
+  alignItems: "center" as const,
+  backgroundColor: "rgba(255, 255, 255, 0.5)",
+  borderColor: "rgba(0, 0, 0, 0.1)",
+  borderCurve: "continuous" as const,
+  borderRadius: 26,
+  borderWidth: 1,
+  height: 52,
+  justifyContent: "center" as const,
+  width: 52,
+});
 
 export default function ReadingScreen() {
   const insets = useSafeAreaInsets();
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(() => currentDate);
-  const scrollViewRef = useRef<ScrollView | null>(null);
-  const [isHeaderExpanded, setIsHeaderExpanded] = useState(true);
+  const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView> | null>(
+    null,
+  );
+  const scrollY = useSharedValue(0);
   const selectedDateKey = getDateKey(selectedDate);
   const selectedDay = useMemo(
     () => getReadingDayForDate(selectedDate),
@@ -350,9 +389,9 @@ export default function ReadingScreen() {
     setIsTranslated(false);
     setIsTranslating(false);
     setTranslationError(null);
-    setIsHeaderExpanded(true);
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-  }, [selectedDayOfYear, stopSpeechPlayback]);
+    scrollY.value = 0;
+  }, [scrollY, selectedDayOfYear, stopSpeechPlayback]);
 
   const speakFromIndex = useCallback((index: number, runId: number) => {
     const chunks = speechChunksRef.current;
@@ -487,16 +526,56 @@ export default function ReadingScreen() {
     setSelectedDate((date) => addDays(date, 1));
   }, [canGoNextDay]);
 
-  const handleReadingScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const isAtTop = event.nativeEvent.contentOffset.y <= HEADER_EXPAND_SCROLL_Y;
+  const handleReadingScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
 
-      setIsHeaderExpanded((current) =>
-        current === isAtTop ? current : isAtTop,
-      );
-    },
-    [],
-  );
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_DISTANCE],
+      [HEADER_EXPANDED_HEIGHT, HEADER_COMPACT_HEIGHT],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const expandedHeaderAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_DISTANCE * 0.7],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, HEADER_COLLAPSE_DISTANCE],
+          [0, -8],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const compactHeaderAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [HEADER_COLLAPSE_DISTANCE * 0.35, HEADER_COLLAPSE_DISTANCE],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, HEADER_COLLAPSE_DISTANCE],
+          [8, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   const panResponder = useMemo(
     () =>
@@ -600,108 +679,141 @@ export default function ReadingScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <View
-        style={{
-          borderBottomWidth: 0.5,
-          borderColor: "#ddd",
-          flexDirection: "row",
-          height: isHeaderExpanded
-            ? HEADER_EXPANDED_HEIGHT
-            : HEADER_COMPACT_HEIGHT,
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          paddingBottom: 10,
-          paddingHorizontal: 20,
-        }}
+      <Animated.View
+        style={[
+          {
+            borderBottomWidth: 0.5,
+            borderColor: "#ddd",
+            overflow: "hidden",
+            paddingHorizontal: 20,
+          },
+          headerAnimatedStyle,
+        ]}
       >
-        {isHeaderExpanded ? (
-          <>
-            <View
-              style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            {
+              alignItems: "flex-end",
+              bottom: 10,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              left: 20,
+              position: "absolute",
+              right: 20,
+            },
+            expandedHeaderAnimatedStyle,
+          ]}
+        >
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+            <Pressable
+              accessibilityLabel="查看前一日经文"
+              accessibilityRole="button"
+              disabled={!canGoPreviousDay}
+              onPress={handlePreviousDay}
+              style={{
+                width: 34,
+                height: 56,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: canGoPreviousDay ? 1 : 0.26,
+              }}
             >
-              <Pressable
-                accessibilityLabel="查看前一日经文"
-                accessibilityRole="button"
-                disabled={!canGoPreviousDay}
-                onPress={handlePreviousDay}
-                style={{
-                  width: 34,
-                  height: 56,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: canGoPreviousDay ? 1 : 0.26,
-                }}
-              >
-                <MaterialIcons name="chevron-left" size={28} color="#222" />
-              </Pressable>
+              <MaterialIcons name="chevron-left" size={28} color="#222" />
+            </Pressable>
 
-              <View style={{ minWidth: 108 }}>
-                <Text style={{ fontSize: 18, fontWeight: "600" }}>
-                  {dateString}
-                </Text>
-                <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
-                  {relativeDateLabel}
-                </Text>
-              </View>
-
-              <Pressable
-                accessibilityLabel="查看后一日经文"
-                accessibilityRole="button"
-                disabled={!canGoNextDay}
-                onPress={handleNextDay}
-                style={{
-                  width: 34,
-                  height: 56,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: canGoNextDay ? 1 : 0.26,
-                }}
-              >
-                <MaterialIcons name="chevron-right" size={28} color="#222" />
-              </Pressable>
+            <View style={{ minWidth: 108 }}>
+              <Text style={{ fontSize: 18, fontWeight: "600" }}>
+                {dateString}
+              </Text>
+              <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
+                {relativeDateLabel}
+              </Text>
             </View>
 
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            <Pressable
+              accessibilityLabel="查看后一日经文"
+              accessibilityRole="button"
+              disabled={!canGoNextDay}
+              onPress={handleNextDay}
+              style={{
+                width: 34,
+                height: 56,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: canGoNextDay ? 1 : 0.26,
+              }}
             >
-              <Pressable
-                accessibilityRole="button"
-                disabled={isTranslating}
-                onPress={handleTranslate}
-                style={getActionButtonStyle({
-                  disabled: isTranslating,
-                  minWidth: 74,
-                })}
-              >
-                <Text style={getActionButtonTextStyle()}>
-                  {isTranslating ? "翻译中" : isTranslated ? "原文" : "翻译"}
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityLabel="开始朗读"
-                accessibilityRole="button"
-                onPress={handlePlay}
-                style={getActionButtonStyle({ minWidth: 56 })}
-              >
-                <MaterialIcons
-                  name="volume-up"
-                  size={24}
-                  color={getActionButtonIconColor()}
-                />
-              </Pressable>
-            </View>
-          </>
-        ) : (
-          <View style={{ minHeight: 56, justifyContent: "center" }}>
-            <Text style={{ fontSize: 18, fontWeight: "600" }}>
-              {dateString}
-            </Text>
+              <MaterialIcons name="chevron-right" size={28} color="#222" />
+            </Pressable>
           </View>
-        )}
-      </View>
 
-      <ScrollView
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isTranslating}
+              onPress={handleTranslate}
+              style={getHeaderToolStyle(isTranslating)}
+            >
+              <MaterialIcons
+                name="translate"
+                size={20}
+                color="rgba(17, 17, 17, 0.82)"
+              />
+              <Text
+                style={{
+                  color: "rgba(17, 17, 17, 0.82)",
+                  fontSize: 15,
+                  fontWeight: "700",
+                }}
+              >
+                {isTranslating ? "翻译中" : isTranslated ? "原文" : "翻译"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityLabel="开始朗读"
+              accessibilityRole="button"
+              onPress={handlePlay}
+              style={getHeaderToolStyle()}
+            >
+              <MaterialIcons
+                name="volume-up"
+                size={21}
+                color="rgba(17, 17, 17, 0.82)"
+              />
+              <Text
+                style={{
+                  color: "rgba(17, 17, 17, 0.82)",
+                  fontSize: 15,
+                  fontWeight: "700",
+                }}
+              >
+                朗读
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
+
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              bottom: 10,
+              justifyContent: "center",
+              left: 20,
+              minHeight: 56,
+              position: "absolute",
+              right: 20,
+            },
+            compactHeaderAnimatedStyle,
+          ]}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
+        </Animated.View>
+      </Animated.View>
+
+      <Animated.ScrollView
         ref={scrollViewRef}
         {...panResponder.panHandlers}
         onScroll={handleReadingScroll}
@@ -897,7 +1009,7 @@ export default function ReadingScreen() {
             )}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       <CompletionCelebrationOverlay
         isVisible={isCelebrating}
@@ -989,14 +1101,7 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handleSkipBackward}
                 style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 26,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.44)",
-                  borderWidth: 1,
-                  borderColor: "rgba(0, 0, 0, 0.12)",
+                  ...getGlassIconButtonStyle(),
                 }}
               >
                 <MaterialIcons name="skip-previous" size={30} color="#222" />
@@ -1014,7 +1119,10 @@ export default function ReadingScreen() {
                   borderRadius: 27,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#111",
+                  backgroundColor: "rgba(17, 17, 17, 0.86)",
+                  borderColor: "rgba(255, 255, 255, 0.48)",
+                  borderWidth: 1,
+                  boxShadow: "0 8px 18px rgba(0, 0, 0, 0.14)",
                 }}
               >
                 <MaterialIcons
@@ -1029,14 +1137,7 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handleSkipForward}
                 style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 26,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.44)",
-                  borderWidth: 1,
-                  borderColor: "rgba(0, 0, 0, 0.12)",
+                  ...getGlassIconButtonStyle(),
                 }}
               >
                 <MaterialIcons name="skip-next" size={30} color="#222" />
@@ -1062,7 +1163,7 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate - SPEECH_RATE_STEP)
                   }
                   style={{
-                    ...getActionButtonStyle({ minWidth: 56 }),
+                    ...getActionButtonStyle({ minWidth: 56, tone: "glass" }),
                     paddingHorizontal: 0,
                   }}
                 >
@@ -1080,7 +1181,7 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate + SPEECH_RATE_STEP)
                   }
                   style={{
-                    ...getActionButtonStyle({ minWidth: 56 }),
+                    ...getActionButtonStyle({ minWidth: 56, tone: "glass" }),
                     paddingHorizontal: 0,
                   }}
                 >
