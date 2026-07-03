@@ -23,7 +23,6 @@ import {
 } from "../progress/daily-progress-store";
 import {
   addDays,
-  DAY_IN_MS,
   formatDate,
   getDateKey,
   getDayOfYear,
@@ -209,26 +208,6 @@ const translateChunks = async (
 const clampSpeechRate = (rate: number) =>
   Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, rate));
 
-const getRelativeDateLabel = (date: Date, currentDate: Date) => {
-  const distance = Math.round(
-    (getDateKey(currentDate) - getDateKey(date)) / DAY_IN_MS,
-  );
-
-  if (distance === 0) {
-    return "今日";
-  }
-
-  if (distance === 1) {
-    return "昨日";
-  }
-
-  if (distance === 2) {
-    return "前日";
-  }
-
-  return `第 ${getDayOfYear(date)} 天`;
-};
-
 const getCompleteButtonLabel = (
   isCompleted: boolean,
   isSelectedToday: boolean,
@@ -291,7 +270,7 @@ const getActionButtonIconColor = (completed = false) =>
   completed ? "#1f7a3a" : "#000000";
 
 const getHeaderToolStyle = (disabled = false) => ({
-  alignItems: "center" as const,
+  alignItems: "flex-end" as const,
   flexDirection: "row" as const,
   gap: 5,
   justifyContent: "center" as const,
@@ -301,7 +280,7 @@ const getHeaderToolStyle = (disabled = false) => ({
 });
 
 const getGlassIconButtonStyle = () => ({
-  alignItems: "center" as const,
+  alignItems: "flex-end" as const,
   backgroundColor: "rgba(255, 255, 255, 0.5)",
   borderColor: "rgba(0, 0, 0, 0.1)",
   borderCurve: "continuous" as const,
@@ -658,7 +637,6 @@ export default function ReadingScreen() {
   };
 
   const dateString = formatDate(selectedDate);
-  const relativeDateLabel = getRelativeDateLabel(selectedDate, currentDate);
   const completeButtonLabel = getCompleteButtonLabel(
     isCompleted,
     isSelectedToday,
@@ -712,22 +690,32 @@ export default function ReadingScreen() {
               disabled={!canGoPreviousDay}
               onPress={handlePreviousDay}
               style={{
-                width: 34,
-                height: 56,
+                width: 30,
+                height: 25,
                 alignItems: "center",
                 justifyContent: "center",
+                backgroundColor: "#E7E7E7",
+                borderTopLeftRadius: 28,
+                borderBottomLeftRadius: 28,
                 opacity: canGoPreviousDay ? 1 : 0.26,
               }}
             >
-              <MaterialIcons name="chevron-left" size={28} color="#222" />
+              <MaterialIcons name="chevron-left" size={25} color="#222" />
             </Pressable>
 
-            <View style={{ minWidth: 108 }}>
-              <Text style={{ fontSize: 18, fontWeight: "600" }}>
+            <View
+              style={{
+                minWidth: 108,
+                backgroundColor: "#E7E7E7",
+                justifyContent: "center",
+                alignItems: "center",
+                marginHorizontal: 2,
+              }}
+            >
+              <Text
+                style={{ fontSize: 18, fontWeight: "600", marginBottom: 1 }}
+              >
                 {dateString}
-              </Text>
-              <Text style={{ color: "#777", fontSize: 12, marginTop: 2 }}>
-                {relativeDateLabel}
               </Text>
             </View>
 
@@ -737,18 +725,27 @@ export default function ReadingScreen() {
               disabled={!canGoNextDay}
               onPress={handleNextDay}
               style={{
-                width: 34,
-                height: 56,
+                width: 30,
+                height: 25,
+                backgroundColor: "#E7E7E7",
+                borderTopRightRadius: 28,
+                borderBottomRightRadius: 28,
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: canGoNextDay ? 1 : 0.26,
               }}
             >
-              <MaterialIcons name="chevron-right" size={28} color="#222" />
+              <MaterialIcons
+                name="chevron-right"
+                size={25}
+                color="#222"
+                style={{ opacity: canGoNextDay ? 1 : 0.26 }}
+              />
             </Pressable>
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
+          >
             <Pressable
               accessibilityRole="button"
               disabled={isTranslating}
@@ -760,15 +757,6 @@ export default function ReadingScreen() {
                 size={20}
                 color="rgba(17, 17, 17, 0.82)"
               />
-              <Text
-                style={{
-                  color: "rgba(17, 17, 17, 0.82)",
-                  fontSize: 15,
-                  fontWeight: "700",
-                }}
-              >
-                {isTranslating ? "翻译中" : isTranslated ? "原文" : "翻译"}
-              </Text>
             </Pressable>
 
             <Pressable
@@ -782,15 +770,6 @@ export default function ReadingScreen() {
                 size={21}
                 color="rgba(17, 17, 17, 0.82)"
               />
-              <Text
-                style={{
-                  color: "rgba(17, 17, 17, 0.82)",
-                  fontSize: 15,
-                  fontWeight: "700",
-                }}
-              >
-                朗读
-              </Text>
             </Pressable>
           </View>
         </Animated.View>
@@ -802,9 +781,10 @@ export default function ReadingScreen() {
               bottom: 10,
               justifyContent: "center",
               left: 20,
-              minHeight: 56,
+              minHeight: 20,
               position: "absolute",
               right: 20,
+              marginLeft: 38,
             },
             compactHeaderAnimatedStyle,
           ]}

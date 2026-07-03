@@ -25,6 +25,9 @@ import day189 from "./day189.json";
 import day190 from "./day190.json";
 import day191 from "./day191.json";
 import day192 from "./day192.json";
+import day193 from "./day193.json";
+import day194 from "./day194.json";
+import day195 from "./day195.json";
 
 const readingPlanModules = [
   day166,
@@ -54,6 +57,9 @@ const readingPlanModules = [
   day190,
   day191,
   day192,
+  day193,
+  day194,
+  day195,
 ] as unknown[];
 
 export const readingPlanDays = readingPlanModules.flatMap((day) =>
