@@ -58,10 +58,10 @@ export default function CatechismScreen() {
             Catechism
           </Text>
           <Text style={{ color: "#111", fontSize: 30, fontWeight: "800" }}>
-            要理问答阅读
+            Catechism Reading
           </Text>
           <Text style={{ color: "#666", fontSize: 15, lineHeight: 22 }}>
-            Westminster Shorter Catechism
+            Compendium of the Catechism of the Catholic Church
           </Text>
         </View>
 
@@ -84,12 +84,12 @@ export default function CatechismScreen() {
             }}
           >
             <Text style={{ color: "#555", fontSize: 14, fontWeight: "700" }}>
-              问答 {selectedIndex + 1}
+              Question {selectedIndex + 1}
             </Text>
 
             <View style={{ flexDirection: "row", gap: 8 }}>
               <Pressable
-                accessibilityLabel="上一条要理问答"
+                accessibilityLabel="Previous catechism question"
                 accessibilityRole="button"
                 onPress={goToPrevious}
                 style={{
@@ -106,7 +106,7 @@ export default function CatechismScreen() {
               </Pressable>
 
               <Pressable
-                accessibilityLabel="下一条要理问答"
+                accessibilityLabel="Next catechism question"
                 accessibilityRole="button"
                 onPress={goToNext}
                 style={{
@@ -152,7 +152,7 @@ export default function CatechismScreen() {
 
         <View style={{ gap: 10 }}>
           <Text style={{ color: "#111", fontSize: 18, fontWeight: "700" }}>
-            Scripture References
+            Catechism References
           </Text>
           {selectedItem.references.map((reference) => (
             <View
@@ -191,7 +191,7 @@ export default function CatechismScreen() {
                 fontWeight: "700",
               }}
             >
-              {isCompleted ? "今日要理问答已完成" : "完成今日要理问答"}
+              {isCompleted ? "Today's catechism is complete" : "Complete Today's Catechism"}
             </Text>
           </Pressable>
 
@@ -204,7 +204,7 @@ export default function CatechismScreen() {
                 textAlign: "center",
               }}
             >
-              明天继续回来，慢慢扎根。
+              Come back tomorrow and keep taking root.
             </Text>
           )}
         </View>

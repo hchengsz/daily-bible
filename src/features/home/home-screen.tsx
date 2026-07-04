@@ -55,7 +55,7 @@ function TodoItem({
               {label}
             </Text>
             <Text style={{ color: "#777", fontSize: 13, fontWeight: "600" }}>
-              {completed ? "已完成" : "待完成"} · {meta}
+              {completed ? "Completed" : "Pending"} · {meta}
             </Text>
           </View>
 
@@ -116,30 +116,33 @@ export default function HomeScreen() {
           {formatDate(currentDate)}
         </Text>
         <Text style={{ color: "#111", fontSize: 30, fontWeight: "800" }}>
-          今日任务
+          Today
         </Text>
         <Text style={{ color: "#555", fontSize: 16, lineHeight: 23 }}>
           {completedCount === 2
-            ? "今日的经文和要理问答都完成了。"
-            : `还有 ${2 - completedCount} 项待完成。`}
+            ? "Today's reading and catechism are complete."
+            : `${2 - completedCount} item${2 - completedCount === 1 ? "" : "s"} remaining.`}
         </Text>
       </View>
 
       <View style={{ gap: 12 }}>
         <TodoItem
           completed={readingCompleted}
-          description={readingReferenceSummary || "今日经文内容尚未配置。"}
+          description={
+            readingReferenceSummary ||
+            "Today's reading has not been configured."
+          }
           href="/reading"
-          label={readingDay.title || "今日经文"}
-          meta={`第 ${readingDay.id || ""} 天`}
+          label={readingDay.title || "Daily Reading"}
+          meta={`Day ${readingDay.id || ""}`}
         />
 
         <TodoItem
           completed={catechismCompleted}
           description={catechismItem.question}
           href="/catechism"
-          label="要理问答"
-          meta={`问答 ${catechismIndex + 1}`}
+          label="Catechism"
+          meta={`Question ${catechismIndex + 1}`}
         />
       </View>
     </ScrollView>

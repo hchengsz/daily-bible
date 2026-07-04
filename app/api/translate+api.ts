@@ -101,7 +101,7 @@ const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
     message.includes("API key not valid") ||
     message.includes("API_KEY_INVALID")
   ) {
-    return "Google Translate API key 无效。请检查 GOOGLE_TRANSLATE_API_KEY。";
+    return "Google Translate API key is invalid. Check GOOGLE_TRANSLATE_API_KEY.";
   }
 
   if (
@@ -109,14 +109,14 @@ const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
     message.includes("is disabled") ||
     message.includes("SERVICE_DISABLED")
   ) {
-    return "Google Cloud Translation API 尚未启用。请在 Google Cloud Console 为当前项目启用 Cloud Translation API。";
+    return "Google Cloud Translation API is not enabled. Enable Cloud Translation API for this project in Google Cloud Console.";
   }
 
   if (
     message.toLowerCase().includes("billing") ||
     message.includes("BILLING_DISABLED")
   ) {
-    return "Google Cloud 项目尚未启用 Billing，Cloud Translation API 需要绑定 Billing 后才能使用。";
+    return "Billing is not enabled for this Google Cloud project. Cloud Translation API requires billing to be enabled.";
   }
 
   return message;
@@ -168,7 +168,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return Response.json(
       {
-        error: `Expo server 无法连接 Google Translate API。如果 VPN 是本地代理/浏览器代理，请停止当前 Expo server 后使用 npm run start:proxy 启动。${getErrorMessage(
+        error: `Expo server could not connect to Google Translate API. If your VPN uses a local or browser proxy, stop the current Expo server and start it with npm run start:proxy. ${getErrorMessage(
           error,
         )}`,
       },

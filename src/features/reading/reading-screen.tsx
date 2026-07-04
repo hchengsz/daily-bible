@@ -3,7 +3,7 @@ import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanResponder, Pressable, Text, View } from "react-native";
+import { PanResponder, Platform, Pressable, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -23,7 +23,6 @@ import {
 } from "../progress/daily-progress-store";
 import {
   addDays,
-  formatDate,
   getDateKey,
   getDayOfYear,
   getParagraphReferenceLabel,
@@ -59,7 +58,7 @@ const SPEECH_RATE_STEP = 0.1;
 const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
 const SWIPE_THRESHOLD = 76;
-const HEADER_EXPANDED_HEIGHT = 100;
+const HEADER_EXPANDED_HEIGHT = 112;
 const HEADER_COMPACT_HEIGHT = 80;
 const HEADER_COLLAPSE_DISTANCE = 72;
 const TRANSLATE_API_ORIGIN = (
@@ -68,11 +67,21 @@ const TRANSLATE_API_ORIGIN = (
 const TRANSLATE_ENDPOINT = TRANSLATE_API_ORIGIN
   ? `${TRANSLATE_API_ORIGIN}${TRANSLATE_PATH}`
   : TRANSLATE_PATH;
+const HEADER_MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  day: "2-digit",
+  month: "long",
+});
+const PLAYER_BLUR_METHOD = Platform.select({
+  android: "dimezisBlurView" as const,
+  default: undefined,
+});
 
 const safeText = (text: unknown) => (typeof text === "string" ? text : "");
 
 const normalizeText = (text?: unknown) =>
   safeText(text).replace(/\s+/g, " ").trim();
+
+const formatHeaderDate = (date: Date) => HEADER_MONTH_FORMATTER.format(date);
 
 const getReferenceText = (ref: Reference) => {
   const { book, chapter, verse } = ref;
@@ -213,16 +222,16 @@ const getCompleteButtonLabel = (
   isSelectedToday: boolean,
 ) => {
   if (isCompleted) {
-    return isSelectedToday ? "今日经文已完成" : "这日经文已完成";
+    return isSelectedToday ? "Today's reading is complete" : "This reading is complete";
   }
 
-  return isSelectedToday ? "完成今日经文" : "标记这日完成";
+  return isSelectedToday ? "Complete Today's Reading" : "Mark This Reading Complete";
 };
 
 const getCompletionMessage = (isSelectedToday: boolean) =>
   isSelectedToday
-    ? "明天继续回来，一天一点也很好。"
-    : "这一天也补上了，继续保持。";
+    ? "Come back tomorrow. A little each day is enough."
+    : "This day is caught up. Keep going.";
 
 const getActionButtonStyle = ({
   completed = false,
@@ -260,12 +269,6 @@ const getActionButtonStyle = ({
   paddingHorizontal: 18,
 });
 
-const getActionButtonTextStyle = (completed = false) => ({
-  color: completed ? "#1f7a3a" : "#000000",
-  fontSize: 16,
-  fontWeight: "700" as const,
-});
-
 const getActionButtonIconColor = (completed = false) =>
   completed ? "#1f7a3a" : "#000000";
 
@@ -280,8 +283,8 @@ const getHeaderToolStyle = (disabled = false) => ({
 });
 
 const getGlassIconButtonStyle = () => ({
-  alignItems: "flex-end" as const,
-  backgroundColor: "rgba(255, 255, 255, 0.5)",
+  alignItems: "center" as const,
+  backgroundColor: "rgba(255, 255, 255, 0.34)",
   borderColor: "rgba(0, 0, 0, 0.1)",
   borderCurve: "continuous" as const,
   borderRadius: 26,
@@ -636,7 +639,7 @@ export default function ReadingScreen() {
     }
   };
 
-  const dateString = formatDate(selectedDate);
+  const dateString = formatHeaderDate(selectedDate);
   const completeButtonLabel = getCompleteButtonLabel(
     isCompleted,
     isSelectedToday,
@@ -673,7 +676,7 @@ export default function ReadingScreen() {
           style={[
             {
               alignItems: "flex-end",
-              bottom: 10,
+              bottom: 7,
               flexDirection: "row",
               justifyContent: "space-between",
               left: 20,
@@ -685,13 +688,13 @@ export default function ReadingScreen() {
         >
           <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
             <Pressable
-              accessibilityLabel="查看前一日经文"
+              accessibilityLabel="View previous reading"
               accessibilityRole="button"
               disabled={!canGoPreviousDay}
               onPress={handlePreviousDay}
               style={{
-                width: 30,
-                height: 25,
+                width: 27,
+                height: 31,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "#E7E7E7",
@@ -710,23 +713,22 @@ export default function ReadingScreen() {
                 justifyContent: "center",
                 alignItems: "center",
                 marginHorizontal: 2,
+                height: 31,
               }}
             >
-              <Text
-                style={{ fontSize: 18, fontWeight: "600", marginBottom: 1 }}
-              >
+              <Text style={{ fontSize: 15, fontWeight: "500" }}>
                 {dateString}
               </Text>
             </View>
 
             <Pressable
-              accessibilityLabel="查看后一日经文"
+              accessibilityLabel="View next reading"
               accessibilityRole="button"
               disabled={!canGoNextDay}
               onPress={handleNextDay}
               style={{
-                width: 30,
-                height: 25,
+                width: 27,
+                height: 31,
                 backgroundColor: "#E7E7E7",
                 borderTopRightRadius: 28,
                 borderBottomRightRadius: 28,
@@ -754,20 +756,20 @@ export default function ReadingScreen() {
             >
               <MaterialIcons
                 name="translate"
-                size={20}
+                size={22}
                 color="rgba(17, 17, 17, 0.82)"
               />
             </Pressable>
 
             <Pressable
-              accessibilityLabel="开始朗读"
+              accessibilityLabel="Start reading aloud"
               accessibilityRole="button"
               onPress={handlePlay}
               style={getHeaderToolStyle()}
             >
               <MaterialIcons
                 name="volume-up"
-                size={21}
+                size={23}
                 color="rgba(17, 17, 17, 0.82)"
               />
             </Pressable>
@@ -778,18 +780,18 @@ export default function ReadingScreen() {
           pointerEvents="none"
           style={[
             {
-              bottom: 10,
+              bottom: 7,
               justifyContent: "center",
               left: 20,
               minHeight: 20,
               position: "absolute",
               right: 20,
-              marginLeft: 38,
+              marginLeft: 51,
             },
             compactHeaderAnimatedStyle,
           ]}
         >
-          <Text style={{ fontSize: 18, fontWeight: "600" }}>{dateString}</Text>
+          <Text style={{ fontSize: 15, fontWeight: "500" }}>{dateString}</Text>
         </Animated.View>
       </Animated.View>
 
@@ -825,7 +827,7 @@ export default function ReadingScreen() {
           <View
             style={{
               marginTop: 12,
-              backgroundColor: "#f5f5f5",
+              backgroundColor: "#ececec",
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderRadius: 0,
@@ -883,7 +885,7 @@ export default function ReadingScreen() {
                     <View
                       style={{
                         marginTop: 12,
-                        backgroundColor: "#f5f5f5",
+                        backgroundColor: "#ececec",
                         paddingHorizontal: 16,
                         paddingVertical: 14,
                         borderRadius: 0,
@@ -968,9 +970,25 @@ export default function ReadingScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={handleCompleteReading}
-              style={getActionButtonStyle({ completed: isCompleted })}
+              style={{
+                alignItems: "center",
+                backgroundColor: isCompleted ? "#f1f8f4" : "#111",
+                borderColor: isCompleted ? "#9bd8ad" : "#111",
+                borderCurve: "continuous",
+                borderRadius: 18,
+                borderWidth: 1,
+                justifyContent: "center",
+                minHeight: 56,
+                paddingHorizontal: 18,
+              }}
             >
-              <Text style={getActionButtonTextStyle(isCompleted)}>
+              <Text
+                style={{
+                  color: isCompleted ? "#1f7a3a" : "#fff",
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
                 {completeButtonLabel}
               </Text>
             </Pressable>
@@ -1008,14 +1026,14 @@ export default function ReadingScreen() {
           }}
         >
           <BlurView
-            experimentalBlurMethod="dimezisBlurView"
-            intensity={88}
-            tint="systemMaterial"
+            experimentalBlurMethod={PLAYER_BLUR_METHOD}
+            intensity={92}
+            tint={Platform.OS === "ios" ? "systemThinMaterialLight" : "light"}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.68)",
+              backgroundColor: "rgba(255, 255, 255, 0.14)",
               borderRadius: 28,
               borderCurve: "continuous",
-              borderColor: "rgba(255, 255, 255, 0.72)",
+              borderColor: "rgba(255, 255, 255, 0.42)",
               borderWidth: 1,
               boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
               maxWidth: 620,
@@ -1037,7 +1055,7 @@ export default function ReadingScreen() {
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
                 <Text style={{ fontSize: 16, fontWeight: "600" }}>
-                  {playbackStatus === "paused" ? "已暂停" : "正在朗读"}
+                  {playbackStatus === "paused" ? "Paused" : "Reading aloud"}
                 </Text>
                 <Text
                   numberOfLines={1}
@@ -1053,7 +1071,7 @@ export default function ReadingScreen() {
               </View>
 
               <Pressable
-                accessibilityLabel="关闭朗读控制"
+                accessibilityLabel="Close reading controls"
                 accessibilityRole="button"
                 onPress={handleStopPlayback}
                 style={{
@@ -1077,7 +1095,7 @@ export default function ReadingScreen() {
               }}
             >
               <Pressable
-                accessibilityLabel="后退到上一段"
+                accessibilityLabel="Go back to previous section"
                 accessibilityRole="button"
                 onPress={handleSkipBackward}
                 style={{
@@ -1089,7 +1107,7 @@ export default function ReadingScreen() {
 
               <Pressable
                 accessibilityLabel={
-                  playbackStatus === "paused" ? "继续朗读" : "暂停朗读"
+                  playbackStatus === "paused" ? "Resume reading aloud" : "Pause reading aloud"
                 }
                 accessibilityRole="button"
                 onPress={handlePauseResume}
@@ -1113,7 +1131,7 @@ export default function ReadingScreen() {
               </Pressable>
 
               <Pressable
-                accessibilityLabel="快进到下一段"
+                accessibilityLabel="Skip to next section"
                 accessibilityRole="button"
                 onPress={handleSkipForward}
                 style={{
@@ -1132,12 +1150,12 @@ export default function ReadingScreen() {
               }}
             >
               <Text style={{ fontSize: 15, fontWeight: "600" }}>
-                速度 {speechRate.toFixed(1)}x
+                Speed {speechRate.toFixed(1)}x
               </Text>
 
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <Pressable
-                  accessibilityLabel="降低朗读速度"
+                  accessibilityLabel="Decrease reading speed"
                   accessibilityRole="button"
                   onPress={() =>
                     updateSpeechRate(speechRate - SPEECH_RATE_STEP)
@@ -1155,7 +1173,7 @@ export default function ReadingScreen() {
                 </Pressable>
 
                 <Pressable
-                  accessibilityLabel="提高朗读速度"
+                  accessibilityLabel="Increase reading speed"
                   accessibilityRole="button"
                   onPress={() =>
                     updateSpeechRate(speechRate + SPEECH_RATE_STEP)
