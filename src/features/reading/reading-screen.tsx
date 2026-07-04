@@ -21,6 +21,7 @@ import {
   useDailyProgressStore,
   useTaskCompletion,
 } from "../progress/daily-progress-store";
+import { useAppearanceStore } from "../settings/appearance-store";
 import {
   addDays,
   getDateKey,
@@ -235,11 +236,13 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
 
 const getActionButtonStyle = ({
   completed = false,
+  darkModeEnabled = false,
   disabled = false,
   minWidth,
   tone = "primary",
 }: {
   completed?: boolean;
+  darkModeEnabled?: boolean;
   disabled?: boolean;
   minWidth?: number;
   tone?: "primary" | "glass";
@@ -247,10 +250,16 @@ const getActionButtonStyle = ({
   ...(minWidth ? { minWidth } : {}),
   alignItems: "center" as const,
   backgroundColor: completed
-    ? "rgba(42, 145, 75, 0.12)"
+    ? darkModeEnabled
+      ? "#112319"
+      : "rgba(42, 145, 75, 0.12)"
     : tone === "glass"
-      ? "rgba(255, 255, 255, 0.58)"
-      : "rgba(17, 17, 17, 0.88)",
+      ? darkModeEnabled
+        ? "rgba(30, 30, 30, 0.72)"
+        : "rgba(255, 255, 255, 0.58)"
+      : darkModeEnabled
+        ? "rgba(245, 245, 245, 0.92)"
+        : "rgba(17, 17, 17, 0.88)",
   borderColor: completed
     ? "rgba(42, 145, 75, 0.24)"
     : tone === "glass"
@@ -269,8 +278,8 @@ const getActionButtonStyle = ({
   paddingHorizontal: 18,
 });
 
-const getActionButtonIconColor = (completed = false) =>
-  completed ? "#1f7a3a" : "#000000";
+const getActionButtonIconColor = (completed = false, darkModeEnabled = false) =>
+  completed ? "#1f7a3a" : darkModeEnabled ? "#f5f5f5" : "#000000";
 
 const getHeaderToolStyle = (disabled = false) => ({
   alignItems: "flex-end" as const,
@@ -282,10 +291,12 @@ const getHeaderToolStyle = (disabled = false) => ({
   paddingHorizontal: 6,
 });
 
-const getGlassIconButtonStyle = () => ({
+const getGlassIconButtonStyle = (darkModeEnabled = false) => ({
   alignItems: "center" as const,
-  backgroundColor: "rgba(255, 255, 255, 0.34)",
-  borderColor: "rgba(0, 0, 0, 0.1)",
+  backgroundColor: darkModeEnabled
+    ? "rgba(30, 30, 30, 0.66)"
+    : "rgba(255, 255, 255, 0.34)",
+  borderColor: darkModeEnabled ? "rgba(255, 255, 255, 0.16)" : "rgba(0, 0, 0, 0.1)",
   borderCurve: "continuous" as const,
   borderRadius: 26,
   borderWidth: 1,
@@ -324,6 +335,7 @@ export default function ReadingScreen() {
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const isCompleted = useTaskCompletion(selectedDateKey, "reading");
   const { celebrationProgress, isCelebrating, startCelebration } =
@@ -657,14 +669,28 @@ export default function ReadingScreen() {
     translations,
     isTranslated,
   );
+  const colors = {
+    background: darkModeEnabled ? "#0c0c0c" : "#fff",
+    border: darkModeEnabled ? "#303030" : "#ddd",
+    chip: darkModeEnabled ? "#242424" : "#E7E7E7",
+    intro: darkModeEnabled ? "#1e1e1e" : "#ececec",
+    label: darkModeEnabled ? "#a5a5a5" : "#666",
+    playerText: darkModeEnabled ? "#f5f5f5" : "#111",
+    text: darkModeEnabled ? "#f5f5f5" : "#111",
+    textSecondary: darkModeEnabled ? "#c9c9c9" : "#333",
+  };
+  const headerIconColor = darkModeEnabled
+    ? "rgba(245, 245, 245, 0.86)"
+    : "rgba(17, 17, 17, 0.82)";
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.View
         style={[
           {
             borderBottomWidth: 0.5,
-            borderColor: "#ddd",
+            borderColor: colors.border,
+            backgroundColor: colors.background,
             overflow: "hidden",
             paddingHorizontal: 20,
           },
@@ -697,26 +723,32 @@ export default function ReadingScreen() {
                 height: 31,
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: "#E7E7E7",
+                backgroundColor: colors.chip,
                 borderTopLeftRadius: 28,
                 borderBottomLeftRadius: 28,
                 opacity: canGoPreviousDay ? 1 : 0.26,
               }}
             >
-              <MaterialIcons name="chevron-left" size={25} color="#222" />
+              <MaterialIcons name="chevron-left" size={25} color={colors.text} />
             </Pressable>
 
             <View
               style={{
                 minWidth: 108,
-                backgroundColor: "#E7E7E7",
+                backgroundColor: colors.chip,
                 justifyContent: "center",
                 alignItems: "center",
                 marginHorizontal: 2,
                 height: 31,
               }}
             >
-              <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontSize: 15,
+                  fontWeight: "500",
+                }}
+              >
                 {dateString}
               </Text>
             </View>
@@ -729,7 +761,7 @@ export default function ReadingScreen() {
               style={{
                 width: 27,
                 height: 31,
-                backgroundColor: "#E7E7E7",
+                backgroundColor: colors.chip,
                 borderTopRightRadius: 28,
                 borderBottomRightRadius: 28,
                 alignItems: "center",
@@ -739,7 +771,7 @@ export default function ReadingScreen() {
               <MaterialIcons
                 name="chevron-right"
                 size={25}
-                color="#222"
+                color={colors.text}
                 style={{ opacity: canGoNextDay ? 1 : 0.26 }}
               />
             </Pressable>
@@ -757,7 +789,7 @@ export default function ReadingScreen() {
               <MaterialIcons
                 name="translate"
                 size={22}
-                color="rgba(17, 17, 17, 0.82)"
+                color={headerIconColor}
               />
             </Pressable>
 
@@ -770,7 +802,7 @@ export default function ReadingScreen() {
               <MaterialIcons
                 name="volume-up"
                 size={23}
-                color="rgba(17, 17, 17, 0.82)"
+                color={headerIconColor}
               />
             </Pressable>
           </View>
@@ -791,7 +823,11 @@ export default function ReadingScreen() {
             compactHeaderAnimatedStyle,
           ]}
         >
-          <Text style={{ fontSize: 15, fontWeight: "500" }}>{dateString}</Text>
+          <Text
+            style={{ color: colors.text, fontSize: 15, fontWeight: "500" }}
+          >
+            {dateString}
+          </Text>
         </Animated.View>
       </Animated.View>
 
@@ -800,6 +836,7 @@ export default function ReadingScreen() {
         {...panResponder.panHandlers}
         onScroll={handleReadingScroll}
         scrollEventThrottle={16}
+        style={{ backgroundColor: colors.background }}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 20,
@@ -809,7 +846,7 @@ export default function ReadingScreen() {
         {!!translationError && (
           <Text
             style={{
-              color: "#b00020",
+              color: darkModeEnabled ? "#ff8a8a" : "#b00020",
               fontSize: 14,
               lineHeight: 20,
               marginBottom: 12,
@@ -820,14 +857,16 @@ export default function ReadingScreen() {
         )}
 
         {!!dayTitle.trim() && (
-          <Text style={{ fontSize: 24, fontWeight: "700" }}>{dayTitle}</Text>
+          <Text style={{ color: colors.text, fontSize: 24, fontWeight: "700" }}>
+            {dayTitle}
+          </Text>
         )}
 
         {!!dayIntroduction.trim() && (
           <View
             style={{
               marginTop: 12,
-              backgroundColor: "#ececec",
+              backgroundColor: colors.intro,
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderRadius: 0,
@@ -838,7 +877,7 @@ export default function ReadingScreen() {
               style={{
                 fontSize: FONT,
                 lineHeight: LINE_HEIGHT,
-                color: "#333",
+                color: colors.textSecondary,
               }}
             >
               {dayIntroduction}
@@ -861,6 +900,7 @@ export default function ReadingScreen() {
                   !!sectionTitle.trim() && (
                     <Text
                       style={{
+                        color: colors.text,
                         fontSize: 22,
                         fontWeight: "600",
                         marginBottom: 8,
@@ -885,7 +925,7 @@ export default function ReadingScreen() {
                     <View
                       style={{
                         marginTop: 12,
-                        backgroundColor: "#ececec",
+                        backgroundColor: colors.intro,
                         paddingHorizontal: 16,
                         paddingVertical: 14,
                         borderRadius: 0,
@@ -896,7 +936,7 @@ export default function ReadingScreen() {
                         style={{
                           fontSize: FONT,
                           lineHeight: LINE_HEIGHT,
-                          color: "#333",
+                          color: colors.textSecondary,
                         }}
                       >
                         {sectionIntroduction}
@@ -924,6 +964,7 @@ export default function ReadingScreen() {
                   <View key={pIndex} style={{ marginBottom: 18 }}>
                     <Text
                       style={{
+                        color: colors.text,
                         fontSize: FONT,
                         fontWeight: "500",
                         marginBottom: 6,
@@ -936,7 +977,7 @@ export default function ReadingScreen() {
                       <Text
                         style={{
                           fontSize: 16,
-                          color: "#666",
+                          color: colors.label,
                           marginBottom: 4,
                         }}
                       >
@@ -945,6 +986,7 @@ export default function ReadingScreen() {
 
                       <Text
                         style={{
+                          color: colors.text,
                           fontSize: FONT,
                           lineHeight: LINE_HEIGHT,
                         }}
@@ -972,8 +1014,20 @@ export default function ReadingScreen() {
               onPress={handleCompleteReading}
               style={{
                 alignItems: "center",
-                backgroundColor: isCompleted ? "#f1f8f4" : "#111",
-                borderColor: isCompleted ? "#9bd8ad" : "#111",
+                backgroundColor: isCompleted
+                  ? darkModeEnabled
+                    ? "#112319"
+                    : "#f1f8f4"
+                  : darkModeEnabled
+                    ? "#f5f5f5"
+                    : "#111",
+                borderColor: isCompleted
+                  ? darkModeEnabled
+                    ? "#2f6d43"
+                    : "#9bd8ad"
+                  : darkModeEnabled
+                    ? "#f5f5f5"
+                    : "#111",
                 borderCurve: "continuous",
                 borderRadius: 18,
                 borderWidth: 1,
@@ -984,7 +1038,13 @@ export default function ReadingScreen() {
             >
               <Text
                 style={{
-                  color: isCompleted ? "#1f7a3a" : "#fff",
+                  color: isCompleted
+                    ? darkModeEnabled
+                      ? "#2db65a"
+                      : "#1f7a3a"
+                    : darkModeEnabled
+                      ? "#111"
+                      : "#fff",
                   fontSize: 16,
                   fontWeight: "700",
                 }}
@@ -996,7 +1056,7 @@ export default function ReadingScreen() {
             {isCompleted && (
               <Text
                 style={{
-                  color: "#777",
+                  color: colors.label,
                   fontSize: 14,
                   lineHeight: 20,
                   textAlign: "center",
@@ -1028,12 +1088,24 @@ export default function ReadingScreen() {
           <BlurView
             experimentalBlurMethod={PLAYER_BLUR_METHOD}
             intensity={92}
-            tint={Platform.OS === "ios" ? "systemThinMaterialLight" : "light"}
+            tint={
+              Platform.OS === "ios"
+                ? darkModeEnabled
+                  ? "systemThinMaterialDark"
+                  : "systemThinMaterialLight"
+                : darkModeEnabled
+                  ? "dark"
+                  : "light"
+            }
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.14)",
+              backgroundColor: darkModeEnabled
+                ? "rgba(16, 16, 16, 0.28)"
+                : "rgba(255, 255, 255, 0.14)",
               borderRadius: 28,
               borderCurve: "continuous",
-              borderColor: "rgba(255, 255, 255, 0.42)",
+              borderColor: darkModeEnabled
+                ? "rgba(255, 255, 255, 0.16)"
+                : "rgba(255, 255, 255, 0.42)",
               borderWidth: 1,
               boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
               maxWidth: 620,
@@ -1054,13 +1126,19 @@ export default function ReadingScreen() {
               }}
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                <Text
+                  style={{
+                    color: colors.playerText,
+                    fontSize: 16,
+                    fontWeight: "600",
+                  }}
+                >
                   {playbackStatus === "paused" ? "Paused" : "Reading aloud"}
                 </Text>
                 <Text
                   numberOfLines={1}
                   style={{
-                    color: "#666",
+                    color: colors.label,
                     fontSize: 13,
                     lineHeight: 18,
                     marginTop: 2,
@@ -1081,7 +1159,7 @@ export default function ReadingScreen() {
                   justifyContent: "center",
                 }}
               >
-                <MaterialIcons name="close" size={24} color="#222" />
+                <MaterialIcons name="close" size={24} color={colors.playerText} />
               </Pressable>
             </View>
 
@@ -1099,10 +1177,14 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handleSkipBackward}
                 style={{
-                  ...getGlassIconButtonStyle(),
+                  ...getGlassIconButtonStyle(darkModeEnabled),
                 }}
               >
-                <MaterialIcons name="skip-previous" size={30} color="#222" />
+                <MaterialIcons
+                  name="skip-previous"
+                  size={30}
+                  color={colors.playerText}
+                />
               </Pressable>
 
               <Pressable
@@ -1117,7 +1199,9 @@ export default function ReadingScreen() {
                   borderRadius: 27,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "rgba(17, 17, 17, 0.86)",
+                  backgroundColor: darkModeEnabled
+                    ? "rgba(245, 245, 245, 0.9)"
+                    : "rgba(17, 17, 17, 0.86)",
                   borderColor: "rgba(255, 255, 255, 0.48)",
                   borderWidth: 1,
                   boxShadow: "0 8px 18px rgba(0, 0, 0, 0.14)",
@@ -1126,7 +1210,7 @@ export default function ReadingScreen() {
                 <MaterialIcons
                   name={playbackStatus === "paused" ? "play-arrow" : "pause"}
                   size={30}
-                  color="#fff"
+                  color={darkModeEnabled ? "#111" : "#fff"}
                 />
               </Pressable>
 
@@ -1135,10 +1219,14 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handleSkipForward}
                 style={{
-                  ...getGlassIconButtonStyle(),
+                  ...getGlassIconButtonStyle(darkModeEnabled),
                 }}
               >
-                <MaterialIcons name="skip-next" size={30} color="#222" />
+                <MaterialIcons
+                  name="skip-next"
+                  size={30}
+                  color={colors.playerText}
+                />
               </Pressable>
             </View>
 
@@ -1149,7 +1237,13 @@ export default function ReadingScreen() {
                 justifyContent: "space-between",
               }}
             >
-              <Text style={{ fontSize: 15, fontWeight: "600" }}>
+              <Text
+                style={{
+                  color: colors.playerText,
+                  fontSize: 15,
+                  fontWeight: "600",
+                }}
+              >
                 Speed {speechRate.toFixed(1)}x
               </Text>
 
@@ -1161,14 +1255,18 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate - SPEECH_RATE_STEP)
                   }
                   style={{
-                    ...getActionButtonStyle({ minWidth: 56, tone: "glass" }),
+                    ...getActionButtonStyle({
+                      darkModeEnabled,
+                      minWidth: 56,
+                      tone: "glass",
+                    }),
                     paddingHorizontal: 0,
                   }}
                 >
                   <MaterialIcons
                     name="remove"
                     size={22}
-                    color={getActionButtonIconColor()}
+                    color={getActionButtonIconColor(false, darkModeEnabled)}
                   />
                 </Pressable>
 
@@ -1179,14 +1277,18 @@ export default function ReadingScreen() {
                     updateSpeechRate(speechRate + SPEECH_RATE_STEP)
                   }
                   style={{
-                    ...getActionButtonStyle({ minWidth: 56, tone: "glass" }),
+                    ...getActionButtonStyle({
+                      darkModeEnabled,
+                      minWidth: 56,
+                      tone: "glass",
+                    }),
                     paddingHorizontal: 0,
                   }}
                 >
                   <MaterialIcons
                     name="add"
                     size={22}
-                    color={getActionButtonIconColor()}
+                    color={getActionButtonIconColor(false, darkModeEnabled)}
                   />
                 </Pressable>
               </View>

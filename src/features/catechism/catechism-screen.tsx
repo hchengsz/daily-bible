@@ -11,6 +11,7 @@ import {
   useTaskCompletion,
 } from "../progress/daily-progress-store";
 import { getDateKey } from "../reading/reading-plan-utils";
+import { useAppearanceStore } from "../settings/appearance-store";
 
 export default function CatechismScreen() {
   const currentDate = useMemo(() => new Date(), []);
@@ -23,8 +24,18 @@ export default function CatechismScreen() {
   const selectedItem = catechismItems[selectedIndex];
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const isCompleted = useTaskCompletion(dateKey, "catechism");
+  const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const { celebrationProgress, isCelebrating, startCelebration } =
     useCompletionCelebration();
+  const colors = {
+    background: darkModeEnabled ? "#0c0c0c" : "#fff",
+    border: darkModeEnabled ? "#303030" : "#e5e5e5",
+    card: darkModeEnabled ? "#171717" : "#f6f6f6",
+    label: darkModeEnabled ? "#a5a5a5" : "#777",
+    muted: darkModeEnabled ? "#c9c9c9" : "#666",
+    separator: darkModeEnabled ? "#303030" : "#e8e8e8",
+    text: darkModeEnabled ? "#f5f5f5" : "#111",
+  };
 
   const goToPrevious = () => {
     setSelectedIndex((index) =>
@@ -42,10 +53,10 @@ export default function CatechismScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={{ flex: 1, backgroundColor: "#fff" }}
+        style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={{
           gap: 24,
           paddingBottom: 96,
@@ -54,21 +65,21 @@ export default function CatechismScreen() {
         }}
       >
         <View style={{ gap: 8 }}>
-          <Text style={{ color: "#777", fontSize: 14, fontWeight: "600" }}>
+          <Text style={{ color: colors.label, fontSize: 14, fontWeight: "600" }}>
             Catechism
           </Text>
-          <Text style={{ color: "#111", fontSize: 30, fontWeight: "800" }}>
+          <Text style={{ color: colors.text, fontSize: 30, fontWeight: "800" }}>
             Catechism Reading
           </Text>
-          <Text style={{ color: "#666", fontSize: 15, lineHeight: 22 }}>
+          <Text style={{ color: colors.muted, fontSize: 15, lineHeight: 22 }}>
             Compendium of the Catechism of the Catholic Church
           </Text>
         </View>
 
         <View
           style={{
-            backgroundColor: "#f6f6f6",
-            borderColor: "#e5e5e5",
+            backgroundColor: colors.card,
+            borderColor: colors.border,
             borderRadius: 20,
             borderCurve: "continuous",
             borderWidth: 1,
@@ -83,7 +94,7 @@ export default function CatechismScreen() {
               justifyContent: "space-between",
             }}
           >
-            <Text style={{ color: "#555", fontSize: 14, fontWeight: "700" }}>
+            <Text style={{ color: colors.muted, fontSize: 14, fontWeight: "700" }}>
               Question {selectedIndex + 1}
             </Text>
 
@@ -94,7 +105,7 @@ export default function CatechismScreen() {
                 onPress={goToPrevious}
                 style={{
                   alignItems: "center",
-                  borderColor: "#d0d0d0",
+                  borderColor: colors.border,
                   borderRadius: 18,
                   borderWidth: 1,
                   height: 36,
@@ -102,7 +113,7 @@ export default function CatechismScreen() {
                   width: 36,
                 }}
               >
-                <MaterialIcons name="chevron-left" size={24} color="#222" />
+                <MaterialIcons name="chevron-left" size={24} color={colors.text} />
               </Pressable>
 
               <Pressable
@@ -111,7 +122,7 @@ export default function CatechismScreen() {
                 onPress={goToNext}
                 style={{
                   alignItems: "center",
-                  borderColor: "#d0d0d0",
+                  borderColor: colors.border,
                   borderRadius: 18,
                   borderWidth: 1,
                   height: 36,
@@ -119,18 +130,18 @@ export default function CatechismScreen() {
                   width: 36,
                 }}
               >
-                <MaterialIcons name="chevron-right" size={24} color="#222" />
+                <MaterialIcons name="chevron-right" size={24} color={colors.text} />
               </Pressable>
             </View>
           </View>
 
           <View style={{ gap: 10 }}>
-            <Text style={{ color: "#777", fontSize: 13, fontWeight: "700" }}>
+            <Text style={{ color: colors.label, fontSize: 13, fontWeight: "700" }}>
               Question
             </Text>
             <Text
               style={{
-                color: "#111",
+                color: colors.text,
                 fontSize: 23,
                 fontWeight: "700",
                 lineHeight: 31,
@@ -141,29 +152,29 @@ export default function CatechismScreen() {
           </View>
 
           <View style={{ gap: 10 }}>
-            <Text style={{ color: "#777", fontSize: 13, fontWeight: "700" }}>
+            <Text style={{ color: colors.label, fontSize: 13, fontWeight: "700" }}>
               Answer
             </Text>
-            <Text style={{ color: "#222", fontSize: 20, lineHeight: 30 }}>
+            <Text style={{ color: colors.text, fontSize: 20, lineHeight: 30 }}>
               {selectedItem.answer}
             </Text>
           </View>
         </View>
 
         <View style={{ gap: 10 }}>
-          <Text style={{ color: "#111", fontSize: 18, fontWeight: "700" }}>
+          <Text style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}>
             Catechism References
           </Text>
           {selectedItem.references.map((reference) => (
             <View
               key={reference}
               style={{
-                borderBottomColor: "#e8e8e8",
+                borderBottomColor: colors.separator,
                 borderBottomWidth: 1,
                 paddingVertical: 12,
               }}
             >
-              <Text style={{ color: "#333", fontSize: 17 }}>{reference}</Text>
+              <Text style={{ color: colors.muted, fontSize: 17 }}>{reference}</Text>
             </View>
           ))}
         </View>
@@ -174,8 +185,20 @@ export default function CatechismScreen() {
             onPress={handleCompleteCatechism}
             style={{
               alignItems: "center",
-              backgroundColor: isCompleted ? "#f1f8f4" : "#111",
-              borderColor: isCompleted ? "#9bd8ad" : "#111",
+              backgroundColor: isCompleted
+                ? darkModeEnabled
+                  ? "#112319"
+                  : "#f1f8f4"
+                : darkModeEnabled
+                  ? "#f5f5f5"
+                  : "#111",
+              borderColor: isCompleted
+                ? darkModeEnabled
+                  ? "#2f6d43"
+                  : "#9bd8ad"
+                : darkModeEnabled
+                  ? "#f5f5f5"
+                  : "#111",
               borderCurve: "continuous",
               borderRadius: 18,
               borderWidth: 1,
@@ -186,7 +209,13 @@ export default function CatechismScreen() {
           >
             <Text
               style={{
-                color: isCompleted ? "#1f7a3a" : "#fff",
+                color: isCompleted
+                  ? darkModeEnabled
+                    ? "#2db65a"
+                    : "#1f7a3a"
+                  : darkModeEnabled
+                    ? "#111"
+                    : "#fff",
                 fontSize: 16,
                 fontWeight: "700",
               }}
@@ -198,7 +227,7 @@ export default function CatechismScreen() {
           {isCompleted && (
             <Text
               style={{
-                color: "#777",
+                color: colors.label,
                 fontSize: 14,
                 lineHeight: 20,
                 textAlign: "center",
