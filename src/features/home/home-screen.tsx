@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useMemo } from "react";
-import { Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import {
   getCatechismIndexForDate,
   getCatechismItemForDate,
@@ -82,14 +82,16 @@ function TodoItem({
                 fontWeight: "600",
               }}
             >
-              {completed ? "Completed" : "Pending"} · {meta}
+              {completed ? "Completed" : "To do"} · {meta}
             </Text>
           </View>
 
           <MaterialIcons
             name={completed ? "check-circle" : "radio-button-unchecked"}
             size={28}
-            color={completed ? "#2db65a" : darkModeEnabled ? "#737373" : "#9a9a9a"}
+            color={
+              completed ? "#2db65a" : darkModeEnabled ? "#737373" : "#9a9a9a"
+            }
           />
         </View>
 
@@ -163,7 +165,7 @@ export default function HomeScreen() {
             fontWeight: "800",
           }}
         >
-          Today
+          To-do List for Today
         </Text>
         <Text
           style={{
@@ -173,8 +175,8 @@ export default function HomeScreen() {
           }}
         >
           {completedCount === 2
-            ? "Today's reading and catechism are complete."
-            : `${2 - completedCount} item${2 - completedCount === 1 ? "" : "s"} remaining.`}
+            ? "You're all caught up for today."
+            : `${2 - completedCount} item${2 - completedCount === 1 ? "" : "s"} left for today.`}
         </Text>
       </View>
 
@@ -183,8 +185,7 @@ export default function HomeScreen() {
           completed={readingCompleted}
           darkModeEnabled={darkModeEnabled}
           description={
-            readingReferenceSummary ||
-            "Today's reading has not been configured."
+            readingReferenceSummary || "Today's reading is not available yet."
           }
           href="/reading"
           label={readingDay.title || "Daily Reading"}
@@ -201,45 +202,39 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View
-        style={{
-          alignItems: "center",
-          backgroundColor: darkModeEnabled ? "#171717" : "#f7f7f7",
-          borderColor: darkModeEnabled ? "#303030" : "#e7e7e7",
-          borderCurve: "continuous",
-          borderRadius: 8,
-          borderWidth: 1,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          minHeight: 56,
-          paddingHorizontal: 16,
-        }}
-      >
-        <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ alignItems: "center", paddingTop: 2 }}>
+        <Pressable
+          accessibilityLabel="Toggle dark mode"
+          accessibilityRole="button"
+          onPress={() => setDarkModeEnabled(!darkModeEnabled)}
+          style={{
+            alignItems: "center",
+            backgroundColor: darkModeEnabled ? "#171717" : "#f7f7f7",
+            borderColor: darkModeEnabled ? "#303030" : "#e7e7e7",
+            borderCurve: "continuous",
+            borderRadius: 18,
+            borderWidth: 1,
+            flexDirection: "row",
+            gap: 6,
+            minHeight: 36,
+            paddingHorizontal: 12,
+          }}
+        >
+          <MaterialIcons
+            name={darkModeEnabled ? "light-mode" : "dark-mode"}
+            size={18}
+            color={darkModeEnabled ? "#f5f5f5" : "#111"}
+          />
           <Text
             style={{
               color: darkModeEnabled ? "#f5f5f5" : "#111",
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: "700",
             }}
           >
-            Dark Mode
+            {darkModeEnabled ? "Light mode" : "Dark mode"}
           </Text>
-          <Text
-            style={{
-              color: darkModeEnabled ? "#a5a5a5" : "#777",
-              fontSize: 13,
-              fontWeight: "600",
-            }}
-          >
-            Use a darker appearance.
-          </Text>
-        </View>
-        <Switch
-          accessibilityLabel="Toggle dark mode"
-          onValueChange={setDarkModeEnabled}
-          value={darkModeEnabled}
-        />
+        </Pressable>
       </View>
     </ScrollView>
   );

@@ -3,7 +3,7 @@ import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanResponder, Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -49,6 +49,21 @@ type TranslationResponse = {
   error?: string;
 };
 
+type VocabularyItem = {
+  definition: string;
+  term: string;
+};
+
+type VocabularyMap = Record<string, VocabularyItem[]>;
+
+type VocabularyResponse = {
+  error?: string;
+  results?: {
+    id: string;
+    terms: VocabularyItem[];
+  }[];
+};
+
 type PlaybackStatus = "idle" | "playing" | "paused";
 
 const FONT = 20;
@@ -58,7 +73,7 @@ const MAX_SPEECH_RATE = 1.4;
 const SPEECH_RATE_STEP = 0.1;
 const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
-const SWIPE_THRESHOLD = 76;
+const VOCABULARY_PATH = "/api/vocabulary";
 const HEADER_EXPANDED_HEIGHT = 112;
 const HEADER_COMPACT_HEIGHT = 80;
 const HEADER_COLLAPSE_DISTANCE = 72;
@@ -68,6 +83,9 @@ const TRANSLATE_API_ORIGIN = (
 const TRANSLATE_ENDPOINT = TRANSLATE_API_ORIGIN
   ? `${TRANSLATE_API_ORIGIN}${TRANSLATE_PATH}`
   : TRANSLATE_PATH;
+const VOCABULARY_ENDPOINT = TRANSLATE_API_ORIGIN
+  ? `${TRANSLATE_API_ORIGIN}${VOCABULARY_PATH}`
+  : VOCABULARY_PATH;
 const HEADER_MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "long",
@@ -83,6 +101,53 @@ const normalizeText = (text?: unknown) =>
   safeText(text).replace(/\s+/g, " ").trim();
 
 const formatHeaderDate = (date: Date) => HEADER_MONTH_FORMATTER.format(date);
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getVocabularyPattern = (items: VocabularyItem[]) => {
+  const terms = items
+    .map((item) => item.term.trim())
+    .filter(Boolean)
+    .sort((first, second) => second.length - first.length);
+
+  if (!terms.length) {
+    return null;
+  }
+
+  return new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "gi");
+};
+
+const renderTextWithVocabulary = (
+  text: string,
+  items: VocabularyItem[],
+  annotationColor: string,
+) => {
+  const pattern = getVocabularyPattern(items);
+
+  if (!pattern) {
+    return text;
+  }
+
+  const definitionsByTerm = new Map(
+    items.map((item) => [item.term.trim().toLowerCase(), item.definition]),
+  );
+  const parts = text.split(pattern).filter(Boolean);
+
+  return parts.map((part, index) => {
+    const definition = definitionsByTerm.get(part.toLowerCase());
+
+    if (!definition) {
+      return part;
+    }
+
+    return (
+      <Text key={`${part}:${index}`} style={{ color: annotationColor }}>
+        {part} ({definition})
+      </Text>
+    );
+  });
+};
 
 const getReferenceText = (ref: Reference) => {
   const { book, chapter, verse } = ref;
@@ -135,6 +200,21 @@ const buildTranslationChunks = (day: Day): TranslationChunk[] =>
           text: getParagraphScripture(paragraph),
         },
       ]),
+    ]),
+  ].filter((chunk) => normalizeText(chunk.text));
+
+const buildVocabularyChunks = (day: Day): TranslationChunk[] =>
+  [
+    { id: getDayIntroductionId(), text: safeText(day.introduction) },
+    ...getSections(day).flatMap((section, sectionIndex) => [
+      {
+        id: getSectionIntroductionId(sectionIndex),
+        text: safeText(section.introduction),
+      },
+      ...getParagraphs(section).map((paragraph, paragraphIndex) => ({
+        id: getParagraphScriptureId(sectionIndex, paragraphIndex),
+        text: getParagraphScripture(paragraph),
+      })),
     ]),
   ].filter((chunk) => normalizeText(chunk.text));
 
@@ -215,6 +295,31 @@ const translateChunks = async (
   );
 };
 
+const analyzeVocabulary = async (
+  chunks: TranslationChunk[],
+): Promise<VocabularyMap> => {
+  const response = await fetch(VOCABULARY_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chunks }),
+  });
+  const data = await parseTranslationResponse(response);
+  const vocabularyData = data as VocabularyResponse;
+
+  if (!response.ok) {
+    throw new Error(
+      vocabularyData.error || `Vocabulary analysis failed: ${response.status}`,
+    );
+  }
+
+  return Object.fromEntries(
+    (vocabularyData.results ?? []).map((result) => [
+      result.id,
+      result.terms ?? [],
+    ]),
+  );
+};
+
 const clampSpeechRate = (rate: number) =>
   Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, rate));
 
@@ -223,16 +328,20 @@ const getCompleteButtonLabel = (
   isSelectedToday: boolean,
 ) => {
   if (isCompleted) {
-    return isSelectedToday ? "Today's reading is complete" : "This reading is complete";
+    return isSelectedToday
+      ? "Today's reading is complete"
+      : "This reading is complete";
   }
 
-  return isSelectedToday ? "Complete Today's Reading" : "Mark This Reading Complete";
+  return isSelectedToday
+    ? "Complete Today's Reading"
+    : "Mark This Reading Complete";
 };
 
 const getCompletionMessage = (isSelectedToday: boolean) =>
   isSelectedToday
     ? "Come back tomorrow. A little each day is enough."
-    : "This day is caught up. Keep going.";
+    : "You're caught up on this day. Keep going.";
 
 const getActionButtonStyle = ({
   completed = false,
@@ -278,14 +387,17 @@ const getActionButtonStyle = ({
   paddingHorizontal: 18,
 });
 
-const getActionButtonIconColor = (completed = false, darkModeEnabled = false) =>
-  completed ? "#1f7a3a" : darkModeEnabled ? "#f5f5f5" : "#000000";
+const getActionButtonIconColor = (
+  completed = false,
+  darkModeEnabled = false,
+) => (completed ? "#1f7a3a" : darkModeEnabled ? "#f5f5f5" : "#000000");
 
 const getHeaderToolStyle = (disabled = false) => ({
   alignItems: "flex-end" as const,
   flexDirection: "row" as const,
   gap: 5,
   justifyContent: "center" as const,
+  marginBottom: 3,
   minHeight: 44,
   opacity: disabled ? 0.45 : 1,
   paddingHorizontal: 6,
@@ -296,7 +408,9 @@ const getGlassIconButtonStyle = (darkModeEnabled = false) => ({
   backgroundColor: darkModeEnabled
     ? "rgba(30, 30, 30, 0.66)"
     : "rgba(255, 255, 255, 0.34)",
-  borderColor: darkModeEnabled ? "rgba(255, 255, 255, 0.16)" : "rgba(0, 0, 0, 0.1)",
+  borderColor: darkModeEnabled
+    ? "rgba(255, 255, 255, 0.16)"
+    : "rgba(0, 0, 0, 0.1)",
   borderCurve: "continuous" as const,
   borderRadius: 26,
   borderWidth: 1,
@@ -331,10 +445,18 @@ export default function ReadingScreen() {
     () => buildTranslationChunks(selectedDay),
     [selectedDay],
   );
+  const vocabularyChunks = useMemo(
+    () => buildVocabularyChunks(selectedDay),
+    [selectedDay],
+  );
   const [translations, setTranslations] = useState<TranslationMap>({});
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const [vocabulary, setVocabulary] = useState<VocabularyMap>({});
+  const [isVocabularyVisible, setIsVocabularyVisible] = useState(false);
+  const [isAnalyzingVocabulary, setIsAnalyzingVocabulary] = useState(false);
+  const [vocabularyError, setVocabularyError] = useState<string | null>(null);
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const isCompleted = useTaskCompletion(selectedDateKey, "reading");
@@ -383,6 +505,10 @@ export default function ReadingScreen() {
     setIsTranslated(false);
     setIsTranslating(false);
     setTranslationError(null);
+    setVocabulary({});
+    setIsVocabularyVisible(false);
+    setIsAnalyzingVocabulary(false);
+    setVocabularyError(null);
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     scrollY.value = 0;
   }, [scrollY, selectedDayOfYear, stopSpeechPlayback]);
@@ -571,26 +697,6 @@ export default function ReadingScreen() {
     ],
   }));
 
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, gestureState) =>
-          Math.abs(gestureState.dx) > 24 &&
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.4,
-        onPanResponderRelease: (_, gestureState) => {
-          if (gestureState.dx > SWIPE_THRESHOLD) {
-            handlePreviousDay();
-            return;
-          }
-
-          if (gestureState.dx < -SWIPE_THRESHOLD) {
-            handleNextDay();
-          }
-        },
-      }),
-    [handleNextDay, handlePreviousDay],
-  );
-
   const handleCompleteReading = () => {
     if (!selectedDay.id) {
       return;
@@ -651,6 +757,38 @@ export default function ReadingScreen() {
     }
   };
 
+  const handleAnalyzeVocabulary = async () => {
+    if (isVocabularyVisible) {
+      setIsVocabularyVisible(false);
+      return;
+    }
+
+    if (Object.keys(vocabulary).length) {
+      setIsVocabularyVisible(true);
+      return;
+    }
+
+    if (!vocabularyChunks.length) {
+      return;
+    }
+
+    setIsAnalyzingVocabulary(true);
+    setVocabularyError(null);
+
+    try {
+      const analyzedVocabulary = await analyzeVocabulary(vocabularyChunks);
+
+      setVocabulary(analyzedVocabulary);
+      setIsVocabularyVisible(true);
+    } catch (error) {
+      setVocabularyError(
+        error instanceof Error ? error.message : "Vocabulary analysis failed.",
+      );
+    } finally {
+      setIsAnalyzingVocabulary(false);
+    }
+  };
+
   const dateString = formatHeaderDate(selectedDate);
   const completeButtonLabel = getCompleteButtonLabel(
     isCompleted,
@@ -670,6 +808,7 @@ export default function ReadingScreen() {
     isTranslated,
   );
   const colors = {
+    annotation: darkModeEnabled ? "#78d893" : "#1f7a3a",
     background: darkModeEnabled ? "#0c0c0c" : "#fff",
     border: darkModeEnabled ? "#303030" : "#ddd",
     chip: darkModeEnabled ? "#242424" : "#E7E7E7",
@@ -729,7 +868,11 @@ export default function ReadingScreen() {
                 opacity: canGoPreviousDay ? 1 : 0.26,
               }}
             >
-              <MaterialIcons name="chevron-left" size={25} color={colors.text} />
+              <MaterialIcons
+                name="chevron-left"
+                size={25}
+                color={colors.text}
+              />
             </Pressable>
 
             <View
@@ -794,6 +937,20 @@ export default function ReadingScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityLabel="Analyze difficult vocabulary"
+              accessibilityRole="button"
+              disabled={isAnalyzingVocabulary}
+              onPress={handleAnalyzeVocabulary}
+              style={getHeaderToolStyle(isAnalyzingVocabulary)}
+            >
+              <MaterialIcons
+                name="school"
+                size={23}
+                color={isVocabularyVisible ? "#2db65a" : headerIconColor}
+              />
+            </Pressable>
+
+            <Pressable
               accessibilityLabel="Start reading aloud"
               accessibilityRole="button"
               onPress={handlePlay}
@@ -818,22 +975,18 @@ export default function ReadingScreen() {
               minHeight: 20,
               position: "absolute",
               right: 20,
-              marginLeft: 51,
             },
             compactHeaderAnimatedStyle,
           ]}
         >
-          <Text
-            style={{ color: colors.text, fontSize: 15, fontWeight: "500" }}
-          >
-            {dateString}
+          <Text style={{ color: colors.text, fontSize: 15, fontWeight: "500" }}>
+            {dateString} | NIV
           </Text>
         </Animated.View>
       </Animated.View>
 
       <Animated.ScrollView
         ref={scrollViewRef}
-        {...panResponder.panHandlers}
         onScroll={handleReadingScroll}
         scrollEventThrottle={16}
         style={{ backgroundColor: colors.background }}
@@ -853,6 +1006,19 @@ export default function ReadingScreen() {
             }}
           >
             {translationError}
+          </Text>
+        )}
+
+        {!!vocabularyError && (
+          <Text
+            style={{
+              color: darkModeEnabled ? "#ff8a8a" : "#b00020",
+              fontSize: 14,
+              lineHeight: 20,
+              marginBottom: 12,
+            }}
+          >
+            {vocabularyError}
           </Text>
         )}
 
@@ -880,7 +1046,13 @@ export default function ReadingScreen() {
                 color: colors.textSecondary,
               }}
             >
-              {dayIntroduction}
+              {isVocabularyVisible && !isTranslated
+                ? renderTextWithVocabulary(
+                    dayIntroduction,
+                    vocabulary[getDayIntroductionId()] ?? [],
+                    colors.annotation,
+                  )
+                : dayIntroduction}
             </Text>
           </View>
         )}
@@ -919,6 +1091,8 @@ export default function ReadingScreen() {
                   translations,
                   isTranslated,
                 );
+                const sectionVocabularyItems =
+                  vocabulary[getSectionIntroductionId(sectionIndex)] ?? [];
 
                 return (
                   !!sectionIntroduction.trim() && (
@@ -939,7 +1113,13 @@ export default function ReadingScreen() {
                           color: colors.textSecondary,
                         }}
                       >
-                        {sectionIntroduction}
+                        {isVocabularyVisible && !isTranslated
+                          ? renderTextWithVocabulary(
+                              sectionIntroduction,
+                              sectionVocabularyItems,
+                              colors.annotation,
+                            )
+                          : sectionIntroduction}
                       </Text>
                     </View>
                   )
@@ -959,6 +1139,9 @@ export default function ReadingScreen() {
                   translations,
                   isTranslated,
                 );
+                const vocabularyItems =
+                  vocabulary[getParagraphScriptureId(sectionIndex, pIndex)] ??
+                  [];
 
                 return (
                   <View key={pIndex} style={{ marginBottom: 18 }}>
@@ -991,7 +1174,13 @@ export default function ReadingScreen() {
                           lineHeight: LINE_HEIGHT,
                         }}
                       >
-                        {paragraphScripture || "[missing]"}
+                        {isVocabularyVisible && !isTranslated
+                          ? renderTextWithVocabulary(
+                              paragraphScripture || "[Text unavailable]",
+                              vocabularyItems,
+                              colors.annotation,
+                            )
+                          : paragraphScripture || "[Text unavailable]"}
                       </Text>
                     </View>
                   </View>
@@ -1159,7 +1348,11 @@ export default function ReadingScreen() {
                   justifyContent: "center",
                 }}
               >
-                <MaterialIcons name="close" size={24} color={colors.playerText} />
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.playerText}
+                />
               </Pressable>
             </View>
 
@@ -1173,7 +1366,7 @@ export default function ReadingScreen() {
               }}
             >
               <Pressable
-                accessibilityLabel="Go back to previous section"
+                accessibilityLabel="Go back to previous passage"
                 accessibilityRole="button"
                 onPress={handleSkipBackward}
                 style={{
@@ -1189,7 +1382,9 @@ export default function ReadingScreen() {
 
               <Pressable
                 accessibilityLabel={
-                  playbackStatus === "paused" ? "Resume reading aloud" : "Pause reading aloud"
+                  playbackStatus === "paused"
+                    ? "Resume reading aloud"
+                    : "Pause reading aloud"
                 }
                 accessibilityRole="button"
                 onPress={handlePauseResume}
@@ -1215,7 +1410,7 @@ export default function ReadingScreen() {
               </Pressable>
 
               <Pressable
-                accessibilityLabel="Skip to next section"
+                accessibilityLabel="Skip to next passage"
                 accessibilityRole="button"
                 onPress={handleSkipForward}
                 style={{

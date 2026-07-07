@@ -1,4 +1,4 @@
-{
+﻿{
    "book": "2 John",
    "count": 1,
    "chapters": [
@@ -15,7 +15,7 @@
             },
             {
                "verse": "3",
-               "text": "Grace, mercy and peace from God the Father and from Jesus Christ, the Father`s Son, will be with us in truth and love."
+               "text": "Grace, mercy and peace from God the Father and from Jesus Christ, the Father's Son, will be with us in truth and love."
             },
             {
                "verse": "4",

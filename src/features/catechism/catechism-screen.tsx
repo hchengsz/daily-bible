@@ -66,10 +66,10 @@ export default function CatechismScreen() {
       >
         <View style={{ gap: 8 }}>
           <Text style={{ color: colors.label, fontSize: 14, fontWeight: "600" }}>
-            Catechism
+            Daily Formation
           </Text>
           <Text style={{ color: colors.text, fontSize: 30, fontWeight: "800" }}>
-            Catechism Reading
+            Catechism
           </Text>
           <Text style={{ color: colors.muted, fontSize: 15, lineHeight: 22 }}>
             Compendium of the Catechism of the Catholic Church
@@ -233,7 +233,7 @@ export default function CatechismScreen() {
                 textAlign: "center",
               }}
             >
-              Come back tomorrow and keep taking root.
+              Come back tomorrow and keep going.
             </Text>
           )}
         </View>
