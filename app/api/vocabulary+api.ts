@@ -1,3 +1,5 @@
+import { ProxyAgent } from "undici";
+
 type VocabularyChunk = {
   id: string;
   text: string;
@@ -36,8 +38,55 @@ const GEMINI_INTERACTIONS_URL =
   "https://generativelanguage.googleapis.com/v1beta/interactions";
 const GEMINI_VOCAB_MODEL =
   process.env.GEMINI_VOCAB_MODEL || "gemini-3.5-flash";
+const GEMINI_PROXY_URL = normalizeProxyUrl(process.env.DEV_PROXY_URL);
 const MAX_CHUNKS = 80;
 const MAX_CHARACTERS = 45000;
+const GEMINI_PROXY_AGENT = createProxyAgent(GEMINI_PROXY_URL);
+
+type GeminiRequestInit = RequestInit & {
+  dispatcher?: ProxyAgent;
+};
+
+function normalizeProxyUrl(proxyServer?: string) {
+  if (!proxyServer) {
+    return "";
+  }
+
+  let candidate = proxyServer.trim();
+
+  if (!candidate) {
+    return "";
+  }
+
+  if (candidate.includes(";")) {
+    const parts = candidate.split(";").filter(Boolean);
+    const httpsPart = parts.find((part) => part.startsWith("https="));
+    const httpPart = parts.find((part) => part.startsWith("http="));
+
+    candidate = httpsPart || httpPart || parts[0] || "";
+    candidate = candidate.replace(/^(https?|socks)=/, "");
+  }
+
+  if (!candidate) {
+    return "";
+  }
+
+  return /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(candidate)
+    ? candidate
+    : `http://${candidate}`;
+}
+
+function createProxyAgent(proxyUrl: string) {
+  if (!proxyUrl) {
+    return undefined;
+  }
+
+  try {
+    return new ProxyAgent(proxyUrl);
+  } catch {
+    return undefined;
+  }
+}
 
 const isVocabularyChunk = (value: unknown): value is VocabularyChunk => {
   if (!value || typeof value !== "object") {
@@ -69,6 +118,21 @@ const readJsonResponse = async <T,>(response: Response): Promise<T | null> => {
   } catch {
     return null;
   }
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    const cause =
+      error.cause instanceof Error
+        ? error.cause.message
+        : typeof error.cause === "string"
+          ? error.cause
+          : "";
+
+    return [error.message, cause].filter(Boolean).join(": ");
+  }
+
+  return String(error);
 };
 
 const extractResponseText = (payload: GeminiResponsePayload | null) => {
@@ -111,6 +175,26 @@ const normalizeResults = (
     }));
 };
 
+const getGeminiRequestInit = (
+  apiKey: string,
+  body: unknown,
+): GeminiRequestInit => {
+  const init: GeminiRequestInit = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify(body),
+  };
+
+  if (GEMINI_PROXY_AGENT) {
+    init.dispatcher = GEMINI_PROXY_AGENT;
+  }
+
+  return init;
+};
+
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -146,56 +230,65 @@ export async function POST(request: Request) {
     JSON.stringify({ chunks }),
   ].join("\n");
 
-  const geminiResponse = await fetch(GEMINI_INTERACTIONS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      input: prompt,
-      model: GEMINI_VOCAB_MODEL,
-      response_format: {
-        mime_type: "application/json",
-        schema: {
-          properties: {
-            results: {
-              items: {
-                properties: {
-                  id: { type: "string" },
-                  terms: {
-                    items: {
-                      properties: {
-                        definition: {
-                          description:
-                            "A concise Simplified Chinese meaning for this term in context.",
-                          type: "string",
+  let geminiResponse: Response;
+
+  try {
+    geminiResponse = await fetch(
+      GEMINI_INTERACTIONS_URL,
+      getGeminiRequestInit(apiKey, {
+        input: prompt,
+        model: GEMINI_VOCAB_MODEL,
+        response_format: {
+          mime_type: "application/json",
+          schema: {
+            properties: {
+              results: {
+                items: {
+                  properties: {
+                    id: { type: "string" },
+                    terms: {
+                      items: {
+                        properties: {
+                          definition: {
+                            description:
+                              "A concise Simplified Chinese meaning for this term in context.",
+                            type: "string",
+                          },
+                          term: {
+                            description:
+                              "The difficult English word or phrase from the passage.",
+                            type: "string",
+                          },
                         },
-                        term: {
-                          description:
-                            "The difficult English word or phrase from the passage.",
-                          type: "string",
-                        },
+                        required: ["term", "definition"],
+                        type: "object",
                       },
-                      required: ["term", "definition"],
-                      type: "object",
+                      type: "array",
                     },
-                    type: "array",
                   },
+                  required: ["id", "terms"],
+                  type: "object",
                 },
-                required: ["id", "terms"],
-                type: "object",
+                type: "array",
               },
-              type: "array",
             },
+            required: ["results"],
+            type: "object",
           },
-          required: ["results"],
-          type: "object",
+          type: "text",
         },
-        type: "text",
+      }),
+    );
+  } catch (error) {
+    return Response.json(
+      {
+        error: `Expo server could not connect to Gemini API. If your VPN uses a local or browser proxy, set DEV_PROXY_URL in .env or restart Expo with npm run start:proxy. ${getErrorMessage(
+          error,
+        )}`,
       },
-    }),
-  });
+      { status: 502 },
+    );
+  }
 
   const payload = await readJsonResponse<GeminiResponsePayload>(geminiResponse);
 
