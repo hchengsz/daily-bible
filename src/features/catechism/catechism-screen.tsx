@@ -1,7 +1,14 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { catechismItems, getCatechismIndexForDate } from "./catechism-data";
+import type { ComponentRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import {
   CompletionCelebrationOverlay,
   useCompletionCelebration,
@@ -10,179 +17,368 @@ import {
   useDailyProgressStore,
   useTaskCompletion,
 } from "../progress/daily-progress-store";
-import { getDateKey } from "../reading/reading-plan-utils";
+import {
+  addDays,
+  getDateKey,
+} from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
+import { getCatechismDayForDate } from "./catechism-data";
+
+const FONT = 20;
+const LINE_HEIGHT = 30;
+const HEADER_EXPANDED_HEIGHT = 112;
+const HEADER_COMPACT_HEIGHT = 80;
+const HEADER_COLLAPSE_DISTANCE = 72;
+const HEADER_MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  day: "2-digit",
+  month: "long",
+});
+
+const formatHeaderDate = (date: Date) => HEADER_MONTH_FORMATTER.format(date);
+
+const getCompleteButtonLabel = (
+  isCompleted: boolean,
+  isSelectedToday: boolean,
+) => {
+  if (isCompleted) {
+    return isSelectedToday
+      ? "Today's catechism is complete"
+      : "This catechism reading is complete";
+  }
+
+  return isSelectedToday
+    ? "Complete Today's Catechism"
+    : "Mark This Catechism Complete";
+};
+
+const getCompletionMessage = (isSelectedToday: boolean) =>
+  isSelectedToday
+    ? "Come back tomorrow and continue with the next section."
+    : "You're caught up on this day. Keep going.";
 
 export default function CatechismScreen() {
   const currentDate = useMemo(() => new Date(), []);
-  const dateKey = getDateKey(currentDate);
-  const initialIndex = useMemo(
-    () => getCatechismIndexForDate(currentDate),
-    [currentDate],
+  const [selectedDate, setSelectedDate] = useState(currentDate);
+  const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView>>(null);
+  const scrollY = useSharedValue(0);
+  const selectedDateKey = getDateKey(selectedDate);
+  const currentDateKey = getDateKey(currentDate);
+  const selectedDay = useMemo(
+    () => getCatechismDayForDate(selectedDate),
+    [selectedDate],
   );
-  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
-  const selectedItem = catechismItems[selectedIndex];
+  const isSelectedToday = selectedDateKey === currentDateKey;
+  const currentYearStartKey = Date.UTC(currentDate.getFullYear(), 0, 1);
+  const canGoPreviousDay = selectedDateKey > currentYearStartKey;
+  const canGoNextDay = selectedDateKey < currentDateKey;
   const completeTask = useDailyProgressStore((state) => state.completeTask);
-  const isCompleted = useTaskCompletion(dateKey, "catechism");
+  const isCompleted = useTaskCompletion(selectedDateKey, "catechism");
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const { celebrationProgress, isCelebrating, startCelebration } =
     useCompletionCelebration();
   const colors = {
     background: darkModeEnabled ? "#0c0c0c" : "#fff",
-    border: darkModeEnabled ? "#303030" : "#e5e5e5",
-    card: darkModeEnabled ? "#171717" : "#f6f6f6",
-    label: darkModeEnabled ? "#a5a5a5" : "#777",
-    muted: darkModeEnabled ? "#c9c9c9" : "#666",
-    separator: darkModeEnabled ? "#303030" : "#e8e8e8",
+    border: darkModeEnabled ? "#303030" : "#ddd",
+    chip: darkModeEnabled ? "#242424" : "#e7e7e7",
+    label: darkModeEnabled ? "#a5a5a5" : "#666",
     text: darkModeEnabled ? "#f5f5f5" : "#111",
   };
 
-  const goToPrevious = () => {
-    setSelectedIndex((index) =>
-      index === 0 ? catechismItems.length - 1 : index - 1,
-    );
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    scrollY.value = 0;
+  }, [scrollY, selectedDateKey]);
+
+  const handlePreviousDay = () => {
+    if (canGoPreviousDay) {
+      setSelectedDate((date) => addDays(date, -1));
+    }
   };
 
-  const goToNext = () => {
-    setSelectedIndex((index) => (index + 1) % catechismItems.length);
+  const handleNextDay = () => {
+    if (canGoNextDay) {
+      setSelectedDate((date) => addDays(date, 1));
+    }
   };
+
+  const handleCatechismScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_DISTANCE],
+      [HEADER_EXPANDED_HEIGHT, HEADER_COMPACT_HEIGHT],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const expandedHeaderAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_DISTANCE * 0.7],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, HEADER_COLLAPSE_DISTANCE],
+          [0, -8],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const compactHeaderAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrollY.value,
+      [HEADER_COLLAPSE_DISTANCE * 0.35, HEADER_COLLAPSE_DISTANCE],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, HEADER_COLLAPSE_DISTANCE],
+          [8, 0],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   const handleCompleteCatechism = () => {
-    completeTask(dateKey, "catechism");
+    completeTask(selectedDateKey, "catechism");
     startCelebration();
   };
 
+  const dateString = formatHeaderDate(selectedDate);
+  const completeButtonLabel = getCompleteButtonLabel(
+    isCompleted,
+    isSelectedToday,
+  );
+  const completionMessage = getCompletionMessage(isSelectedToday);
+  const reference =
+    selectedDay.startNumber === selectedDay.endNumber
+      ? `${selectedDay.startNumber}`
+      : `${selectedDay.startNumber}-${selectedDay.endNumber}`;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{
-          alignSelf: "center",
-          gap: 24,
-          maxWidth: 1000,
-          paddingBottom: 96,
-          paddingHorizontal: 20,
-          paddingTop: 72,
-          width: "100%",
-        }}
-      >
-        <View style={{ gap: 8 }}>
-          <Text style={{ color: colors.label, fontSize: 14, fontWeight: "600" }}>
-            Daily Formation
-          </Text>
-          <Text style={{ color: colors.text, fontSize: 30, fontWeight: "800" }}>
-            Catechism
-          </Text>
-          <Text style={{ color: colors.muted, fontSize: 15, lineHeight: 22 }}>
-            Compendium of the Catechism of the Catholic Church
-          </Text>
-        </View>
-
-        <View
-          style={{
-            backgroundColor: colors.card,
+      <Animated.View
+        style={[
+          {
+            backgroundColor: colors.background,
+            borderBottomWidth: 0.5,
             borderColor: colors.border,
-            borderRadius: 20,
-            borderCurve: "continuous",
-            borderWidth: 1,
-            gap: 18,
-            padding: 18,
-          }}
-        >
-          <View
-            style={{
-              alignItems: "center",
+            overflow: "hidden",
+            paddingHorizontal: 20,
+          },
+          headerAnimatedStyle,
+        ]}
+      >
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            {
+              alignItems: "flex-end",
+              bottom: 7,
               flexDirection: "row",
               justifyContent: "space-between",
-            }}
-          >
-            <Text style={{ color: colors.muted, fontSize: 14, fontWeight: "700" }}>
-              Question {selectedIndex + 1}
-            </Text>
+              left: 20,
+              position: "absolute",
+              right: 20,
+            },
+            expandedHeaderAnimatedStyle,
+          ]}
+        >
+          <View style={{ alignItems: "center", flexDirection: "row" }}>
+            <Pressable
+              accessibilityLabel="View previous catechism reading"
+              accessibilityRole="button"
+              disabled={!canGoPreviousDay}
+              onPress={handlePreviousDay}
+              style={{
+                alignItems: "center",
+                backgroundColor: colors.chip,
+                borderBottomLeftRadius: 28,
+                borderTopLeftRadius: 28,
+                height: 31,
+                justifyContent: "center",
+                opacity: canGoPreviousDay ? 1 : 0.26,
+                width: 27,
+              }}
+            >
+              <MaterialIcons
+                name="chevron-left"
+                size={25}
+                color={colors.text}
+              />
+            </Pressable>
 
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              <Pressable
-                accessibilityLabel="Previous catechism question"
-                accessibilityRole="button"
-                onPress={goToPrevious}
+            <View
+              style={{
+                alignItems: "center",
+                backgroundColor: colors.chip,
+                height: 31,
+                justifyContent: "center",
+                marginHorizontal: 2,
+                minWidth: 108,
+              }}
+            >
+              <Text
                 style={{
-                  alignItems: "center",
-                  borderColor: colors.border,
-                  borderRadius: 18,
-                  borderWidth: 1,
-                  height: 36,
-                  justifyContent: "center",
-                  width: 36,
+                  color: colors.text,
+                  fontSize: 15,
+                  fontWeight: "500",
                 }}
               >
-                <MaterialIcons name="chevron-left" size={24} color={colors.text} />
-              </Pressable>
-
-              <Pressable
-                accessibilityLabel="Next catechism question"
-                accessibilityRole="button"
-                onPress={goToNext}
-                style={{
-                  alignItems: "center",
-                  borderColor: colors.border,
-                  borderRadius: 18,
-                  borderWidth: 1,
-                  height: 36,
-                  justifyContent: "center",
-                  width: 36,
-                }}
-              >
-                <MaterialIcons name="chevron-right" size={24} color={colors.text} />
-              </Pressable>
+                {dateString}
+              </Text>
             </View>
+
+            <Pressable
+              accessibilityLabel="View next catechism reading"
+              accessibilityRole="button"
+              disabled={!canGoNextDay}
+              onPress={handleNextDay}
+              style={{
+                alignItems: "center",
+                backgroundColor: colors.chip,
+                borderBottomRightRadius: 28,
+                borderTopRightRadius: 28,
+                height: 31,
+                justifyContent: "center",
+                opacity: canGoNextDay ? 1 : 0.26,
+                width: 27,
+              }}
+            >
+              <MaterialIcons
+                name="chevron-right"
+                size={25}
+                color={colors.text}
+              />
+            </Pressable>
           </View>
 
-          <View style={{ gap: 10 }}>
-            <Text style={{ color: colors.label, fontSize: 13, fontWeight: "700" }}>
-              Question
-            </Text>
+          <View
+            style={{
+              backgroundColor: colors.chip,
+              borderRadius: 16,
+              justifyContent: "center",
+              minHeight: 31,
+              paddingHorizontal: 12,
+            }}
+          >
             <Text
               style={{
                 color: colors.text,
-                fontSize: 23,
-                fontWeight: "700",
-                lineHeight: 31,
+                fontSize: 14,
+                fontWeight: "600",
               }}
             >
-              {selectedItem.question}
+              CCC {reference}
             </Text>
           </View>
+        </Animated.View>
 
-          <View style={{ gap: 10 }}>
-            <Text style={{ color: colors.label, fontSize: 13, fontWeight: "700" }}>
-              Answer
-            </Text>
-            <Text style={{ color: colors.text, fontSize: 20, lineHeight: 30 }}>
-              {selectedItem.answer}
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ gap: 10 }}>
-          <Text style={{ color: colors.text, fontSize: 18, fontWeight: "700" }}>
-            Catechism References
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              bottom: 7,
+              justifyContent: "center",
+              left: 20,
+              minHeight: 20,
+              position: "absolute",
+              right: 20,
+            },
+            compactHeaderAnimatedStyle,
+          ]}
+        >
+          <Text style={{ color: colors.text, fontSize: 15, fontWeight: "500" }}>
+            {dateString} | CCC {reference}
           </Text>
-          {selectedItem.references.map((reference) => (
-            <View
-              key={reference}
-              style={{
-                borderBottomColor: colors.separator,
-                borderBottomWidth: 1,
-                paddingVertical: 12,
-              }}
-            >
-              <Text style={{ color: colors.muted, fontSize: 17 }}>{reference}</Text>
+        </Animated.View>
+      </Animated.View>
+
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 1000,
+          paddingBottom: 80,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          width: "100%",
+        }}
+        onScroll={handleCatechismScroll}
+        scrollEventThrottle={16}
+        style={{ backgroundColor: colors.background }}
+      >
+        <Text
+          selectable
+          style={{
+            color: colors.text,
+            fontSize: 24,
+            fontWeight: "700",
+          }}
+        >
+          Catechism of the Catholic Church
+        </Text>
+
+        <Text
+          selectable
+          style={{
+            color: colors.label,
+            fontSize: 15,
+            lineHeight: 22,
+            marginTop: 6,
+          }}
+        >
+          天主教教理 · CCC {reference} · {selectedDay.entryCount} 条
+        </Text>
+
+        <View style={{ gap: 24, marginTop: 24 }}>
+          {selectedDay.entries.map((entry) => (
+            <View key={entry.number} style={{ gap: 10 }}>
+              <Text
+                selectable
+                style={{
+                  color: colors.label,
+                  fontSize: 15,
+                  fontWeight: "700",
+                }}
+              >
+                CCC {entry.number}
+              </Text>
+
+              {entry.text.split(/\n{2,}/).filter(Boolean).map(
+                (paragraph, index) => (
+                  <Text
+                    key={`${entry.number}:${index}`}
+                    selectable
+                    style={{
+                      color: colors.text,
+                      fontSize: FONT,
+                      lineHeight: LINE_HEIGHT,
+                    }}
+                  >
+                    {paragraph}
+                  </Text>
+                ),
+              )}
             </View>
           ))}
         </View>
 
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 12, marginTop: 28, paddingTop: 8 }}>
           <Pressable
             accessibilityRole="button"
             onPress={handleCompleteCatechism}
@@ -223,12 +419,13 @@ export default function CatechismScreen() {
                 fontWeight: "700",
               }}
             >
-              {isCompleted ? "Today's catechism is complete" : "Complete Today's Catechism"}
+              {completeButtonLabel}
             </Text>
           </Pressable>
 
           {isCompleted && (
             <Text
+              selectable
               style={{
                 color: colors.label,
                 fontSize: 14,
@@ -236,11 +433,11 @@ export default function CatechismScreen() {
                 textAlign: "center",
               }}
             >
-              Come back tomorrow and keep going.
+              {completionMessage}
             </Text>
           )}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <CompletionCelebrationOverlay
         isVisible={isCelebrating}

@@ -20,7 +20,7 @@ The Today tab gives each day a simple shape: finish the daily Bible reading, fin
 
 | Light mode | Dark mode |
 | --- | --- |
-| <img src="photos/today-list-light.png" alt="Today checklist in light mode" width="250" /> | <img src="photos/today-list-dark.png" alt="Today checklist in dark mode" width="250" /> |
+| <img src="screenshots/today-list-light.png" alt="Today checklist in light mode" width="250" /> | <img src="screenshots/today-list-dark.png" alt="Today checklist in dark mode" width="250" /> |
 
 ### Daily Reading
 
@@ -30,7 +30,7 @@ The Reading tab follows a date-based reading plan. Each day includes a title, re
 
 | English Scripture | Chinese translation |
 | --- | --- |
-| <img src="photos/reading-english-scripture.png" alt="English Scripture reading view" width="250" /> | <img src="photos/reading-chinese-translation.png" alt="Chinese translation reading view" width="250" /> |
+| <img src="screenshots/reading-english-scripture.png" alt="English Scripture reading view" width="250" /> | <img src="screenshots/reading-chinese-translation.png" alt="Chinese translation reading view" width="250" /> |
 
 ### Vocabulary Study
 
@@ -38,7 +38,7 @@ The study mode uses Gemini to identify difficult English words, idioms, and cont
 
 中文：学习模式会把英文难词和短语标注在原文中，并给出简洁中文释义。
 
-<img src="photos/reading-vocabulary-annotations.png" alt="English Scripture with inline Chinese vocabulary annotations" width="250" />
+<img src="screenshots/reading-vocabulary-annotations.png" alt="English Scripture with inline Chinese vocabulary annotations" width="250" />
 
 ### Audio Reading
 
@@ -46,7 +46,7 @@ The reading screen includes a floating audio player powered by `expo-speech`. It
 
 中文：朗读浮层支持暂停、前后跳段和语速调整，方便边听边读。
 
-<img src="photos/reading-audio-player.png" alt="Reading aloud player with speed controls" width="250" />
+<img src="screenshots/reading-audio-player.png" alt="Reading aloud player with speed controls" width="250" />
 
 ### Completion Flow
 
@@ -56,17 +56,17 @@ At the bottom of a reading, the user can mark the day complete. The app saves pr
 
 | Complete action | Completion state |
 | --- | --- |
-| <img src="photos/reading-complete-action.png" alt="Mark this reading complete button" width="250" /> | <img src="photos/reading-completion-celebration.png" alt="Reading completion celebration state" width="250" /> |
+| <img src="screenshots/reading-complete-action.png" alt="Mark this reading complete button" width="250" /> | <img src="screenshots/reading-completion-celebration.png" alt="Reading completion celebration state" width="250" /> |
 
 ### Catechism Formation
 
-The Catechism tab presents one question and answer from the Compendium of the Catechism of the Catholic Church, with CCC references and previous/next navigation. Catechism progress is tracked as a second daily task.
+The Catechism tab presents one numbered paragraph from the Traditional Chinese Catechism of the Catholic Church each day. Its date navigation, collapsible header, reading width, and completion flow mirror the Reading tab.
 
-中文：教理页每天展示一个问答，并提供 CCC 参考和完成记录。
+中文：教理页每天展示一条繁体中文《天主教教理》，并采用与 Reading 一致的日期导航和阅读布局。
 
-| Question detail | Completed catechism |
+| Catechism reading | Completed catechism |
 | --- | --- |
-| <img src="photos/catechism-question-detail.png" alt="Catechism question and answer detail" width="250" /> | <img src="photos/catechism-completed-state.png" alt="Completed catechism state" width="250" /> |
+| <img src="screenshots/catechism-question-detail.png" alt="Catechism reading detail" width="250" /> | <img src="screenshots/catechism-completed-state.png" alt="Completed catechism state" width="250" /> |
 
 ## Features
 
@@ -77,7 +77,7 @@ The Catechism tab presents one question and answer from the Compendium of the Ca
 - Gemini-powered vocabulary annotations for Chinese-speaking English Bible readers. 中文：Gemini 辅助英文难词中文注释。
 - Text-to-speech playback with passage navigation and speed controls. 中文：支持朗读、跳段和语速调整。
 - Local progress storage for completed daily tasks. 中文：本地保存每日完成进度。
-- Catechism question-and-answer flow with CCC references. 中文：教理问答和 CCC 参考。
+- A balanced 365-day Traditional Chinese Catechism plan covering CCC 1-2865 in order. Short entries are grouped together so each day has a similar reading length. 中文：将 2865 条《天主教教理》按字数均衡分配到 365 天。
 - Light and dark reading modes. 中文：支持浅色和深色模式。
 
 ## Tech Stack
@@ -151,8 +151,10 @@ GEMINI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/interaction
 - `app/api/vocabulary+api.ts`: Gemini vocabulary analysis route.
 - `src/features/home/`: Today checklist experience.
 - `src/features/reading/`: Daily reading screen, date plan logic, translation, vocabulary, and audio playback.
-- `src/features/catechism/`: Catechism data and question screen.
+- `src/features/catechism/`: Daily Catechism reader and date mapping.
 - `src/features/progress/`: Local completion state and celebration overlay.
 - `src/data/bible/`: Bible text and lookup utilities.
 - `src/data/reading-plan/`: Daily reading plan JSON files.
-- `photos/`: README screenshots with descriptive filenames.
+- `src/data/catechism-source/`: JSON converted from the 43 source Catechism PDFs, plus the generated balanced 365-day reading plan.
+- `catechism/`: Original Traditional Chinese Catechism PDFs.
+- `screenshots/`: README screenshots with descriptive filenames.

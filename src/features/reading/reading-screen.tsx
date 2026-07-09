@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
 import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -65,12 +66,27 @@ type VocabularyResponse = {
 };
 
 type PlaybackStatus = "idle" | "playing" | "paused";
+type SentenceTranslation =
+  | { status: "loading" }
+  | { status: "success"; text: string }
+  | { message: string; status: "error" };
+type SentenceTranslationMap = Record<string, SentenceTranslation>;
+type SentenceLongPressHandler = (sentenceId: string, text: string) => void;
+type WordPressHandler = (word: string) => void;
 
 const FONT = 20;
 const LINE_HEIGHT = 30;
+const DOUBLE_PRESS_DELAY = 350;
 const MIN_SPEECH_RATE = 0.6;
 const MAX_SPEECH_RATE = 1.4;
 const SPEECH_RATE_STEP = 0.1;
+const WORD_SPEECH_RATE = 0.85;
+const WORD_PRONUNCIATION_HINT =
+  process.env.EXPO_OS === "web"
+    ? "Double-click any English word to hear it."
+    : "Double-tap any English word to hear it.";
+const SENTENCE_TRANSLATION_HINT =
+  "Press and hold any sentence for a Chinese translation.";
 const TARGET_LANGUAGE = "zh-CN";
 const TRANSLATE_PATH = "/api/translate";
 const VOCABULARY_PATH = "/api/vocabulary";
@@ -100,6 +116,31 @@ const safeText = (text: unknown) => (typeof text === "string" ? text : "");
 const normalizeText = (text?: unknown) =>
   safeText(text).replace(/\s+/g, " ").trim();
 
+const ENGLISH_WORD_PATTERN = /([A-Za-z]+(?:[’'-][A-Za-z]+)*)/g;
+const ENGLISH_WORD_PART_PATTERN = /^[A-Za-z]+(?:[’'-][A-Za-z]+)*$/;
+
+const renderPronounceableText = (
+  text: string,
+  onWordPress: WordPressHandler,
+  onLongPress?: () => void,
+) =>
+  text.split(ENGLISH_WORD_PATTERN).map((part, index) => {
+    if (!ENGLISH_WORD_PART_PATTERN.test(part)) {
+      return part;
+    }
+
+    return (
+      <Text
+        key={`${part}:${index}`}
+        onLongPress={onLongPress}
+        onPress={() => onWordPress(part)}
+        suppressHighlighting={Boolean(onLongPress)}
+      >
+        {part}
+      </Text>
+    );
+  });
+
 const formatHeaderDate = (date: Date) => HEADER_MONTH_FORMATTER.format(date);
 
 const escapeRegExp = (value: string) =>
@@ -122,11 +163,13 @@ const renderTextWithVocabulary = (
   text: string,
   items: VocabularyItem[],
   annotationColor: string,
+  onWordPress: WordPressHandler,
+  onLongPress?: () => void,
 ) => {
   const pattern = getVocabularyPattern(items);
 
   if (!pattern) {
-    return text;
+    return renderPronounceableText(text, onWordPress, onLongPress);
   }
 
   const definitionsByTerm = new Map(
@@ -138,12 +181,145 @@ const renderTextWithVocabulary = (
     const definition = definitionsByTerm.get(part.toLowerCase());
 
     if (!definition) {
-      return part;
+      return renderPronounceableText(part, onWordPress, onLongPress);
     }
 
     return (
-      <Text key={`${part}:${index}`} style={{ color: annotationColor }}>
-        {part} ({definition})
+      <Text
+        key={`${part}:${index}`}
+        onLongPress={onLongPress}
+        style={{ color: annotationColor }}
+      >
+        {renderPronounceableText(part, onWordPress, onLongPress)} ({definition})
+      </Text>
+    );
+  });
+};
+
+type SentenceSegment = {
+  text: string;
+  trailingWhitespace: string;
+};
+
+const splitIntoSentences = (text: string): SentenceSegment[] => {
+  const segments: SentenceSegment[] = [];
+  let sentenceStart = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    if (!".!?".includes(text[index])) {
+      continue;
+    }
+
+    let sentenceEnd = index + 1;
+
+    while (
+      sentenceEnd < text.length &&
+      "\"'’”)]".includes(text[sentenceEnd])
+    ) {
+      sentenceEnd += 1;
+    }
+
+    if (sentenceEnd < text.length && !/\s/.test(text[sentenceEnd])) {
+      continue;
+    }
+
+    let nextSentenceStart = sentenceEnd;
+
+    while (
+      nextSentenceStart < text.length &&
+      /\s/.test(text[nextSentenceStart])
+    ) {
+      nextSentenceStart += 1;
+    }
+
+    segments.push({
+      text: text.slice(sentenceStart, sentenceEnd),
+      trailingWhitespace: text.slice(sentenceEnd, nextSentenceStart),
+    });
+    sentenceStart = nextSentenceStart;
+    index = nextSentenceStart - 1;
+  }
+
+  if (sentenceStart < text.length) {
+    const remainingText = text.slice(sentenceStart);
+    const trailingWhitespace = remainingText.match(/\s*$/)?.[0] ?? "";
+
+    segments.push({
+      text: remainingText.slice(
+        0,
+        remainingText.length - trailingWhitespace.length,
+      ),
+      trailingWhitespace,
+    });
+  }
+
+  return segments.filter((segment) => segment.text);
+};
+
+const renderInteractiveSentences = ({
+  annotationColor,
+  chunkId,
+  enabled,
+  errorColor,
+  loadingColor,
+  onSentenceLongPress,
+  onWordPress,
+  sentenceTranslations,
+  text,
+  translationColor,
+  vocabularyItems,
+}: {
+  annotationColor: string;
+  chunkId: string;
+  enabled: boolean;
+  errorColor: string;
+  loadingColor: string;
+  onSentenceLongPress: SentenceLongPressHandler;
+  onWordPress: WordPressHandler;
+  sentenceTranslations: SentenceTranslationMap;
+  text: string;
+  translationColor: string;
+  vocabularyItems: VocabularyItem[];
+}) => {
+  if (!enabled) {
+    return renderPronounceableText(text, onWordPress);
+  }
+
+  return splitIntoSentences(text).map((sentence, index) => {
+    const sentenceId = `${chunkId}.sentence.${index}`;
+    const translation = sentenceTranslations[sentenceId];
+    const handleLongPress = () =>
+      onSentenceLongPress(sentenceId, sentence.text);
+
+    return (
+      <Text
+        key={sentenceId}
+        onLongPress={handleLongPress}
+        suppressHighlighting
+      >
+        {renderTextWithVocabulary(
+          sentence.text,
+          vocabularyItems,
+          annotationColor,
+          onWordPress,
+          handleLongPress,
+        )}
+        {translation?.status === "loading" && (
+          <Text style={{ color: loadingColor }}> 〔Translating…〕</Text>
+        )}
+        {translation?.status === "success" && (
+          <Text style={{ color: translationColor }}>
+            {" "}
+            〔{translation.text}〕
+          </Text>
+        )}
+        {translation?.status === "error" && (
+          <Text style={{ color: errorColor }}>
+            {" "}
+            〔{translation.message} Long-press to retry.〕
+          </Text>
+        )}
+        {sentence.trailingWhitespace}
       </Text>
     );
   });
@@ -272,6 +448,7 @@ const parseTranslationResponse = async (
 
 const translateChunks = async (
   chunks: TranslationChunk[],
+  signal?: AbortSignal,
 ): Promise<TranslationMap> => {
   const response = await fetch(TRANSLATE_ENDPOINT, {
     method: "POST",
@@ -280,6 +457,7 @@ const translateChunks = async (
       targetLanguage: TARGET_LANGUAGE,
       chunks,
     }),
+    signal,
   });
   const data = await parseTranslationResponse(response);
 
@@ -453,6 +631,8 @@ export default function ReadingScreen() {
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
+  const [sentenceTranslations, setSentenceTranslations] =
+    useState<SentenceTranslationMap>({});
   const [vocabulary, setVocabulary] = useState<VocabularyMap>({});
   const [isVocabularyVisible, setIsVocabularyVisible] = useState(false);
   const [isAnalyzingVocabulary, setIsAnalyzingVocabulary] = useState(false);
@@ -472,6 +652,14 @@ export default function ReadingScreen() {
   const speechLanguageRef = useRef(isTranslated ? "zh-CN" : "en-US");
   const playbackRunRef = useRef(0);
   const isPausedInEngineRef = useRef(false);
+  const lastWordPressRef = useRef<{
+    normalizedWord: string;
+    timestamp: number;
+  } | null>(null);
+  const sentenceTranslationsRef = useRef<SentenceTranslationMap>({});
+  const sentenceTranslationControllersRef = useRef(
+    new Map<string, AbortController>(),
+  );
 
   useEffect(() => {
     speechRateRef.current = speechRate;
@@ -485,6 +673,10 @@ export default function ReadingScreen() {
     () => () => {
       playbackRunRef.current += 1;
       Speech.stop();
+      sentenceTranslationControllersRef.current.forEach((controller) =>
+        controller.abort(),
+      );
+      sentenceTranslationControllersRef.current.clear();
     },
     [],
   );
@@ -505,13 +697,146 @@ export default function ReadingScreen() {
     setIsTranslated(false);
     setIsTranslating(false);
     setTranslationError(null);
+    sentenceTranslationControllersRef.current.forEach((controller) =>
+      controller.abort(),
+    );
+    sentenceTranslationControllersRef.current.clear();
+    sentenceTranslationsRef.current = {};
+    setSentenceTranslations({});
     setVocabulary({});
     setIsVocabularyVisible(false);
     setIsAnalyzingVocabulary(false);
     setVocabularyError(null);
+    lastWordPressRef.current = null;
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     scrollY.value = 0;
   }, [scrollY, selectedDayOfYear, stopSpeechPlayback]);
+
+  const pronounceWord = useCallback((word: string) => {
+    const runId = playbackRunRef.current + 1;
+
+    playbackRunRef.current = runId;
+    isPausedInEngineRef.current = false;
+    speechChunksRef.current = [];
+    currentSpeechIndexRef.current = 0;
+    setPlaybackStatus("idle");
+    setIsPlayerVisible(false);
+    setCurrentSpeechIndex(0);
+
+    void Speech.stop().finally(() => {
+      if (runId !== playbackRunRef.current) {
+        return;
+      }
+
+      Speech.speak(word, {
+        language: "en-US",
+        pitch: 1,
+        rate: WORD_SPEECH_RATE,
+      });
+    });
+  }, []);
+
+  const handleWordPress = useCallback(
+    (word: string) => {
+      const timestamp = Date.now();
+      const normalizedWord = word.toLocaleLowerCase("en-US");
+      const lastPress = lastWordPressRef.current;
+
+      if (
+        lastPress?.normalizedWord === normalizedWord &&
+        timestamp - lastPress.timestamp <= DOUBLE_PRESS_DELAY
+      ) {
+        lastWordPressRef.current = null;
+        pronounceWord(word);
+        return;
+      }
+
+      lastWordPressRef.current = { normalizedWord, timestamp };
+    },
+    [pronounceWord],
+  );
+
+  const updateSentenceTranslation = useCallback(
+    (sentenceId: string, translation: SentenceTranslation) => {
+      const nextTranslations = {
+        ...sentenceTranslationsRef.current,
+        [sentenceId]: translation,
+      };
+
+      sentenceTranslationsRef.current = nextTranslations;
+      setSentenceTranslations(nextTranslations);
+    },
+    [],
+  );
+
+  const handleSentenceLongPress = useCallback(
+    async (sentenceId: string, text: string) => {
+      const currentTranslation = sentenceTranslationsRef.current[sentenceId];
+
+      if (
+        currentTranslation?.status === "loading" ||
+        currentTranslation?.status === "success"
+      ) {
+        return;
+      }
+
+      const sentence = normalizeText(text);
+
+      if (!sentence) {
+        return;
+      }
+
+      if (process.env.EXPO_OS === "ios") {
+        void Haptics.selectionAsync();
+      }
+
+      sentenceTranslationControllersRef.current
+        .get(sentenceId)
+        ?.abort();
+
+      const controller = new AbortController();
+
+      sentenceTranslationControllersRef.current.set(sentenceId, controller);
+      updateSentenceTranslation(sentenceId, { status: "loading" });
+
+      try {
+        const translatedChunks = await translateChunks(
+          [{ id: sentenceId, text: sentence }],
+          controller.signal,
+        );
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        updateSentenceTranslation(sentenceId, {
+          status: "success",
+          text: translatedChunks[sentenceId] ?? sentence,
+        });
+      } catch (error) {
+        if (
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === "AbortError")
+        ) {
+          return;
+        }
+
+        updateSentenceTranslation(sentenceId, {
+          message:
+            error instanceof Error ? error.message : "Translation failed.",
+          status: "error",
+        });
+      } finally {
+        if (
+          sentenceTranslationControllersRef.current.get(sentenceId) ===
+          controller
+        ) {
+          sentenceTranslationControllersRef.current.delete(sentenceId);
+        }
+      }
+    },
+    [updateSentenceTranslation],
+  );
 
   const speakFromIndex = useCallback((index: number, runId: number) => {
     const chunks = speechChunksRef.current;
@@ -1027,9 +1352,48 @@ export default function ReadingScreen() {
 
         {!!dayTitle.trim() && (
           <Text style={{ color: colors.text, fontSize: 24, fontWeight: "700" }}>
-            {dayTitle}
+            {renderPronounceableText(dayTitle, handleWordPress)}
           </Text>
         )}
+
+        <View
+          style={{
+            gap: 4,
+            marginTop: 8,
+          }}
+        >
+          <View
+            style={{ alignItems: "center", flexDirection: "row", gap: 6 }}
+          >
+            <MaterialIcons name="volume-up" size={16} color={colors.label} />
+            <Text
+              style={{
+                color: colors.label,
+                flex: 1,
+                fontSize: 13,
+                lineHeight: 18,
+              }}
+            >
+              {WORD_PRONUNCIATION_HINT}
+            </Text>
+          </View>
+
+          <View
+            style={{ alignItems: "center", flexDirection: "row", gap: 6 }}
+          >
+            <MaterialIcons name="translate" size={16} color={colors.label} />
+            <Text
+              style={{
+                color: colors.label,
+                flex: 1,
+                fontSize: 13,
+                lineHeight: 18,
+              }}
+            >
+              {SENTENCE_TRANSLATION_HINT}
+            </Text>
+          </View>
+        </View>
 
         {!!dayIntroduction.trim() && (
           <View
@@ -1049,13 +1413,22 @@ export default function ReadingScreen() {
                 color: colors.textSecondary,
               }}
             >
-              {isVocabularyVisible && !isTranslated
-                ? renderTextWithVocabulary(
-                    dayIntroduction,
-                    vocabulary[getDayIntroductionId()] ?? [],
-                    colors.annotation,
-                  )
-                : dayIntroduction}
+              {renderInteractiveSentences({
+                annotationColor: colors.annotation,
+                chunkId: getDayIntroductionId(),
+                enabled: !isTranslated,
+                errorColor: darkModeEnabled ? "#ff8a8a" : "#b00020",
+                loadingColor: colors.label,
+                onSentenceLongPress: handleSentenceLongPress,
+                onWordPress: handleWordPress,
+                sentenceTranslations,
+                text: dayIntroduction,
+                translationColor: colors.annotation,
+                vocabularyItems:
+                  isVocabularyVisible && !isTranslated
+                    ? (vocabulary[getDayIntroductionId()] ?? [])
+                    : [],
+              })}
             </Text>
           </View>
         )}
@@ -1081,7 +1454,10 @@ export default function ReadingScreen() {
                         marginBottom: 8,
                       }}
                     >
-                      {sectionTitle}
+                      {renderPronounceableText(
+                        sectionTitle,
+                        handleWordPress,
+                      )}
                     </Text>
                   )
                 );
@@ -1116,13 +1492,22 @@ export default function ReadingScreen() {
                           color: colors.textSecondary,
                         }}
                       >
-                        {isVocabularyVisible && !isTranslated
-                          ? renderTextWithVocabulary(
-                              sectionIntroduction,
-                              sectionVocabularyItems,
-                              colors.annotation,
-                            )
-                          : sectionIntroduction}
+                        {renderInteractiveSentences({
+                          annotationColor: colors.annotation,
+                          chunkId: getSectionIntroductionId(sectionIndex),
+                          enabled: !isTranslated,
+                          errorColor: darkModeEnabled ? "#ff8a8a" : "#b00020",
+                          loadingColor: colors.label,
+                          onSentenceLongPress: handleSentenceLongPress,
+                          onWordPress: handleWordPress,
+                          sentenceTranslations,
+                          text: sectionIntroduction,
+                          translationColor: colors.annotation,
+                          vocabularyItems:
+                            isVocabularyVisible && !isTranslated
+                              ? sectionVocabularyItems
+                              : [],
+                        })}
                       </Text>
                     </View>
                   )
@@ -1156,7 +1541,10 @@ export default function ReadingScreen() {
                         marginBottom: 6,
                       }}
                     >
-                      {paragraphTitle}
+                      {renderPronounceableText(
+                        paragraphTitle,
+                        handleWordPress,
+                      )}
                     </Text>
 
                     <View style={{ marginBottom: 10 }}>
@@ -1177,13 +1565,29 @@ export default function ReadingScreen() {
                           lineHeight: LINE_HEIGHT,
                         }}
                       >
-                        {isVocabularyVisible && !isTranslated
-                          ? renderTextWithVocabulary(
-                              paragraphScripture || "[Text unavailable]",
-                              vocabularyItems,
-                              colors.annotation,
-                            )
-                          : paragraphScripture || "[Text unavailable]"}
+                        {paragraphScripture
+                          ? renderInteractiveSentences({
+                              annotationColor: colors.annotation,
+                              chunkId: getParagraphScriptureId(
+                                sectionIndex,
+                                pIndex,
+                              ),
+                              enabled: !isTranslated,
+                              errorColor: darkModeEnabled
+                                ? "#ff8a8a"
+                                : "#b00020",
+                              loadingColor: colors.label,
+                              onSentenceLongPress: handleSentenceLongPress,
+                              onWordPress: handleWordPress,
+                              sentenceTranslations,
+                              text: paragraphScripture,
+                              translationColor: colors.annotation,
+                              vocabularyItems:
+                                isVocabularyVisible && !isTranslated
+                                  ? vocabularyItems
+                                  : [],
+                            })
+                          : "[Text unavailable]"}
                       </Text>
                     </View>
                   </View>

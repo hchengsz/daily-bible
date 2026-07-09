@@ -2,10 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import {
-  getCatechismIndexForDate,
-  getCatechismItemForDate,
-} from "../catechism/catechism-data";
+import { getCatechismDayForDate } from "../catechism/catechism-data";
 import { useTaskCompletion } from "../progress/daily-progress-store";
 import {
   formatDate,
@@ -121,14 +118,14 @@ export default function HomeScreen() {
     () => getReadingReferenceSummary(readingDay),
     [readingDay],
   );
-  const catechismIndex = useMemo(
-    () => getCatechismIndexForDate(currentDate),
+  const catechismDay = useMemo(
+    () => getCatechismDayForDate(currentDate),
     [currentDate],
   );
-  const catechismItem = useMemo(
-    () => getCatechismItemForDate(currentDate),
-    [currentDate],
-  );
+  const catechismReference =
+    catechismDay.startNumber === catechismDay.endNumber
+      ? `${catechismDay.startNumber}`
+      : `${catechismDay.startNumber}-${catechismDay.endNumber}`;
   const readingCompleted = useTaskCompletion(dateKey, "reading");
   const catechismCompleted = useTaskCompletion(dateKey, "catechism");
   const completedCount = Number(readingCompleted) + Number(catechismCompleted);
@@ -198,10 +195,12 @@ export default function HomeScreen() {
         <TodoItem
           completed={catechismCompleted}
           darkModeEnabled={darkModeEnabled}
-          description={catechismItem.question}
+          description={catechismDay.entries
+            .map((entry) => entry.text)
+            .join(" ")}
           href="/catechism"
           label="Catechism"
-          meta={`Question ${catechismIndex + 1}`}
+          meta={`CCC ${catechismReference}`}
         />
       </View>
 
