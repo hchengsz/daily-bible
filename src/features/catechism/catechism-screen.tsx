@@ -58,10 +58,13 @@ export default function CatechismScreen() {
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: colors.background }}
         contentContainerStyle={{
+          alignSelf: "center",
           gap: 24,
+          maxWidth: 1000,
           paddingBottom: 96,
           paddingHorizontal: 20,
           paddingTop: 72,
+          width: "100%",
         }}
       >
         <View style={{ gap: 8 }}>

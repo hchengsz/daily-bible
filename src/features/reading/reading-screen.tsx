@@ -991,9 +991,12 @@ export default function ReadingScreen() {
         scrollEventThrottle={16}
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 1000,
+          paddingBottom: isPlayerVisible ? 240 : 80,
           paddingHorizontal: 20,
           paddingTop: 20,
-          paddingBottom: isPlayerVisible ? 240 : 80,
+          width: "100%",
         }}
       >
         {!!translationError && (
