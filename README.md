@@ -1,3 +1,9 @@
+# Copyright Notice / 版权声明
+
+English: This is a small personal project made for fun and learning. There is no intention to infringe any copyright or other rights. If anything is inappropriate, please contact haochengcs@gmail.com and I will remove the file(s) or folder(s) that violate copyright.
+
+中文：这是一个个人做着玩和学习用的小项目，无意侵犯任何版权或其他权利。如有不妥，请联系 haochengcs@gmail.com，我会撤下违反版权的 file 或 folder。
+
 # Daily Bible
 
 Daily Bible is a mobile-first Expo app for building a steady daily rhythm of Scripture reading, assisted English study, text-to-speech listening, and catechism formation.
