@@ -5,6 +5,7 @@ import re
 from bisect import bisect_left
 from pathlib import Path
 
+from opencc import OpenCC
 from pypdf import PdfReader
 
 
@@ -18,6 +19,7 @@ ENTRY_PATTERN = re.compile(r"(?m)^(?P<number>\d{1,4})\.\s*")
 CJK_PATTERN = r"\u3400-\u4dbf\u4e00-\u9fff"
 CATECHISM_DAY_COUNT = 365
 BOUNDARY_CANDIDATE_RADIUS = 36
+TRADITIONAL_TO_SIMPLIFIED = OpenCC("t2s")
 
 # These entries repair source-PDF defects verified against the rendered pages.
 # Paragraph 1725 is absent from the newer PDF but present in the Vatican source's
@@ -248,7 +250,10 @@ def extract_entries(
         raise ValueError(f"Empty entries {empty} in range {start}-{end}")
 
     return [
-        {"number": number, "text": entries[number]}
+        {
+            "number": number,
+            "text": TRADITIONAL_TO_SIMPLIFIED.convert(entries[number]),
+        }
         for number in range(start, end + 1)
     ]
 
@@ -271,7 +276,7 @@ def convert_pdf(path: Path) -> dict[str, object]:
     return {
         "id": source_id,
         "title": "天主教教理",
-        "language": "zh-Hant",
+        "language": "zh-Hans",
         "sourceFile": path.name,
         "range": {"start": start, "end": end},
         "pageCount": len(reader.pages),
@@ -417,7 +422,7 @@ def build_reading_plan(
 
     return {
         "title": "天主教教理 365 天閱讀計劃",
-        "language": "zh-Hant",
+        "language": "zh-Hans",
         "dayCount": day_count,
         "entryCount": entry_count,
         "totalCharacterCount": total_character_count,
@@ -462,7 +467,7 @@ def main() -> None:
 
     index_payload = {
         "title": "天主教教理",
-        "language": "zh-Hant",
+        "language": "zh-Hans",
         "entryCount": len(all_entries),
         "sources": [
             {

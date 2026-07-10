@@ -60,9 +60,9 @@ At the bottom of a reading, the user can mark the day complete. The app saves pr
 
 ### Catechism Formation
 
-The Catechism tab presents one numbered paragraph from the Traditional Chinese Catechism of the Catholic Church each day. Its date navigation, collapsible header, reading width, and completion flow mirror the Reading tab.
+The Catechism tab presents a balanced daily section from the Simplified Chinese Catechism of the Catholic Church. Its date navigation, collapsible header, reading width, and completion flow mirror the Reading tab.
 
-中文：教理页每天展示一条繁体中文《天主教教理》，并采用与 Reading 一致的日期导航和阅读布局。
+中文：教理页每天展示按字数均衡分配的简体中文《天主教教理》，并采用与 Reading 一致的日期导航和阅读布局。
 
 | Catechism reading | Completed catechism |
 | --- | --- |
@@ -77,7 +77,7 @@ The Catechism tab presents one numbered paragraph from the Traditional Chinese C
 - Gemini-powered vocabulary annotations for Chinese-speaking English Bible readers. 中文：Gemini 辅助英文难词中文注释。
 - Text-to-speech playback with passage navigation and speed controls. 中文：支持朗读、跳段和语速调整。
 - Local progress storage for completed daily tasks. 中文：本地保存每日完成进度。
-- A balanced 365-day Traditional Chinese Catechism plan covering CCC 1-2865 in order. Short entries are grouped together so each day has a similar reading length. 中文：将 2865 条《天主教教理》按字数均衡分配到 365 天。
+- A balanced 365-day Simplified Chinese Catechism plan covering CCC 1-2865 in order. Short entries are grouped together so each day has a similar reading length. 中文：将 2865 条简体中文《天主教教理》按字数均衡分配到 365 天。
 - Light and dark reading modes. 中文：支持浅色和深色模式。
 
 ## Tech Stack
@@ -155,6 +155,6 @@ GEMINI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/interaction
 - `src/features/progress/`: Local completion state and celebration overlay.
 - `src/data/bible/`: Bible text and lookup utilities.
 - `src/data/reading-plan/`: Daily reading plan JSON files.
-- `src/data/catechism-source/`: JSON converted from the 43 source Catechism PDFs, plus the generated balanced 365-day reading plan.
+- `src/data/catechism-source/`: Simplified Chinese JSON converted from the 43 source Catechism PDFs, plus the generated balanced 365-day reading plan.
 - `catechism/`: Original Traditional Chinese Catechism PDFs.
 - `screenshots/`: README screenshots with descriptive filenames.

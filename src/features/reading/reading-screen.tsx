@@ -1257,7 +1257,7 @@ export default function ReadingScreen() {
               <MaterialIcons
                 name="translate"
                 size={22}
-                color={headerIconColor}
+                color={isTranslated ? "#2db65a" : headerIconColor}
               />
             </Pressable>
 
