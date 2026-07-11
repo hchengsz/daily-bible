@@ -12,7 +12,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getScriptureText } from "../../data/bible";
 import {
   CompletionCelebrationOverlay,
@@ -110,10 +109,12 @@ const PLAYER_BLUR_METHOD = Platform.select({
   android: "dimezisBlurView" as const,
   default: undefined,
 });
-const PLAYER_BOTTOM_OFFSET = 9;
-const PLAYER_SAFE_AREA_OFFSET = 6;
-const PLAYER_SCROLL_PADDING = 180;
+const PLAYER_BOTTOM_OFFSET = 15;
+const PLAYER_SCROLL_PADDING = 216;
 const PLAYER_RADIUS = 24;
+const PLAYER_VERTICAL_PADDING = 22;
+const PLAYER_HEADER_BOTTOM_GAP = 12;
+const PLAYER_CONTROLS_BOTTOM_GAP = 16;
 const PLAYER_CONTROL_BUTTON_SIZE = 48;
 const PLAYER_CONTROL_ICON_SIZE = 28;
 const PLAYER_PRIMARY_BUTTON_SIZE = 52;
@@ -583,7 +584,6 @@ const getCenteredIconStyle = (size: number) => ({
 });
 
 export default function ReadingScreen() {
-  const insets = useSafeAreaInsets();
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(() => currentDate);
   const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView> | null>(
@@ -1663,10 +1663,7 @@ export default function ReadingScreen() {
             pointerEvents: "box-none",
             position: "absolute",
             right: 16,
-            bottom: Math.max(
-              PLAYER_BOTTOM_OFFSET,
-              insets.bottom + PLAYER_SAFE_AREA_OFFSET,
-            ),
+            bottom: PLAYER_BOTTOM_OFFSET,
           }}
         >
           <BlurView
@@ -1694,9 +1691,9 @@ export default function ReadingScreen() {
               boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
               maxWidth: 620,
               overflow: "hidden",
-              paddingBottom: 14,
+              paddingBottom: PLAYER_VERTICAL_PADDING,
               paddingHorizontal: 16,
-              paddingTop: 14,
+              paddingTop: PLAYER_VERTICAL_PADDING,
               pointerEvents: "auto",
               width: "100%",
             }}
@@ -1706,7 +1703,7 @@ export default function ReadingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 10,
+                marginBottom: PLAYER_HEADER_BOTTOM_GAP,
               }}
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
@@ -1757,7 +1754,7 @@ export default function ReadingScreen() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 14,
-                marginBottom: 12,
+                marginBottom: PLAYER_CONTROLS_BOTTOM_GAP,
                 minHeight: PLAYER_PRIMARY_BUTTON_SIZE,
               }}
             >
