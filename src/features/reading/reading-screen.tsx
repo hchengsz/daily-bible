@@ -110,6 +110,17 @@ const PLAYER_BLUR_METHOD = Platform.select({
   android: "dimezisBlurView" as const,
   default: undefined,
 });
+const PLAYER_BOTTOM_OFFSET = 9;
+const PLAYER_SAFE_AREA_OFFSET = 6;
+const PLAYER_SCROLL_PADDING = 180;
+const PLAYER_RADIUS = 24;
+const PLAYER_CONTROL_BUTTON_SIZE = 48;
+const PLAYER_CONTROL_ICON_SIZE = 28;
+const PLAYER_PRIMARY_BUTTON_SIZE = 52;
+const PLAYER_PRIMARY_ICON_SIZE = 30;
+const PLAYER_SPEED_BUTTON_HEIGHT = 32;
+const PLAYER_SPEED_BUTTON_WIDTH = Math.round(PLAYER_SPEED_BUTTON_HEIGHT * 1.618);
+const PLAYER_SPEED_ICON_SIZE = 20;
 
 const safeText = (text: unknown) => (typeof text === "string" ? text : "");
 
@@ -521,55 +532,6 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
     ? "Come back tomorrow. A little each day is enough."
     : "You're caught up on this day. Keep going.";
 
-const getActionButtonStyle = ({
-  completed = false,
-  darkModeEnabled = false,
-  disabled = false,
-  minWidth,
-  tone = "primary",
-}: {
-  completed?: boolean;
-  darkModeEnabled?: boolean;
-  disabled?: boolean;
-  minWidth?: number;
-  tone?: "primary" | "glass";
-} = {}) => ({
-  ...(minWidth ? { minWidth } : {}),
-  alignItems: "center" as const,
-  backgroundColor: completed
-    ? darkModeEnabled
-      ? "#112319"
-      : "rgba(42, 145, 75, 0.12)"
-    : tone === "glass"
-      ? darkModeEnabled
-        ? "rgba(30, 30, 30, 0.72)"
-        : "rgba(255, 255, 255, 0.58)"
-      : darkModeEnabled
-        ? "rgba(245, 245, 245, 0.92)"
-        : "rgba(17, 17, 17, 0.88)",
-  borderColor: completed
-    ? "rgba(42, 145, 75, 0.24)"
-    : tone === "glass"
-      ? "rgba(0, 0, 0, 0.09)"
-      : "rgba(255, 255, 255, 0.48)",
-  borderCurve: "continuous" as const,
-  borderRadius: 18,
-  borderWidth: 1,
-  boxShadow:
-    tone === "glass"
-      ? "inset 0 1px 0 rgba(255, 255, 255, 0.62)"
-      : "0 8px 18px rgba(0, 0, 0, 0.12)",
-  justifyContent: "center" as const,
-  minHeight: 56,
-  opacity: disabled ? 0.5 : 1,
-  paddingHorizontal: 18,
-});
-
-const getActionButtonIconColor = (
-  completed = false,
-  darkModeEnabled = false,
-) => (completed ? "#1f7a3a" : darkModeEnabled ? "#f5f5f5" : "#000000");
-
 const getHeaderToolStyle = (disabled = false) => ({
   alignItems: "flex-end" as const,
   flexDirection: "row" as const,
@@ -590,11 +552,34 @@ const getGlassIconButtonStyle = (darkModeEnabled = false) => ({
     ? "rgba(255, 255, 255, 0.16)"
     : "rgba(0, 0, 0, 0.1)",
   borderCurve: "continuous" as const,
-  borderRadius: 26,
+  borderRadius: PLAYER_CONTROL_BUTTON_SIZE / 2,
   borderWidth: 1,
-  height: 52,
+  height: PLAYER_CONTROL_BUTTON_SIZE,
   justifyContent: "center" as const,
-  width: 52,
+  width: PLAYER_CONTROL_BUTTON_SIZE,
+});
+
+const getSpeedButtonStyle = (darkModeEnabled = false) => ({
+  alignItems: "center" as const,
+  backgroundColor: darkModeEnabled
+    ? "rgba(30, 30, 30, 0.72)"
+    : "rgba(255, 255, 255, 0.58)",
+  borderColor: darkModeEnabled
+    ? "rgba(255, 255, 255, 0.16)"
+    : "rgba(0, 0, 0, 0.09)",
+  borderCurve: "continuous" as const,
+  borderRadius: PLAYER_SPEED_BUTTON_HEIGHT / 2,
+  borderWidth: 1,
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.62)",
+  height: PLAYER_SPEED_BUTTON_HEIGHT,
+  justifyContent: "center" as const,
+  width: PLAYER_SPEED_BUTTON_WIDTH,
+});
+
+const getCenteredIconStyle = (size: number) => ({
+  includeFontPadding: false,
+  lineHeight: size,
+  textAlign: "center" as const,
 });
 
 export default function ReadingScreen() {
@@ -1318,7 +1303,7 @@ export default function ReadingScreen() {
         contentContainerStyle={{
           alignSelf: "center",
           maxWidth: 1000,
-          paddingBottom: isPlayerVisible ? 240 : 80,
+          paddingBottom: isPlayerVisible ? PLAYER_SCROLL_PADDING : 80,
           paddingHorizontal: 20,
           paddingTop: 20,
           width: "100%",
@@ -1678,7 +1663,10 @@ export default function ReadingScreen() {
             pointerEvents: "box-none",
             position: "absolute",
             right: 16,
-            bottom: Math.max(18, insets.bottom + 12),
+            bottom: Math.max(
+              PLAYER_BOTTOM_OFFSET,
+              insets.bottom + PLAYER_SAFE_AREA_OFFSET,
+            ),
           }}
         >
           <BlurView
@@ -1697,7 +1685,7 @@ export default function ReadingScreen() {
               backgroundColor: darkModeEnabled
                 ? "rgba(16, 16, 16, 0.28)"
                 : "rgba(255, 255, 255, 0.14)",
-              borderRadius: 28,
+              borderRadius: PLAYER_RADIUS,
               borderCurve: "continuous",
               borderColor: darkModeEnabled
                 ? "rgba(255, 255, 255, 0.16)"
@@ -1706,9 +1694,9 @@ export default function ReadingScreen() {
               boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
               maxWidth: 620,
               overflow: "hidden",
-              paddingBottom: 18,
-              paddingHorizontal: 18,
-              paddingTop: 16,
+              paddingBottom: 14,
+              paddingHorizontal: 16,
+              paddingTop: 14,
               pointerEvents: "auto",
               width: "100%",
             }}
@@ -1718,7 +1706,7 @@ export default function ReadingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: 14,
+                marginBottom: 10,
               }}
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
@@ -1768,8 +1756,9 @@ export default function ReadingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 18,
-                marginBottom: 18,
+                gap: 14,
+                marginBottom: 12,
+                minHeight: PLAYER_PRIMARY_BUTTON_SIZE,
               }}
             >
               <Pressable
@@ -1782,8 +1771,9 @@ export default function ReadingScreen() {
               >
                 <MaterialIcons
                   name="skip-previous"
-                  size={30}
+                  size={PLAYER_CONTROL_ICON_SIZE}
                   color={colors.playerText}
+                  style={getCenteredIconStyle(PLAYER_CONTROL_ICON_SIZE)}
                 />
               </Pressable>
 
@@ -1796,23 +1786,24 @@ export default function ReadingScreen() {
                 accessibilityRole="button"
                 onPress={handlePauseResume}
                 style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: 27,
                   alignItems: "center",
-                  justifyContent: "center",
                   backgroundColor: darkModeEnabled
                     ? "rgba(245, 245, 245, 0.9)"
                     : "rgba(17, 17, 17, 0.86)",
                   borderColor: "rgba(255, 255, 255, 0.48)",
+                  borderRadius: PLAYER_PRIMARY_BUTTON_SIZE / 2,
                   borderWidth: 1,
+                  height: PLAYER_PRIMARY_BUTTON_SIZE,
+                  justifyContent: "center",
                   boxShadow: "0 8px 18px rgba(0, 0, 0, 0.14)",
+                  width: PLAYER_PRIMARY_BUTTON_SIZE,
                 }}
               >
                 <MaterialIcons
                   name={playbackStatus === "paused" ? "play-arrow" : "pause"}
-                  size={30}
+                  size={PLAYER_PRIMARY_ICON_SIZE}
                   color={darkModeEnabled ? "#111" : "#fff"}
+                  style={getCenteredIconStyle(PLAYER_PRIMARY_ICON_SIZE)}
                 />
               </Pressable>
 
@@ -1826,8 +1817,9 @@ export default function ReadingScreen() {
               >
                 <MaterialIcons
                   name="skip-next"
-                  size={30}
+                  size={PLAYER_CONTROL_ICON_SIZE}
                   color={colors.playerText}
+                  style={getCenteredIconStyle(PLAYER_CONTROL_ICON_SIZE)}
                 />
               </Pressable>
             </View>
@@ -1837,6 +1829,7 @@ export default function ReadingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
+                minHeight: PLAYER_SPEED_BUTTON_HEIGHT,
               }}
             >
               <Text
@@ -1849,26 +1842,20 @@ export default function ReadingScreen() {
                 Speed {speechRate.toFixed(1)}x
               </Text>
 
-              <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
                 <Pressable
                   accessibilityLabel="Decrease reading speed"
                   accessibilityRole="button"
                   onPress={() =>
                     updateSpeechRate(speechRate - SPEECH_RATE_STEP)
                   }
-                  style={{
-                    ...getActionButtonStyle({
-                      darkModeEnabled,
-                      minWidth: 56,
-                      tone: "glass",
-                    }),
-                    paddingHorizontal: 0,
-                  }}
+                  style={getSpeedButtonStyle(darkModeEnabled)}
                 >
                   <MaterialIcons
                     name="remove"
-                    size={22}
-                    color={getActionButtonIconColor(false, darkModeEnabled)}
+                    size={PLAYER_SPEED_ICON_SIZE}
+                    color={colors.playerText}
+                    style={getCenteredIconStyle(PLAYER_SPEED_ICON_SIZE)}
                   />
                 </Pressable>
 
@@ -1878,19 +1865,13 @@ export default function ReadingScreen() {
                   onPress={() =>
                     updateSpeechRate(speechRate + SPEECH_RATE_STEP)
                   }
-                  style={{
-                    ...getActionButtonStyle({
-                      darkModeEnabled,
-                      minWidth: 56,
-                      tone: "glass",
-                    }),
-                    paddingHorizontal: 0,
-                  }}
+                  style={getSpeedButtonStyle(darkModeEnabled)}
                 >
                   <MaterialIcons
                     name="add"
-                    size={22}
-                    color={getActionButtonIconColor(false, darkModeEnabled)}
+                    size={PLAYER_SPEED_ICON_SIZE}
+                    color={colors.playerText}
+                    style={getCenteredIconStyle(PLAYER_SPEED_ICON_SIZE)}
                   />
                 </Pressable>
               </View>
