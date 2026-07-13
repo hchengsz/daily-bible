@@ -1534,10 +1534,12 @@ export default function ReadingScreen() {
 
                     <View style={{ marginBottom: 10 }}>
                       <Text
+                        selectable={false}
                         style={{
                           fontSize: 16,
                           color: colors.label,
                           marginBottom: 4,
+                          userSelect: "none",
                         }}
                       >
                         {getParagraphReferenceLabel(p)}
