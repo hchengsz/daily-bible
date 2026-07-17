@@ -360,7 +360,9 @@ export default function VocabularyNotebookScreen() {
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const words = useVocabularyNotebookStore((state) => state.words);
   const keepForStudy = useVocabularyNotebookStore((state) => state.keepForStudy);
+  const knownWordIds = useVocabularyNotebookStore((state) => state.knownWordIds);
   const markCorrect = useVocabularyNotebookStore((state) => state.markCorrect);
+  const markKnown = useVocabularyNotebookStore((state) => state.markKnown);
   const removeWord = useVocabularyNotebookStore((state) => state.removeWord);
   const [mode, setMode] = useState<NotebookMode>("screening");
   const [studyIndex, setStudyIndex] = useState(0);
@@ -375,6 +377,7 @@ export default function VocabularyNotebookScreen() {
     [words],
   );
   const currentStudyWord = learningWords[studyIndex] ?? null;
+  const knownWordsCount = Object.keys(knownWordIds).length;
 
   useEffect(() => {
     if (studyIndex >= learningWords.length) {
@@ -469,6 +472,11 @@ export default function VocabularyNotebookScreen() {
           colors={colors}
           label="学习中"
           value={String(learningWords.length)}
+        />
+        <Metric
+          colors={colors}
+          label="已掌握"
+          value={String(knownWordsCount)}
         />
         <Metric colors={colors} label="毕业标准" value="7" />
       </View>
@@ -566,7 +574,7 @@ export default function VocabularyNotebookScreen() {
                 colors={colors}
                 key={word.id}
                 onKeep={() => keepForStudy(word.id)}
-                onRemove={() => removeWord(word.id)}
+                onRemove={() => markKnown(word.id)}
                 word={word}
               />
             ))

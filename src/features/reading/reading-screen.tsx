@@ -4,7 +4,7 @@ import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
 import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -126,6 +126,7 @@ const PLAYER_PRIMARY_ICON_SIZE = 30;
 const PLAYER_SPEED_BUTTON_HEIGHT = 32;
 const PLAYER_SPEED_BUTTON_WIDTH = Math.round(PLAYER_SPEED_BUTTON_HEIGHT * 1.618);
 const PLAYER_SPEED_ICON_SIZE = 20;
+const VOCABULARY_PANEL_SCROLL_PADDING = 432;
 
 const safeText = (text: unknown) => (typeof text === "string" ? text : "");
 
@@ -645,13 +646,19 @@ export default function ReadingScreen() {
     useState<SentenceTranslationMap>({});
   const [vocabulary, setVocabulary] = useState<VocabularyMap>({});
   const [isVocabularyVisible, setIsVocabularyVisible] = useState(false);
+  const [isVocabularyNotebookPanelVisible, setIsVocabularyNotebookPanelVisible] =
+    useState(false);
   const [isAnalyzingVocabulary, setIsAnalyzingVocabulary] = useState(false);
   const [vocabularyError, setVocabularyError] = useState<string | null>(null);
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const notebookWords = useVocabularyNotebookStore((state) => state.words);
+  const knownWordIds = useVocabularyNotebookStore((state) => state.knownWordIds);
   const addNotebookWord = useVocabularyNotebookStore((state) => state.addWord);
   const addNotebookWords = useVocabularyNotebookStore((state) => state.addWords);
+  const markKnownVocabularyWord = useVocabularyNotebookStore(
+    (state) => state.markKnown,
+  );
   const isCompleted = useTaskCompletion(selectedDateKey, "reading");
   const { celebrationProgress, isCelebrating, startCelebration } =
     useCompletionCelebration();
@@ -718,6 +725,7 @@ export default function ReadingScreen() {
     setSentenceTranslations({});
     setVocabulary({});
     setIsVocabularyVisible(false);
+    setIsVocabularyNotebookPanelVisible(false);
     setIsAnalyzingVocabulary(false);
     setVocabularyError(null);
     lastWordPressRef.current = null;
@@ -1097,12 +1105,13 @@ export default function ReadingScreen() {
 
   const handleAnalyzeVocabulary = async () => {
     if (isVocabularyVisible) {
-      setIsVocabularyVisible(false);
+      setIsVocabularyNotebookPanelVisible((value) => !value);
       return;
     }
 
     if (Object.keys(vocabulary).length) {
       setIsVocabularyVisible(true);
+      setIsVocabularyNotebookPanelVisible(true);
       return;
     }
 
@@ -1118,6 +1127,7 @@ export default function ReadingScreen() {
 
       setVocabulary(analyzedVocabulary);
       setIsVocabularyVisible(true);
+      setIsVocabularyNotebookPanelVisible(true);
     } catch (error) {
       setVocabularyError(
         error instanceof Error ? error.message : "Vocabulary analysis failed.",
@@ -1128,9 +1138,21 @@ export default function ReadingScreen() {
   };
 
   const dateString = formatHeaderDate(selectedDate);
+  const visibleVocabulary = useMemo<VocabularyMap>(
+    () =>
+      Object.fromEntries(
+        Object.entries(vocabulary).map(([chunkId, items]) => [
+          chunkId,
+          items.filter(
+            (item) => !knownWordIds[getVocabularyWordId(item.term)],
+          ),
+        ]),
+      ),
+    [knownWordIds, vocabulary],
+  );
   const vocabularyList = useMemo(
-    () => flattenVocabularyItems(vocabulary),
-    [vocabulary],
+    () => flattenVocabularyItems(visibleVocabulary),
+    [visibleVocabulary],
   );
   const notebookWordIds = useMemo(
     () => new Set(notebookWords.map((word) => word.id)),
@@ -1192,6 +1214,9 @@ export default function ReadingScreen() {
         term: item.term,
       })),
     );
+  };
+  const handleMarkVocabularyKnown = (item: VocabularyItem) => {
+    markKnownVocabularyWord(getVocabularyWordId(item.term));
   };
 
   return (
@@ -1365,7 +1390,12 @@ export default function ReadingScreen() {
         contentContainerStyle={{
           alignSelf: "center",
           maxWidth: 1000,
-          paddingBottom: isPlayerVisible ? PLAYER_SCROLL_PADDING : 80,
+          paddingBottom: Math.max(
+            isPlayerVisible ? PLAYER_SCROLL_PADDING : 80,
+            isVocabularyNotebookPanelVisible
+              ? VOCABULARY_PANEL_SCROLL_PADDING
+              : 80,
+          ),
           paddingHorizontal: 20,
           paddingTop: 20,
           width: "100%",
@@ -1395,178 +1425,6 @@ export default function ReadingScreen() {
           >
             {vocabularyError}
           </Text>
-        )}
-
-        {isVocabularyVisible && vocabularyList.length > 0 && (
-          <View
-            style={{
-              borderColor: colors.border,
-              borderCurve: "continuous",
-              borderRadius: 8,
-              borderWidth: 1,
-              gap: 12,
-              marginBottom: 16,
-              padding: 14,
-            }}
-          >
-            <View
-              style={{
-                alignItems: "center",
-                flexDirection: "row",
-                gap: 10,
-                justifyContent: "space-between",
-              }}
-            >
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text
-                  style={{
-                    color: colors.text,
-                    fontSize: 16,
-                    fontWeight: "800",
-                  }}
-                >
-                  AI Difficult Words
-                </Text>
-                <Text
-                  style={{
-                    color: colors.label,
-                    fontSize: 13,
-                    lineHeight: 18,
-                  }}
-                >
-                  加入后会先进入单词本初筛。
-                </Text>
-              </View>
-
-              {addableVocabularyItems.length > 0 && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={handleAddAllVocabularyItems}
-                  style={{
-                    alignItems: "center",
-                    backgroundColor: darkModeEnabled ? "#f5f5f5" : "#111",
-                    borderCurve: "continuous",
-                    borderRadius: 18,
-                    minHeight: 36,
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: darkModeEnabled ? "#111" : "#fff",
-                      fontSize: 13,
-                      fontWeight: "800",
-                    }}
-                  >
-                    全部加入
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-
-            <View style={{ gap: 8 }}>
-              {vocabularyList.map((item) => {
-                const isAdded = notebookWordIds.has(
-                  getVocabularyWordId(item.term),
-                );
-
-                return (
-                  <View
-                    key={getVocabularyWordId(item.term)}
-                    style={{
-                      backgroundColor: darkModeEnabled ? "#171717" : "#f7f7f7",
-                      borderColor: colors.border,
-                      borderCurve: "continuous",
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      gap: 8,
-                      padding: 12,
-                    }}
-                  >
-                    <View style={{ gap: 3 }}>
-                      <Text
-                        selectable
-                        style={{
-                          color: colors.text,
-                          fontSize: 17,
-                          fontWeight: "800",
-                        }}
-                      >
-                        {item.term}
-                      </Text>
-                      <Text
-                        selectable
-                        style={{
-                          color: colors.textSecondary,
-                          fontSize: 14,
-                          lineHeight: 20,
-                        }}
-                      >
-                        {item.definition}
-                      </Text>
-                    </View>
-
-                    <Pressable
-                      accessibilityRole="button"
-                      disabled={isAdded}
-                      onPress={() => handleAddVocabularyItem(item)}
-                      style={{
-                        alignItems: "center",
-                        alignSelf: "flex-start",
-                        backgroundColor: isAdded
-                          ? darkModeEnabled
-                            ? "#112319"
-                            : "#edf8f0"
-                          : darkModeEnabled
-                            ? "#f5f5f5"
-                            : "#111",
-                        borderColor: isAdded
-                          ? darkModeEnabled
-                            ? "#2f6d43"
-                            : "#9bd8ad"
-                          : darkModeEnabled
-                            ? "#f5f5f5"
-                            : "#111",
-                        borderCurve: "continuous",
-                        borderRadius: 18,
-                        borderWidth: 1,
-                        flexDirection: "row",
-                        gap: 6,
-                        minHeight: 34,
-                        opacity: isAdded ? 0.86 : 1,
-                        paddingHorizontal: 11,
-                      }}
-                    >
-                      <MaterialIcons
-                        name={isAdded ? "check-circle" : "add"}
-                        size={17}
-                        color={
-                          isAdded
-                            ? "#2db65a"
-                            : darkModeEnabled
-                              ? "#111"
-                              : "#fff"
-                        }
-                      />
-                      <Text
-                        style={{
-                          color: isAdded
-                            ? "#2db65a"
-                            : darkModeEnabled
-                              ? "#111"
-                              : "#fff",
-                          fontSize: 13,
-                          fontWeight: "800",
-                        }}
-                      >
-                        {isAdded ? "已加入单词本" : "加入单词本"}
-                      </Text>
-                    </Pressable>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
         )}
 
         {!!dayTitle.trim() && (
@@ -1645,7 +1503,7 @@ export default function ReadingScreen() {
                 translationColor: colors.annotation,
                 vocabularyItems:
                   isVocabularyVisible && !isTranslated
-                    ? (vocabulary[getDayIntroductionId()] ?? [])
+                    ? (visibleVocabulary[getDayIntroductionId()] ?? [])
                     : [],
               })}
             </Text>
@@ -1690,7 +1548,8 @@ export default function ReadingScreen() {
                   isTranslated,
                 );
                 const sectionVocabularyItems =
-                  vocabulary[getSectionIntroductionId(sectionIndex)] ?? [];
+                  visibleVocabulary[getSectionIntroductionId(sectionIndex)] ??
+                  [];
 
                 return (
                   !!sectionIntroduction.trim() && (
@@ -1747,8 +1606,9 @@ export default function ReadingScreen() {
                   isTranslated,
                 );
                 const vocabularyItems =
-                  vocabulary[getParagraphScriptureId(sectionIndex, pIndex)] ??
-                  [];
+                  visibleVocabulary[
+                    getParagraphScriptureId(sectionIndex, pIndex)
+                  ] ?? [];
 
                 return (
                   <View key={pIndex} style={{ marginBottom: 18 }}>
@@ -1890,6 +1750,325 @@ export default function ReadingScreen() {
         isVisible={isCelebrating}
         progress={celebrationProgress}
       />
+
+      {isVocabularyNotebookPanelVisible && isVocabularyVisible && (
+        <View
+          pointerEvents="box-none"
+          style={{
+            alignItems: "center",
+            bottom: isPlayerVisible
+              ? PLAYER_BOTTOM_OFFSET + PLAYER_SCROLL_PADDING
+              : PLAYER_BOTTOM_OFFSET,
+            left: 16,
+            position: "absolute",
+            right: 16,
+          }}
+        >
+          <BlurView
+            experimentalBlurMethod={PLAYER_BLUR_METHOD}
+            intensity={92}
+            tint={
+              Platform.OS === "ios"
+                ? darkModeEnabled
+                  ? "systemThinMaterialDark"
+                  : "systemThinMaterialLight"
+                : darkModeEnabled
+                  ? "dark"
+                  : "light"
+            }
+            style={{
+              backgroundColor: darkModeEnabled
+                ? "rgba(16, 16, 16, 0.3)"
+                : "rgba(255, 255, 255, 0.16)",
+              borderColor: darkModeEnabled
+                ? "rgba(255, 255, 255, 0.16)"
+                : "rgba(255, 255, 255, 0.44)",
+              borderCurve: "continuous",
+              borderRadius: PLAYER_RADIUS,
+              borderWidth: 1,
+              boxShadow: "0 14px 34px rgba(0, 0, 0, 0.18)",
+              maxWidth: 620,
+              overflow: "hidden",
+              padding: 16,
+              pointerEvents: "auto",
+              width: "100%",
+            }}
+          >
+            <View
+              style={{
+                alignItems: "center",
+                flexDirection: "row",
+                gap: 12,
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text
+                  style={{
+                    color: colors.playerText,
+                    fontSize: 16,
+                    fontWeight: "700",
+                  }}
+                >
+                  AI Difficult Words
+                </Text>
+                <Text
+                  style={{
+                    color: colors.label,
+                    fontSize: 13,
+                    lineHeight: 18,
+                  }}
+                >
+                  加入后会先进入单词本初筛。
+                </Text>
+              </View>
+
+              <Pressable
+                accessibilityLabel="Close vocabulary panel"
+                accessibilityRole="button"
+                onPress={() => setIsVocabularyNotebookPanelVisible(false)}
+                style={{
+                  alignItems: "center",
+                  height: 36,
+                  justifyContent: "center",
+                  width: 36,
+                }}
+              >
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={colors.playerText}
+                />
+              </Pressable>
+            </View>
+
+            {vocabularyList.length ? (
+              <>
+                {addableVocabularyItems.length > 0 && (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={handleAddAllVocabularyItems}
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: darkModeEnabled ? "#f5f5f5" : "#111",
+                      borderCurve: "continuous",
+                      borderRadius: 18,
+                      flexDirection: "row",
+                      gap: 6,
+                      justifyContent: "center",
+                      marginBottom: 10,
+                      minHeight: 38,
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="playlist-add"
+                      size={18}
+                      color={darkModeEnabled ? "#111" : "#fff"}
+                    />
+                    <Text
+                      style={{
+                        color: darkModeEnabled ? "#111" : "#fff",
+                        fontSize: 14,
+                        fontWeight: "800",
+                      }}
+                    >
+                      全部加入
+                    </Text>
+                  </Pressable>
+                )}
+
+                <ScrollView
+                  nestedScrollEnabled
+                  style={{ maxHeight: 310 }}
+                  contentContainerStyle={{ gap: 8 }}
+                >
+                  {vocabularyList.map((item) => {
+                    const wordId = getVocabularyWordId(item.term);
+                    const isAdded = notebookWordIds.has(wordId);
+
+                    return (
+                      <View
+                        key={wordId}
+                        style={{
+                          backgroundColor: darkModeEnabled
+                            ? "rgba(23, 23, 23, 0.72)"
+                            : "rgba(247, 247, 247, 0.72)",
+                          borderColor: colors.border,
+                          borderCurve: "continuous",
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          gap: 9,
+                          padding: 12,
+                        }}
+                      >
+                        <View style={{ gap: 3 }}>
+                          <Text
+                            selectable
+                            style={{
+                              color: colors.text,
+                              fontSize: 17,
+                              fontWeight: "800",
+                            }}
+                          >
+                            {item.term}
+                          </Text>
+                          <Text
+                            selectable
+                            style={{
+                              color: colors.textSecondary,
+                              fontSize: 14,
+                              lineHeight: 20,
+                            }}
+                          >
+                            {item.definition}
+                          </Text>
+                        </View>
+
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                            gap: 8,
+                          }}
+                        >
+                          <Pressable
+                            accessibilityRole="button"
+                            disabled={isAdded}
+                            onPress={() => handleAddVocabularyItem(item)}
+                            style={{
+                              alignItems: "center",
+                              backgroundColor: isAdded
+                                ? darkModeEnabled
+                                  ? "#112319"
+                                  : "#edf8f0"
+                                : darkModeEnabled
+                                  ? "#f5f5f5"
+                                  : "#111",
+                              borderColor: isAdded
+                                ? darkModeEnabled
+                                  ? "#2f6d43"
+                                  : "#9bd8ad"
+                                : darkModeEnabled
+                                  ? "#f5f5f5"
+                                  : "#111",
+                              borderCurve: "continuous",
+                              borderRadius: 18,
+                              borderWidth: 1,
+                              flexDirection: "row",
+                              gap: 6,
+                              minHeight: 34,
+                              opacity: isAdded ? 0.86 : 1,
+                              paddingHorizontal: 11,
+                            }}
+                          >
+                            <MaterialIcons
+                              name={isAdded ? "check-circle" : "add"}
+                              size={17}
+                              color={
+                                isAdded
+                                  ? "#2db65a"
+                                  : darkModeEnabled
+                                    ? "#111"
+                                    : "#fff"
+                              }
+                            />
+                            <Text
+                              style={{
+                                color: isAdded
+                                  ? "#2db65a"
+                                  : darkModeEnabled
+                                    ? "#111"
+                                    : "#fff",
+                                fontSize: 13,
+                                fontWeight: "800",
+                              }}
+                            >
+                              {isAdded ? "已加入单词本" : "加入单词本"}
+                            </Text>
+                          </Pressable>
+
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() => handleMarkVocabularyKnown(item)}
+                            style={{
+                              alignItems: "center",
+                              backgroundColor: darkModeEnabled
+                                ? "rgba(255, 255, 255, 0.1)"
+                                : "rgba(255, 255, 255, 0.5)",
+                              borderColor: colors.border,
+                              borderCurve: "continuous",
+                              borderRadius: 18,
+                              borderWidth: 1,
+                              flexDirection: "row",
+                              gap: 6,
+                              minHeight: 34,
+                              paddingHorizontal: 11,
+                            }}
+                          >
+                            <MaterialIcons
+                              name="check-circle"
+                              size={17}
+                              color="#2db65a"
+                            />
+                            <Text
+                              style={{
+                                color: colors.playerText,
+                                fontSize: 13,
+                                fontWeight: "800",
+                              }}
+                            >
+                              已熟知
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </>
+            ) : (
+              <View
+                style={{
+                  alignItems: "center",
+                  backgroundColor: darkModeEnabled
+                    ? "rgba(255, 255, 255, 0.08)"
+                    : "rgba(255, 255, 255, 0.54)",
+                  borderColor: colors.border,
+                  borderCurve: "continuous",
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  gap: 8,
+                  padding: 18,
+                }}
+              >
+                <MaterialIcons name="check-circle" size={26} color="#2db65a" />
+                <Text
+                  style={{
+                    color: colors.playerText,
+                    fontSize: 16,
+                    fontWeight: "800",
+                    textAlign: "center",
+                  }}
+                >
+                  没有新的难词
+                </Text>
+                <Text
+                  style={{
+                    color: colors.label,
+                    fontSize: 13,
+                    lineHeight: 18,
+                    textAlign: "center",
+                  }}
+                >
+                  已加入、已熟知或已掌握的词会自动过滤。
+                </Text>
+              </View>
+            )}
+          </BlurView>
+        </View>
+      )}
 
       {isPlayerVisible && (
         <View

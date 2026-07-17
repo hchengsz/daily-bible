@@ -23,12 +23,16 @@ type AddVocabularyWordInput = {
   term: string;
 };
 
+type KnownVocabularyWordIds = Record<string, boolean>;
+
 type VocabularyNotebookState = {
   addWord: (word: AddVocabularyWordInput) => void;
   addWords: (words: AddVocabularyWordInput[]) => void;
   hasHydrated: boolean;
   keepForStudy: (id: string) => void;
+  knownWordIds: KnownVocabularyWordIds;
   markCorrect: (id: string) => void;
+  markKnown: (id: string) => void;
   removeWord: (id: string) => void;
   resetStreak: (id: string) => void;
   words: VocabularyNotebookWord[];
@@ -87,18 +91,67 @@ const sanitizeWord = (word: unknown): VocabularyNotebookWord | null => {
   };
 };
 
-const saveWords = (words: VocabularyNotebookWord[]) => {
+const saveNotebookState = (
+  words: VocabularyNotebookWord[],
+  knownWordIds: KnownVocabularyWordIds,
+) => {
   Promise.resolve(
-    progressStorage.setItem(STORAGE_KEY, JSON.stringify({ words })),
+    progressStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ knownWordIds: Object.keys(knownWordIds), words }),
+    ),
   ).catch(() => undefined);
+};
+
+const sanitizeKnownWordIds = (value: unknown) => {
+  const ids =
+    Array.isArray(value)
+      ? value
+      : value && typeof value === "object"
+        ? Object.keys(value)
+        : [];
+
+  return ids.reduce<KnownVocabularyWordIds>((result, id) => {
+    if (typeof id !== "string") {
+      return result;
+    }
+
+    const normalizedId = getVocabularyWordId(id);
+
+    if (normalizedId) {
+      result[normalizedId] = true;
+    }
+
+    return result;
+  }, {});
+};
+
+const dedupeWords = (
+  words: VocabularyNotebookWord[],
+  knownWordIds: KnownVocabularyWordIds,
+) => {
+  const wordsById = new Map<string, VocabularyNotebookWord>();
+
+  for (const word of words) {
+    const id = getVocabularyWordId(word.term);
+
+    if (!id || knownWordIds[id] || wordsById.has(id)) {
+      continue;
+    }
+
+    wordsById.set(id, { ...word, id });
+  }
+
+  return [...wordsById.values()];
 };
 
 const upsertWords = (
   currentWords: VocabularyNotebookWord[],
   incomingWords: AddVocabularyWordInput[],
+  knownWordIds: KnownVocabularyWordIds,
 ) => {
-  const nextWords = [...currentWords];
-  let changed = false;
+  const nextWords = dedupeWords(currentWords, knownWordIds);
+  let changed = nextWords.length !== currentWords.length;
 
   for (const incomingWord of incomingWords) {
     const term = normalizeVocabularyTerm(incomingWord.term);
@@ -109,6 +162,11 @@ const upsertWords = (
     }
 
     const id = getVocabularyWordId(term);
+
+    if (knownWordIds[id]) {
+      continue;
+    }
+
     const existingIndex = nextWords.findIndex((word) => word.id === id);
     const now = new Date().toISOString();
 
@@ -148,20 +206,24 @@ export const useVocabularyNotebookStore = create<VocabularyNotebookState>(
   (set) => ({
     addWord: (word) =>
       set((state) => {
-        const words = upsertWords(state.words, [word]);
+        const words = upsertWords(state.words, [word], state.knownWordIds);
 
         if (words !== state.words) {
-          saveWords(words);
+          saveNotebookState(words, state.knownWordIds);
         }
 
         return { words };
       }),
     addWords: (incomingWords) =>
       set((state) => {
-        const words = upsertWords(state.words, incomingWords);
+        const words = upsertWords(
+          state.words,
+          incomingWords,
+          state.knownWordIds,
+        );
 
         if (words !== state.words) {
-          saveWords(words);
+          saveNotebookState(words, state.knownWordIds);
         }
 
         return { words };
@@ -173,12 +235,14 @@ export const useVocabularyNotebookStore = create<VocabularyNotebookState>(
           word.id === id ? { ...word, status: "learning" as const } : word,
         );
 
-        saveWords(words);
+        saveNotebookState(words, state.knownWordIds);
 
         return { words };
       }),
+    knownWordIds: {},
     markCorrect: (id) =>
       set((state) => {
+        let knownWordIds = state.knownWordIds;
         const words = state.words.flatMap((word) => {
           if (word.id !== id) {
             return [word];
@@ -187,21 +251,39 @@ export const useVocabularyNotebookStore = create<VocabularyNotebookState>(
           const correctStreak = word.correctStreak + 1;
 
           if (correctStreak >= REQUIRED_CORRECT_STREAK) {
+            knownWordIds = { ...knownWordIds, [id]: true };
             return [];
           }
 
           return [{ ...word, correctStreak, status: "learning" as const }];
         });
 
-        saveWords(words);
+        saveNotebookState(words, knownWordIds);
 
-        return { words };
+        return { knownWordIds, words };
+      }),
+    markKnown: (id) =>
+      set((state) => {
+        const normalizedId = getVocabularyWordId(id);
+
+        if (!normalizedId) {
+          return {};
+        }
+
+        const words = state.words.filter((word) => word.id !== normalizedId);
+        const knownWordIds = state.knownWordIds[normalizedId]
+          ? state.knownWordIds
+          : { ...state.knownWordIds, [normalizedId]: true };
+
+        saveNotebookState(words, knownWordIds);
+
+        return { knownWordIds, words };
       }),
     removeWord: (id) =>
       set((state) => {
         const words = state.words.filter((word) => word.id !== id);
 
-        saveWords(words);
+        saveNotebookState(words, state.knownWordIds);
 
         return { words };
       }),
@@ -211,7 +293,7 @@ export const useVocabularyNotebookStore = create<VocabularyNotebookState>(
           word.id === id ? { ...word, correctStreak: 0 } : word,
         );
 
-        saveWords(words);
+        saveNotebookState(words, state.knownWordIds);
 
         return { words };
       }),
@@ -226,12 +308,24 @@ Promise.resolve(progressStorage.getItem(STORAGE_KEY))
       return;
     }
 
-    const parsed = JSON.parse(value) as { words?: unknown[] };
-    const words = (Array.isArray(parsed.words) ? parsed.words : [])
-      .map(sanitizeWord)
-      .filter((word): word is VocabularyNotebookWord => word !== null);
+    const parsed = JSON.parse(value) as {
+      knownWordIds?: unknown;
+      words?: unknown[];
+    };
+    const knownWordIds = sanitizeKnownWordIds(parsed.knownWordIds);
+    const persistedWords = Array.isArray(parsed.words) ? parsed.words : [];
+    const words = dedupeWords(
+      persistedWords
+        .map(sanitizeWord)
+        .filter((word): word is VocabularyNotebookWord => word !== null),
+      knownWordIds,
+    );
 
-    useVocabularyNotebookStore.setState({ hasHydrated: true, words });
+    useVocabularyNotebookStore.setState({
+      hasHydrated: true,
+      knownWordIds,
+      words,
+    });
   })
   .catch(() => {
     useVocabularyNotebookStore.setState({ hasHydrated: true });
