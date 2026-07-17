@@ -36,6 +36,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="vocabulary"
+        options={{
+          title: "Words",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="rectangle.stack.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="catechism"
         options={{
           title: "Catechism",
