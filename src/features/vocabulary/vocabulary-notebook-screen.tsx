@@ -1,6 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Speech from "expo-speech";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  useDailyProgressStore,
+  useTaskCompletion,
+} from "../progress/daily-progress-store";
+import { getDateKey } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
 import {
   REQUIRED_CORRECT_STREAK,
@@ -9,6 +15,9 @@ import {
 } from "./vocabulary-notebook-store";
 
 type NotebookMode = "screening" | "library" | "study";
+type VocabularyAnswer = "correct" | "wrong";
+
+const WORD_SPEECH_RATE = 0.82;
 
 type NotebookColors = {
   accent: string;
@@ -357,6 +366,8 @@ function LibraryWordCard({
 }
 
 export default function VocabularyNotebookScreen() {
+  const currentDate = useMemo(() => new Date(), []);
+  const dateKey = getDateKey(currentDate);
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const words = useVocabularyNotebookStore((state) => state.words);
   const keepForStudy = useVocabularyNotebookStore((state) => state.keepForStudy);
@@ -364,8 +375,13 @@ export default function VocabularyNotebookScreen() {
   const markCorrect = useVocabularyNotebookStore((state) => state.markCorrect);
   const markKnown = useVocabularyNotebookStore((state) => state.markKnown);
   const removeWord = useVocabularyNotebookStore((state) => state.removeWord);
+  const resetStreak = useVocabularyNotebookStore((state) => state.resetStreak);
+  const completeTask = useDailyProgressStore((state) => state.completeTask);
+  const vocabularyCompleted = useTaskCompletion(dateKey, "vocabulary");
   const [mode, setMode] = useState<NotebookMode>("screening");
   const [studyIndex, setStudyIndex] = useState(0);
+  const [studyQueueIds, setStudyQueueIds] = useState<string[]>([]);
+  const [isStudySessionComplete, setIsStudySessionComplete] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const colors = getNotebookColors(darkModeEnabled);
   const screeningWords = useMemo(
@@ -376,15 +392,45 @@ export default function VocabularyNotebookScreen() {
     () => words.filter((word) => word.status === "learning"),
     [words],
   );
-  const currentStudyWord = learningWords[studyIndex] ?? null;
+  const learningWordsById = useMemo(
+    () => new Map(learningWords.map((word) => [word.id, word])),
+    [learningWords],
+  );
+  const currentStudyWord = studyQueueIds.length
+    ? (learningWordsById.get(studyQueueIds[studyIndex]) ?? null)
+    : null;
   const knownWordsCount = Object.keys(knownWordIds).length;
 
   useEffect(() => {
-    if (studyIndex >= learningWords.length) {
-      setStudyIndex(Math.max(learningWords.length - 1, 0));
+    if (mode !== "study") {
+      return;
+    }
+
+    if (!studyQueueIds.length && learningWords.length && !isStudySessionComplete) {
+      setStudyQueueIds(learningWords.map((word) => word.id));
+      setStudyIndex(0);
+      setIsFlipped(false);
+      return;
+    }
+
+    if (studyIndex >= studyQueueIds.length) {
+      setStudyIndex(Math.max(studyQueueIds.length - 1, 0));
       setIsFlipped(false);
     }
-  }, [learningWords.length, studyIndex]);
+  }, [
+    isStudySessionComplete,
+    learningWords,
+    mode,
+    studyIndex,
+    studyQueueIds.length,
+  ]);
+
+  useEffect(
+    () => () => {
+      Speech.stop();
+    },
+    [],
+  );
 
   const handleKeepAll = () => {
     for (const word of screeningWords) {
@@ -394,34 +440,56 @@ export default function VocabularyNotebookScreen() {
     setMode("library");
   };
 
-  const handleStudyWord = (wordId: string) => {
-    const index = learningWords.findIndex((word) => word.id === wordId);
+  const startStudySession = (startWordId?: string) => {
+    const wordIds = learningWords.map((word) => word.id);
+    const queue =
+      startWordId && wordIds.includes(startWordId)
+        ? [startWordId, ...wordIds.filter((wordId) => wordId !== startWordId)]
+        : wordIds;
 
-    setStudyIndex(Math.max(index, 0));
+    setStudyQueueIds(queue);
+    setStudyIndex(0);
+    setIsStudySessionComplete(false);
     setIsFlipped(false);
     setMode("study");
   };
 
-  const handleCorrect = () => {
+  const handleStudyWord = (wordId: string) => {
+    startStudySession(wordId);
+  };
+
+  const handleAnswer = (answer: VocabularyAnswer) => {
     if (!currentStudyWord) {
       return;
     }
 
-    const willGraduate =
-      currentStudyWord.correctStreak + 1 >= REQUIRED_CORRECT_STREAK;
-    const nextCount = willGraduate
-      ? Math.max(learningWords.length - 1, 0)
-      : learningWords.length;
-    const nextIndex =
-      nextCount > 0
-        ? willGraduate
-          ? studyIndex % nextCount
-          : (studyIndex + 1) % nextCount
-        : 0;
+    if (answer === "correct") {
+      markCorrect(currentStudyWord.id);
+    } else {
+      resetStreak(currentStudyWord.id);
+    }
 
-    markCorrect(currentStudyWord.id);
     setIsFlipped(false);
-    setStudyIndex(nextIndex);
+
+    if (studyIndex >= studyQueueIds.length - 1) {
+      setIsStudySessionComplete(true);
+      return;
+    }
+
+    setStudyIndex((index) => index + 1);
+  };
+
+  const handleCompleteVocabularyReview = () => {
+    completeTask(dateKey, "vocabulary");
+  };
+
+  const handleSpeakWord = (word: string) => {
+    Speech.stop();
+    Speech.speak(word, {
+      language: "en-US",
+      pitch: 1,
+      rate: WORD_SPEECH_RATE,
+    });
   };
 
   return (
@@ -506,6 +574,11 @@ export default function VocabularyNotebookScreen() {
               accessibilityRole="button"
               key={item}
               onPress={() => {
+                if (item === "study") {
+                  startStudySession();
+                  return;
+                }
+
                 setMode(item);
                 setIsFlipped(false);
               }}
@@ -614,78 +687,224 @@ export default function VocabularyNotebookScreen() {
 
       {mode === "study" && (
         <View style={{ gap: 14 }}>
-          {currentStudyWord ? (
-            <>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setIsFlipped((value) => !value)}
+          {isStudySessionComplete ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleCompleteVocabularyReview}
+              style={{
+                alignItems: "center",
+                backgroundColor: vocabularyCompleted
+                  ? darkModeEnabled
+                    ? "#112319"
+                    : "#f1f8f4"
+                  : colors.primaryButton,
+                borderColor: vocabularyCompleted
+                  ? darkModeEnabled
+                    ? "#2f6d43"
+                    : "#9bd8ad"
+                  : colors.primaryButton,
+                borderCurve: "continuous",
+                borderRadius: 8,
+                borderWidth: 1,
+                gap: 12,
+                justifyContent: "center",
+                minHeight: 230,
+                padding: 24,
+              }}
+            >
+              <MaterialIcons
+                name={vocabularyCompleted ? "check-circle" : "task-alt"}
+                size={42}
+                color={
+                  vocabularyCompleted ? "#2db65a" : colors.primaryButtonText
+                }
+              />
+              <Text
                 style={{
-                  alignItems: "center",
+                  color: vocabularyCompleted
+                    ? "#2db65a"
+                    : colors.primaryButtonText,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  textAlign: "center",
+                }}
+              >
+                {vocabularyCompleted
+                  ? "今日单词复习已完成"
+                  : "完成今日单词复习"}
+              </Text>
+              <Text
+                style={{
+                  color: vocabularyCompleted
+                    ? "#2db65a"
+                    : colors.primaryButtonText,
+                  fontSize: 14,
+                  fontWeight: "700",
+                  lineHeight: 20,
+                  opacity: 0.86,
+                  textAlign: "center",
+                }}
+              >
+                已完成本轮每个学习中单词的猜测。
+              </Text>
+            </Pressable>
+          ) : currentStudyWord ? (
+            <>
+              <View
+                style={{
                   backgroundColor: colors.card,
                   borderColor: colors.border,
                   borderCurve: "continuous",
                   borderRadius: 8,
                   borderWidth: 1,
-                  justifyContent: "center",
+                  gap: 12,
                   minHeight: 260,
                   padding: 22,
                 }}
               >
-                <Text
+                <View
                   style={{
-                    color: colors.muted,
-                    fontSize: 13,
-                    fontWeight: "800",
-                    marginBottom: 12,
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
                   }}
                 >
-                  {isFlipped ? "Definition" : "Guess the meaning"}
-                </Text>
-                <Text
-                  selectable
+                  <Text
+                    style={{
+                      color: colors.muted,
+                      fontSize: 13,
+                      fontWeight: "800",
+                    }}
+                  >
+                    {isFlipped ? "Definition" : "Guess the meaning"}
+                  </Text>
+                  <Pressable
+                    accessibilityLabel={`Pronounce ${currentStudyWord.term}`}
+                    accessibilityRole="button"
+                    onPress={() => handleSpeakWord(currentStudyWord.term)}
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: colors.cardMuted,
+                      borderColor: colors.border,
+                      borderCurve: "continuous",
+                      borderRadius: 18,
+                      borderWidth: 1,
+                      height: 36,
+                      justifyContent: "center",
+                      width: 36,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="volume-up"
+                      size={20}
+                      color={colors.text}
+                    />
+                  </Pressable>
+                </View>
+
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setIsFlipped((value) => !value)}
                   style={{
-                    color: colors.text,
-                    fontSize: isFlipped ? 24 : 34,
-                    fontWeight: "800",
-                    lineHeight: isFlipped ? 34 : 42,
-                    textAlign: "center",
+                    alignItems: "center",
+                    flex: 1,
+                    justifyContent: "center",
+                    minHeight: 168,
                   }}
                 >
-                  {isFlipped ? currentStudyWord.definition : currentStudyWord.term}
-                </Text>
+                  <Text
+                    selectable
+                    style={{
+                      color: colors.text,
+                      fontSize: isFlipped ? 24 : 34,
+                      fontWeight: "800",
+                      lineHeight: isFlipped ? 34 : 42,
+                      textAlign: "center",
+                    }}
+                  >
+                    {isFlipped
+                      ? currentStudyWord.definition
+                      : currentStudyWord.term}
+                  </Text>
+                </Pressable>
+
                 <Text
                   style={{
                     color: colors.muted,
                     fontSize: 13,
                     fontWeight: "700",
-                    marginTop: 18,
+                    textAlign: "center",
                   }}
                 >
-                  {currentStudyWord.correctStreak}/{REQUIRED_CORRECT_STREAK} · 点击卡片翻面
+                  {currentStudyWord.correctStreak}/{REQUIRED_CORRECT_STREAK} ·
+                  点击卡片翻面
                 </Text>
-              </Pressable>
+              </View>
 
               {isFlipped && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={handleCorrect}
-                  style={{
-                    alignItems: "center",
-                    backgroundColor: colors.success,
-                    borderCurve: "continuous",
-                    borderRadius: 18,
-                    flexDirection: "row",
-                    gap: 8,
-                    justifyContent: "center",
-                    minHeight: 48,
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <MaterialIcons name="check-circle" size={20} color="#fff" />
-                  <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800" }}>
-                    我猜对了
-                  </Text>
-                </Pressable>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => handleAnswer("wrong")}
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: colors.cardMuted,
+                      borderColor: colors.border,
+                      borderCurve: "continuous",
+                      borderRadius: 18,
+                      borderWidth: 1,
+                      flex: 1,
+                      flexDirection: "row",
+                      gap: 8,
+                      justifyContent: "center",
+                      minHeight: 48,
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="cancel"
+                      size={20}
+                      color={colors.muted}
+                    />
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 16,
+                        fontWeight: "800",
+                      }}
+                    >
+                      我猜错了
+                    </Text>
+                  </Pressable>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => handleAnswer("correct")}
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: colors.success,
+                      borderCurve: "continuous",
+                      borderRadius: 18,
+                      flex: 1,
+                      flexDirection: "row",
+                      gap: 8,
+                      justifyContent: "center",
+                      minHeight: 48,
+                      paddingHorizontal: 16,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="check-circle"
+                      size={20}
+                      color="#fff"
+                    />
+                    <Text
+                      style={{ color: "#fff", fontSize: 16, fontWeight: "800" }}
+                    >
+                      我猜对了
+                    </Text>
+                  </Pressable>
+                </View>
               )}
             </>
           ) : (

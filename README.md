@@ -155,6 +155,5 @@ GEMINI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/interaction
 - `src/features/progress/`: Local completion state and celebration overlay.
 - `src/data/bible/`: Bible text and lookup utilities.
 - `src/data/reading-plan/`: Daily reading plan JSON files.
-- `src/data/catechism-source/`: Simplified Chinese JSON converted from the 43 source Catechism PDFs, plus the generated balanced 365-day reading plan.
-- `catechism/`: Original Traditional Chinese Catechism PDFs.
+- `src/data/catechism-source/`: Simplified Chinese JSON converted from the 43 source Catechism PDFs, plus the generated balanced 365-day reading plan. The original PDFs are intentionally not kept in the repo.
 - `screenshots/`: README screenshots with descriptive filenames.

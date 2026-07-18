@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { progressStorage } from "./progress-storage";
 
-export type DailyTask = "reading" | "catechism";
+export type DailyTask = "reading" | "catechism" | "vocabulary";
 
 type DailyProgressState = {
   completions: Record<string, boolean>;

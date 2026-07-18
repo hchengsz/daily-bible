@@ -22,12 +22,13 @@ import {
   type Paragraph,
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
+import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
 
 type TodoItemProps = {
   completed: boolean;
   darkModeEnabled: boolean;
   description: string;
-  href: "/reading" | "/catechism";
+  href: "/reading" | "/catechism" | "/vocabulary";
   label: string;
   meta: string;
 };
@@ -195,9 +196,21 @@ export default function HomeScreen() {
     catechismDay.startNumber === catechismDay.endNumber
       ? `${catechismDay.startNumber}`
       : `${catechismDay.startNumber}-${catechismDay.endNumber}`;
+  const vocabularyWords = useVocabularyNotebookStore((state) => state.words);
+  const learningVocabularyWords = useMemo(
+    () => vocabularyWords.filter((word) => word.status === "learning"),
+    [vocabularyWords],
+  );
   const readingCompleted = useTaskCompletion(dateKey, "reading");
   const catechismCompleted = useTaskCompletion(dateKey, "catechism");
-  const completedCount = Number(readingCompleted) + Number(catechismCompleted);
+  const vocabularyCompleted = useTaskCompletion(dateKey, "vocabulary");
+  const vocabularyTodoCompleted =
+    vocabularyCompleted || learningVocabularyWords.length === 0;
+  const totalTodoCount = 3;
+  const completedCount =
+    Number(readingCompleted) +
+    Number(catechismCompleted) +
+    Number(vocabularyTodoCompleted);
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const setDarkModeEnabled = useAppearanceStore(
     (state) => state.setDarkModeEnabled,
@@ -330,9 +343,11 @@ export default function HomeScreen() {
             lineHeight: 23,
           }}
         >
-          {completedCount === 2
+          {completedCount === totalTodoCount
             ? "You're all caught up for today."
-            : `${2 - completedCount} item${2 - completedCount === 1 ? "" : "s"} left for today.`}
+            : `${totalTodoCount - completedCount} item${
+                totalTodoCount - completedCount === 1 ? "" : "s"
+              } left for today.`}
         </Text>
       </View>
 
@@ -357,6 +372,21 @@ export default function HomeScreen() {
           href="/catechism"
           label="Catechism"
           meta={`CCC ${catechismReference}`}
+        />
+
+        <TodoItem
+          completed={vocabularyTodoCompleted}
+          darkModeEnabled={darkModeEnabled}
+          description={
+            learningVocabularyWords.length
+              ? "Review every saved word once, then mark today's vocabulary practice complete."
+              : "No saved words are waiting for review."
+          }
+          href="/vocabulary"
+          label="Vocabulary Review"
+          meta={`${learningVocabularyWords.length} word${
+            learningVocabularyWords.length === 1 ? "" : "s"
+          }`}
         />
       </View>
 
