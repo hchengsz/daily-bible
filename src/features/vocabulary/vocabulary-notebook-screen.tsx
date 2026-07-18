@@ -546,7 +546,6 @@ export default function VocabularyNotebookScreen() {
           label="已掌握"
           value={String(knownWordsCount)}
         />
-        <Metric colors={colors} label="毕业标准" value="7" />
       </View>
 
       <View
