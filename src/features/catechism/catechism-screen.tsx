@@ -183,6 +183,9 @@ const getCenteredIconStyle = (size: number) => ({
   textAlign: "center" as const,
 });
 
+const nonSelectableTextStyle =
+  Platform.OS === "web" ? ({ userSelect: "none" } as const) : undefined;
+
 const getCompleteButtonLabel = (
   isCompleted: boolean,
   isSelectedToday: boolean,
@@ -726,7 +729,6 @@ export default function CatechismScreen() {
         )}
 
         <Text
-          selectable
           style={{
             color: colors.text,
             fontSize: 24,
@@ -737,13 +739,16 @@ export default function CatechismScreen() {
         </Text>
 
         <Text
-          selectable
-          style={{
-            color: colors.label,
-            fontSize: 15,
-            lineHeight: 22,
-            marginTop: 6,
-          }}
+          selectable={false}
+          style={[
+            {
+              color: colors.label,
+              fontSize: 15,
+              lineHeight: 22,
+              marginTop: 6,
+            },
+            nonSelectableTextStyle,
+          ]}
         >
           天主教教理 · CCC {reference} · {selectedDay.entryCount} 条
         </Text>
@@ -752,12 +757,15 @@ export default function CatechismScreen() {
           {selectedDay.entries.map((entry) => (
             <View key={entry.number} style={{ gap: 10 }}>
               <Text
-                selectable
-                style={{
-                  color: colors.label,
-                  fontSize: 15,
-                  fontWeight: "700",
-                }}
+                selectable={false}
+                style={[
+                  {
+                    color: colors.label,
+                    fontSize: 15,
+                    fontWeight: "700",
+                  },
+                  nonSelectableTextStyle,
+                ]}
               >
                 CCC {entry.number}
               </Text>
