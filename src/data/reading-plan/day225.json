@@ -1,0 +1,53 @@
+[
+  {
+    "id": 225,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "Attack Against Prophets",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 23,
+                "verse": "9-14"
+              }
+            ]
+          },
+          {
+            "title": "",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 23,
+                "verse": "15-24"
+              }
+            ]
+          },
+          {
+            "title": "Dreams Are Delusions",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 23,
+                "verse": "25-32"
+              }
+            ]
+          },
+          {
+            "title": "False Oracles",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 23,
+                "verse": "33-40"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
