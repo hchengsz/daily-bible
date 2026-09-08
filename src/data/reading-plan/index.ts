@@ -39,6 +39,44 @@ import day203 from "./day203.json";
 import day204 from "./day204.json";
 import day205 from "./day205.json";
 import day206 from "./day206.json";
+import day207 from "./day207.json";
+import day208 from "./day208.json";
+import day209 from "./day209.json";
+import day210 from "./day210.json";
+import day211 from "./day211.json";
+import day212 from "./day212.json";
+import day213 from "./day213.json";
+import day214 from "./day214.json";
+import day215 from "./day215.json";
+import day216 from "./day216.json";
+import day217 from "./day217.json";
+import day218 from "./day218.json";
+import day219 from "./day219.json";
+import day220 from "./day220.json";
+import day221 from "./day221.json";
+import day222 from "./day222.json";
+import day223 from "./day223.json";
+import day224 from "./day224.json";
+import day225 from "./day225.json";
+import day226 from "./day226.json";
+import day227 from "./day227.json";
+import day228 from "./day228.json";
+import day229 from "./day229.json";
+import day230 from "./day230.json";
+import day231 from "./day231.json";
+import day232 from "./day232.json";
+import day233 from "./day233.json";
+import day234 from "./day234.json";
+import day235 from "./day235.json";
+import day236 from "./day236.json";
+import day237 from "./day237.json";
+import day238 from "./day238.json";
+import day239 from "./day239.json";
+import day240 from "./day240.json";
+import day241 from "./day241.json";
+import day242 from "./day242.json";
+import day243 from "./day243.json";
+import day251 from "./day251.json";
 
 const readingPlanModules = [
   day166,
@@ -82,6 +120,44 @@ const readingPlanModules = [
   day204,
   day205,
   day206,
+  day207,
+  day208,
+  day209,
+  day210,
+  day211,
+  day212,
+  day213,
+  day214,
+  day215,
+  day216,
+  day217,
+  day218,
+  day219,
+  day220,
+  day221,
+  day222,
+  day223,
+  day224,
+  day225,
+  day226,
+  day227,
+  day228,
+  day229,
+  day230,
+  day231,
+  day232,
+  day233,
+  day234,
+  day235,
+  day236,
+  day237,
+  day238,
+  day239,
+  day240,
+  day241,
+  day242,
+  day243,
+  day251,
 ] as unknown[];
 
 export const readingPlanDays = readingPlanModules.flatMap((day) =>
