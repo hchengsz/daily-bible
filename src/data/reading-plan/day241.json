@@ -4,173 +4,79 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Fall of Jerusalem",
-        "introduction": "The end has finally come. Plagued by famine, drought, and pestilence from within, and besieged by the Babylonian hordes from without, the City of David finally falls. The historical record is mercifully brief in its account, as if the shame of it all forbids greater mention. The essential details are these: the wall is breached in the fourth month of 586 B.C.; when Zedekiah and his troops flee the city by night, they are quickly captured; a month later the glorious temple of Solomon and the royal palace are razed; the remaining noblemen are killed and temple treasures are taken as booty; and, over a period of four years, hundreds of people are taken captive and deported to Babylon. With the fall now an undeniable reality, the final chapter of the glorious era of Israel comes to a close, and the prophets of God are regrettably vindicated. Ezekiel in particular is proved correct as to the final fate of Zedekiah and the exact manner in which it happens."
+        "title": "Jeremiah's Lamentations",
+        "introduction": "It would be altogether reasonable for Jeremiah to gloat over the fall of Jerusalem. After all, he stood virtually alone in predicting its destruction, and suffered a great deal of persecution as a result. Now that his prophecies have come true, it would be natural enough for him to say, \"I told you so!\" But that would not be consistent with Jeremiah's character. Like the God he serves, Jeremiah is grieved at the loss of Jerusalem and the scattering of God's people. He is both angry and sad. He is angry at the priests and prophets whose sins made the destruction necessary. He is angry at the nations which have either directly overthrown Judah or failed to come to her rescue. But mostly Jeremiah is sad. This weeping prophet, who so many times lamented his own sufferings, now laments the suffering of his fellow countrymen.\n\nAlthough its authorship is not specifically indicated, it seems most likely that Jeremiah is the author of a writing known simply as Lamentations. The poem expresses the many mixed feelings which this aging and weary man of God must have. Sometimes he speaks from a personal viewpoint about his own sufferings and persecutions; sometimes he voices the nation's collective horror, grief, confusion, and yet hope. So poignant is this beautiful lament that even to this day it is read by these Hebrews' descendants each year on the anniversary of the temple's destruction. From a literary standpoint alone, the poem is a classic. Far beyond that, however, it is one of the most powerful and moving expressions of human emotions that one will ever read, and it bears a timeless message which is nothing less than sublime."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "Wall Is Broken",
+            "title": "",
             "references": [
               {
-                "book": "2 Kings",
-                "chapter": 25,
-                "verse": "3"
-              },
-              {
-                "book": "Jeremiah",
-                "chapter": 39,
-                "verse": "2-3"
+                "book": "Lamentations",
+                "chapter": 1,
+                "verse": "1-6"
               }
             ]
           },
           {
-            "title": "King and Army Flee",
+            "title": "",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 39,
-                "verse": "4-5a"
+                "book": "Lamentations",
+                "chapter": 1,
+                "verse": "7-11"
               }
             ]
           },
           {
-            "title": "Zedekiah Humiliated",
+            "title": "",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "9b-11"
+                "book": "Lamentations",
+                "chapter": 1,
+                "verse": "12-17"
               }
             ]
           },
           {
-            "title": "Destruction of City",
+            "title": "",
             "references": [
               {
-                "book": "2 Chronicles",
-                "chapter": 36,
-                "verse": "17"
-              },
-              {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "12-14"
+                "book": "Lamentations",
+                "chapter": 1,
+                "verse": "18-22"
               }
             ]
           },
           {
-            "title": "Officials Executed",
+            "title": "",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "24-27a"
+                "book": "Lamentations",
+                "chapter": 2,
+                "verse": "1-10"
               }
             ]
           },
           {
-            "title": "Treasures Taken",
+            "title": "",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "17-23"
+                "book": "Lamentations",
+                "chapter": 2,
+                "verse": "11-17"
               }
             ]
           },
           {
-            "title": "Further Deportations Begin",
+            "title": "",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 39,
-                "verse": "9-10"
-              },
-              {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "15-16"
-              }
-            ]
-          },
-          {
-            "title": "Number of Future Captives",
-            "references": [
-              {
-                "book": "Jeremiah",
-                "chapter": 52,
-                "verse": "27b-30"
-              }
-            ]
-          },
-          {
-            "title": "Prospect for Captives",
-            "references": [
-              {
-                "book": "2 Chronicles",
-                "chapter": 36,
-                "verse": "20-21"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Gedaliah and Jeremiah",
-        "introduction": "While the city that Jeremiah had tried to save was being destroyed and the people to whom he had preached God's words of warning were being killed or taken away captive, God reassured Jeremiah that he would be saved. Working through Nebuchadnezzar and his officers, God now fulfills his promise. Jeremiah's future is about to cross paths with a man named Gedaliah, whom Nebuchadnezzar appoints as governor over the people left behind."
-      },
-      {
-        "title": "",
-        "paragraphs": [
-          {
-            "title": "Gedaliah Made Governor",
-            "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 25,
-                "verse": "22"
-              }
-            ]
-          },
-          {
-            "title": "Jeremiah's Prior Assurance",
-            "references": [
-              {
-                "book": "Jeremiah",
-                "chapter": 39,
-                "verse": "15-18"
-              }
-            ]
-          },
-          {
-            "title": "Jeremiah Saved",
-            "references": [
-              {
-                "book": "Jeremiah",
-                "chapter": 39,
-                "verse": "11-14"
-              }
-            ]
-          },
-          {
-            "title": "Details of Release",
-            "references": [
-              {
-                "book": "Jeremiah",
-                "chapter": 40,
-                "verse": "1-5"
-              }
-            ]
-          },
-          {
-            "title": "Jeremiah with Those Left",
-            "references": [
-              {
-                "book": "Jeremiah",
-                "chapter": 40,
-                "verse": "6"
+                "book": "Lamentations",
+                "chapter": 2,
+                "verse": "18-22"
               }
             ]
           }

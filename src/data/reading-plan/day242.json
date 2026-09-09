@@ -4,10 +4,6 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Jeremiah's Lamentations",
-        "introduction": "It would be altogether reasonable for Jeremiah to gloat over the fall of Jerusalem. After all, he stood virtually alone in predicting its destruction, and suffered a great deal of persecution as a result. Now that his prophecies have come true, it would be natural enough for him to say, \"I told you so!\" But that would not be consistent with Jeremiah's character. Like the God he serves, Jeremiah is grieved at the loss of Jerusalem and the scattering of God's people. He is both angry and sad. He is angry at the priests and prophets whose sins made the destruction necessary. He is angry at the nations which have either directly overthrown Judah or failed to come to her rescue. But mostly Jeremiah is sad. This weeping prophet, who so many times lamented his own sufferings, now laments the suffering of his fellow countrymen.\n\nAlthough its authorship is not specifically indicated, it seems most likely that Jeremiah is the author of a writing known simply as Lamentations. The poem expresses the many mixed feelings which this aging and weary man of God must have. Sometimes he speaks from a personal viewpoint about his own sufferings and persecutions; sometimes he voices the nation's collective horror, grief, confusion, and yet hope. So poignant is this beautiful lament that even to this day it is read by these Hebrews' descendants each year on the anniversary of the temple's destruction. From a literary standpoint alone, the poem is a classic. Far beyond that, however, it is one of the most powerful and moving expressions of human emotions that one will ever read, and it bears a timeless message which is nothing less than sublime."
-      },
-      {
         "title": "",
         "paragraphs": [
           {
@@ -15,8 +11,8 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 1,
-                "verse": "1-6"
+                "chapter": 3,
+                "verse": "1-21"
               }
             ]
           },
@@ -25,8 +21,8 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 1,
-                "verse": "7-11"
+                "chapter": 3,
+                "verse": "22-33"
               }
             ]
           },
@@ -35,8 +31,8 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 1,
-                "verse": "12-17"
+                "chapter": 3,
+                "verse": "34-54"
               }
             ]
           },
@@ -45,8 +41,8 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 1,
-                "verse": "18-22"
+                "chapter": 3,
+                "verse": "55-66"
               }
             ]
           },
@@ -55,7 +51,7 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 2,
+                "chapter": 4,
                 "verse": "1-10"
               }
             ]
@@ -65,8 +61,8 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 2,
-                "verse": "11-17"
+                "chapter": 4,
+                "verse": "11-22"
               }
             ]
           },
@@ -75,8 +71,18 @@
             "references": [
               {
                 "book": "Lamentations",
-                "chapter": 2,
-                "verse": "18-22"
+                "chapter": 5,
+                "verse": "1-18"
+              }
+            ]
+          },
+          {
+            "title": "",
+            "references": [
+              {
+                "book": "Lamentations",
+                "chapter": 5,
+                "verse": "19-22"
               }
             ]
           }

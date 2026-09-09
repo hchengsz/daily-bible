@@ -4,126 +4,36 @@
     "introduction": "",
     "sections": [
       {
-        "introduction": "Using three allegories, God foretells Judah's imminent destruction. The first allegory shows Judah as a useless vine to be burned. The second is a vitriolic attack against Judah's unfaithfulness, portraying Judah as an adulterous wife, worse than her two sisters, Israel and Edom, and less moral than a prostitute. The third allegory, using two eagles and a vine, calls specific attention to the personal ruin of King Zedekiah."
+        "introduction": "As a lasting reminder of how the wicked are brought down, Ezekiel writes a lament for two of Judah's kings who were taken by Judah's oppressors. It has been some 17 years since Pharaoh Necho led King Jehoahaz away to captivity in Egypt, and some six years since Nebuchadnezzar brought a subdued King Jehoiakin to Babylonia. Their capture and exile are witness to Judah's vulnerability to God's judgment."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "The Useless Vine",
+            "title": "Lament for the Kings",
             "references": [
               {
                 "book": "Ezekiel",
-                "chapter": 15,
-                "verse": "1-8"
-              }
-            ]
-          },
-          {
-            "title": "The Unfaithful Wife",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "1-14"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "15-22"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "23-34"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "35-43"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "44-52"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "53-58"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 16,
-                "verse": "59-63"
-              }
-            ]
-          },
-          {
-            "title": "Two Eagles and a Vine",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 17,
-                "verse": "1-18"
-              }
-            ]
-          },
-          {
-            "title": "",
-            "references": [
-              {
-                "book": "Ezekiel",
-                "chapter": 17,
-                "verse": "19-24"
+                "chapter": 19,
+                "verse": "1-9"
               }
             ]
           }
         ]
       },
       {
-        "introduction": "It is only natural in times of pending punishment to place the blame on others, to hide behind prior good conduct, or perhaps to take security in one's family or heritage. In one of the clearest passages in all of prophecy, God discredits any notion that the people of Judah are suffering only because of their predecessors' sins, or that they can claim any immunity as descendants of faithful forefathers such as Abraham. No, each person is accountable for his own sins, says Ezekiel; and God assures his people that, just as the wicked can repent and be saved, the righteous can fall into sin and be destroyed."
+        "introduction": "In the following year, 590 B.C., God once again chastises Israel, citing their long history of rebellion and its repeated reluctance to bring ultimate punishment against them. He reminds Israel that they continue to be as sinful as their fathers, but that the day is coming when God's chosen ones will be an obedient and holy people."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "Personal Accountability",
+            "title": "History of Rebelliousness",
             "references": [
               {
                 "book": "Ezekiel",
-                "chapter": 18,
-                "verse": "1-9"
+                "chapter": 20,
+                "verse": "1-12"
               }
             ]
           },
@@ -132,8 +42,56 @@
             "references": [
               {
                 "book": "Ezekiel",
-                "chapter": 18,
-                "verse": "10-20"
+                "chapter": 20,
+                "verse": "13-29"
+              }
+            ]
+          },
+          {
+            "title": "Present Rebelliousness",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 20,
+                "verse": "30-38"
+              }
+            ]
+          },
+          {
+            "title": "Time of No Rebellion",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 20,
+                "verse": "39-44"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "introduction": "Because of Israel's rebellion, judgment has already come against the northern tribes, and God's vengeance is poised against Judah. Ezekiel now sees the sword of judgment coming. Ezekiel turns his face southward and brings still other pronouncements against Judah's sin. Perhaps the judgments keep coming for the simple reason that so far few people have believed their message. As Ezekiel complains, they think he is simply bringing nice little parables—interesting sermons from which they derive entertainment. Hence the picture of a sword. Maybe it will get their attention."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "View to the Homeland",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 20,
+                "verse": "45-49"
+              }
+            ]
+          },
+          {
+            "title": "Sword of Judgment",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 21,
+                "verse": "1-12"
               }
             ]
           },
@@ -142,8 +100,58 @@
             "references": [
               {
                 "book": "Ezekiel",
-                "chapter": 18,
-                "verse": "21-32"
+                "chapter": 21,
+                "verse": "13-17"
+              }
+            ]
+          },
+          {
+            "title": "Babylonia Is Sword",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 21,
+                "verse": "18-24"
+              }
+            ]
+          },
+          {
+            "title": "Warning to Zedekiah",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 21,
+                "verse": "25-27"
+              }
+            ]
+          },
+          {
+            "title": "Ammonites Share Fate",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 21,
+                "verse": "28-32"
+              }
+            ]
+          },
+          {
+            "title": "Enumeration of Sins",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 22,
+                "verse": "1-16"
+              }
+            ]
+          },
+          {
+            "title": "",
+            "references": [
+              {
+                "book": "Ezekiel",
+                "chapter": 22,
+                "verse": "17-31"
               }
             ]
           }

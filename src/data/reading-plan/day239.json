@@ -4,102 +4,143 @@
     "introduction": "",
     "sections": [
       {
+        "title": "Jeremiah Escapes Death",
+        "introduction": "After apparently having been released for a time from house arrest in the royal palace, Jeremiah is first imprisoned in a dungeon and then put down into an empty well, before being saved by, of all people, Zedekiah. One gets the feeling that Zedekiah really does fear God and his prophet after all. This is somewhat confirmed when Zedekiah approaches Jeremiah secretly to learn what God's plans are. Unfortunately, Zedekiah never accepts God's words.\n\nIt is revealed somewhat incidentally that, before the end of Jerusalem's siege, Nebuchadnezzar temporarily withdraws his forces in order to push the Egyptian army back to its borders. Egypt had hoped to come to Judah's rescue in order to keep Judah as a buffer state between Babylonia and its own territory. But Babylon prevails and returns to finish off Jerusalem.\n\nHere are the incidents leading to Jeremiah's imprisonment and close brush with death. With famine having set in and bread being scarce, these events evidently take place just prior to Jerusalem's fall."
+      },
+      {
         "title": "",
         "paragraphs": [
           {
-            "title": "Judgment Against Tyre",
+            "title": "Future Fate Sought",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 26,
-                "verse": "1-6"
+                "book": "Jeremiah",
+                "chapter": 37,
+                "verse": "3-5"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Babylonians Will Return",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 26,
-                "verse": "7-14"
+                "book": "Jeremiah",
+                "chapter": 37,
+                "verse": "6-10"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Jeremiah Imprisoned",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 26,
-                "verse": "15-21"
+                "book": "Jeremiah",
+                "chapter": 37,
+                "verse": "11-16"
               }
             ]
           },
           {
-            "title": "Lament for Tyre",
+            "title": "Zedekiah Warned Again",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 27,
-                "verse": "1-11"
+                "book": "Jeremiah",
+                "chapter": 37,
+                "verse": "17"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Limited Release",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 27,
-                "verse": "12-24"
+                "book": "Jeremiah",
+                "chapter": 37,
+                "verse": "18-21"
               }
             ]
           },
           {
-            "title": "",
+            "title": "Officials Conspire",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 27,
-                "verse": "25-36"
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "1-3"
               }
             ]
           },
           {
-            "title": "Judgment Against Tyre's King",
+            "title": "Jeremiah Put into Cistern",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 28,
-                "verse": "1-10"
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "4-6"
               }
             ]
           },
           {
-            "title": "King's Satanlike Rule",
+            "title": "Jeremiah Rescued",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 28,
-                "verse": "11-19"
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "7-13"
               }
             ]
           },
           {
-            "title": "Judgment Against Sidon",
+            "title": "Zedekiah Asks Privately",
             "references": [
               {
-                "book": "Ezekiel",
-                "chapter": 28,
-                "verse": "20-26"
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "14-16"
+              }
+            ]
+          },
+          {
+            "title": "Zedekiah's Options",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "17-18"
+              }
+            ]
+          },
+          {
+            "title": "Zedekiah Fears Surrender",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "19-23"
+              }
+            ]
+          },
+          {
+            "title": "Conversation Kept Secret",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "24-27"
+              }
+            ]
+          },
+          {
+            "title": "House Arrest Continues",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 38,
+                "verse": "28"
               }
             ]
           }
         ]
-      },
-      {
-        "introduction": "Sixteen years from now, after Nebuchadnezzar has laid a 13-year siege against Tyre, Ezekiel will record a footnote to this prophecy (Ezk. 29:17-20)."
       }
     ]
   }

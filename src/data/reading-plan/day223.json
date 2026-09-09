@@ -4,128 +4,119 @@
     "introduction": "",
     "sections": [
       {
-        "title": "The Great Deportation",
-        "introduction": "Upon the death of his father, eighteen-year-old Jehoiachin ascends the throne of Judah, but he reigns for only three months. Nebuchadnezzar is not about to allow a second king of Judah to defy him, so he comes to lead the new king away as a captive. Although the historical record indicates that Jehoiachin's character is as evil as his father's, in all fairness it may simply be that during his brief reign nothing is done by his queen mother or advisors to alter the wicked course which Jehoiachin had taken. But God knows a man's heart long before his actions reveal it, and so it is altogether that, given enough time, Jehoiachin would have been just like his father. Therefore Jeremiah forewarns Jehoiachin and his mother of their pending fate.\n\nJehoiachin's fate is linked to the fate of thousands of God's people. There have been many deportations already, and more will follow, but this is to be by far the greatest deportation of them all. Significant among the royal and priestly captives is a man by the name of Ezekiel, who will soon be called by God to be a prophet among his fellow captives in Babylonia."
+        "title": "Jeremiah's Prophecies Under Zedekiah",
+        "introduction": "Jeremiah's chief concern during the early part of Zedekiah's reign is the number of false prophets who are still saying that all is well, and that Babylonia will be broken instead of Judah. Perhaps because of the persecution he faces as a true prophet of God, Jeremiah unleashes a blistering attack against those who are masquerading as God's prophets, even among the captives in Babylonia. Jeremiah is forced to write to the people in exile and tell them to settle in for the duration, which will be 70 years."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "Jehoiachin Child-King",
-            "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "6b, 8"
-              }
-            ]
-          },
-          {
-            "title": "Jehoiachin's Character",
-            "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "9"
-              }
-            ]
-          },
-          {
-            "title": "Jeremiah's Prophecy",
+            "title": "Vision of the Figs",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 22,
-                "verse": "24-30"
+                "chapter": 24,
+                "verse": "1-10"
               }
             ]
           },
           {
-            "title": "Jehoiachin Taken Captive",
+            "title": "Letter to Exiles",
             "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "10-12"
-              },
-              {
-                "book": "3 Chronicles",
-                "chapter": 36,
-                "verse": "10a"
-              }
-            ]
-          },
-          {
-            "title": "The Great Deportation",
-            "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "13"
-              },
-              {
-                "book": "Daniel",
-                "chapter": 1,
-                "verse": "2"
-              },
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "14-16"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Reign of Zedekiah",
-        "introduction": "With the great deportation under way and young King Jehoiachin being taken to Babylon, Nebuchadnezzar sets up Jehoiachin's uncle Mattaniah to be a puppet king. Mattaniah is the third son of former King Josiah. Nebuchadnezzar calls Mattaniah by the name of Zedekiah, and that is how he will be remembered throughout history. Zedekiah's character, like that of his people, is unrighteous. Zedekiah has the dubious distinction of being the king of Judah during its final destruction. The 11 years of his reign will come to a disastrous end with the fall of Jerusalem."
-      },
-      {
-        "title": "",
-        "paragraphs": [
-          {
-            "title": "Zedekiah a Puppet King",
-            "references": [
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "17"
-              },
               {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "1"
-              },
-              {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "18"
+                "chapter": 29,
+                "verse": "1-23"
               }
             ]
           },
           {
-            "title": "Zedekiah's Character",
+            "title": "Message for Shemaiah",
             "references": [
               {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "19"
-              },
-              {
-                "book": "2 Chronicles",
-                "chapter": 36,
-                "verse": "13b-16"
-              },
+                "book": "Jeremiah",
+                "chapter": 29,
+                "verse": "24-32"
+              }
+            ]
+          },
+          {
+            "title": "Jeremiah to Wear Yoke",
+            "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "2"
-              },
+                "chapter": 27,
+                "verse": "1-3"
+              }
+            ]
+          },
+          {
+            "title": "Meaning to the Nations",
+            "references": [
               {
-                "book": "2 Kings",
-                "chapter": 24,
-                "verse": "20a"
+                "book": "Jeremiah",
+                "chapter": 27,
+                "verse": "4-11"
+              }
+            ]
+          },
+          {
+            "title": "Meaning to Judah",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 27,
+                "verse": "12-15"
+              }
+            ]
+          },
+          {
+            "title": "Fate of Temple Articles",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 27,
+                "verse": "16-22"
+              }
+            ]
+          },
+          {
+            "title": "Hananiah Contradicts Jeremiah",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 28,
+                "verse": "1-4"
+              }
+            ]
+          },
+          {
+            "title": "Jeremiah's Response",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 28,
+                "verse": "5-9"
+              }
+            ]
+          },
+          {
+            "title": "Hananiah Breaks Yoke",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 28,
+                "verse": "10-11"
+              }
+            ]
+          },
+          {
+            "title": "Hananiah's Punishment",
+            "references": [
+              {
+                "book": "Jeremiah",
+                "chapter": 28,
+                "verse": "12-17"
               }
             ]
           }

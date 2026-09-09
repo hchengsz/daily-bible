@@ -4,139 +4,173 @@
     "introduction": "",
     "sections": [
       {
-        "title": "Jeremiah Escapes Death",
-        "introduction": "After apparently having been released for a time from house arrest in the royal palace, Jeremiah is first imprisoned in a dungeon and then put down into an empty well, before being saved by, of all people, Zedekiah. One gets the feeling that Zedekiah really does fear God and his prophet after all. This is somewhat confirmed when Zedekiah approaches Jeremiah secretly to learn what God's plans are. Unfortunately, Zedekiah never accepts God's words.\n\nIt is revealed somewhat incidentally that, before the end of Jerusalem's siege, Nebuchadnezzar temporarily withdraws his forces in order to push the Egyptian army back to its borders. Egypt had hoped to come to Judah's rescue in order to keep Judah as a buffer state between Babylonia and its own territory. But Babylon prevails and returns to finish off Jerusalem.\n\nHere are the incidents leading to Jeremiah's imprisonment and close brush with death. With famine having set in and bread being scarce, these events evidently take place just prior to Jerusalem's fall."
+        "title": "Fall of Jerusalem",
+        "introduction": "The end has finally come. Plagued by famine, drought, and pestilence from within, and besieged by the Babylonian hordes from without, the City of David finally falls. The historical record is mercifully brief in its account, as if the shame of it all forbids greater mention. The essential details are these: the wall is breached in the fourth month of 586 B.C.; when Zedekiah and his troops flee the city by night, they are quickly captured; a month later the glorious temple of Solomon and the royal palace are razed; the remaining noblemen are killed and temple treasures are taken as booty; and, over a period of four years, hundreds of people are taken captive and deported to Babylon. With the fall now an undeniable reality, the final chapter of the glorious era of Israel comes to a close, and the prophets of God are regrettably vindicated. Ezekiel in particular is proved correct as to the final fate of Zedekiah and the exact manner in which it happens."
       },
       {
         "title": "",
         "paragraphs": [
           {
-            "title": "Future Fate Sought",
+            "title": "Wall Is Broken",
             "references": [
               {
+                "book": "2 Kings",
+                "chapter": 25,
+                "verse": "3"
+              },
+              {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "3-5"
+                "chapter": 39,
+                "verse": "2-3"
               }
             ]
           },
           {
-            "title": "Babylonians Will Return",
+            "title": "King and Army Flee",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "6-10"
+                "chapter": 39,
+                "verse": "4-5a"
               }
             ]
           },
           {
-            "title": "Jeremiah Imprisoned",
+            "title": "Zedekiah Humiliated",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "11-16"
+                "chapter": 52,
+                "verse": "9b-11"
               }
             ]
           },
           {
-            "title": "Zedekiah Warned Again",
+            "title": "Destruction of City",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 37,
+                "book": "2 Chronicles",
+                "chapter": 36,
                 "verse": "17"
+              },
+              {
+                "book": "Jeremiah",
+                "chapter": 52,
+                "verse": "12-14"
               }
             ]
           },
           {
-            "title": "Limited Release",
+            "title": "Officials Executed",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 37,
-                "verse": "18-21"
+                "chapter": 52,
+                "verse": "24-27a"
               }
             ]
           },
           {
-            "title": "Officials Conspire",
+            "title": "Treasures Taken",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "1-3"
+                "chapter": 52,
+                "verse": "17-23"
               }
             ]
           },
           {
-            "title": "Jeremiah Put into Cistern",
+            "title": "Further Deportations Begin",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "4-6"
+                "chapter": 39,
+                "verse": "9-10"
+              },
+              {
+                "book": "Jeremiah",
+                "chapter": 52,
+                "verse": "15-16"
               }
             ]
           },
           {
-            "title": "Jeremiah Rescued",
+            "title": "Number of Future Captives",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "7-13"
+                "chapter": 52,
+                "verse": "27b-30"
               }
             ]
           },
           {
-            "title": "Zedekiah Asks Privately",
+            "title": "Prospect for Captives",
             "references": [
               {
-                "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "14-16"
+                "book": "2 Chronicles",
+                "chapter": 36,
+                "verse": "20-21"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Gedaliah and Jeremiah",
+        "introduction": "While the city that Jeremiah had tried to save was being destroyed and the people to whom he had preached God's words of warning were being killed or taken away captive, God reassured Jeremiah that he would be saved. Working through Nebuchadnezzar and his officers, God now fulfills his promise. Jeremiah's future is about to cross paths with a man named Gedaliah, whom Nebuchadnezzar appoints as governor over the people left behind."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "Gedaliah Made Governor",
+            "references": [
+              {
+                "book": "2 Kings",
+                "chapter": 25,
+                "verse": "22"
               }
             ]
           },
           {
-            "title": "Zedekiah's Options",
+            "title": "Jeremiah's Prior Assurance",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "17-18"
+                "chapter": 39,
+                "verse": "15-18"
               }
             ]
           },
           {
-            "title": "Zedekiah Fears Surrender",
+            "title": "Jeremiah Saved",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "19-23"
+                "chapter": 39,
+                "verse": "11-14"
               }
             ]
           },
           {
-            "title": "Conversation Kept Secret",
+            "title": "Details of Release",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "24-27"
+                "chapter": 40,
+                "verse": "1-5"
               }
             ]
           },
           {
-            "title": "House Arrest Continues",
+            "title": "Jeremiah with Those Left",
             "references": [
               {
                 "book": "Jeremiah",
-                "chapter": 38,
-                "verse": "28"
+                "chapter": 40,
+                "verse": "6"
               }
             ]
           }
