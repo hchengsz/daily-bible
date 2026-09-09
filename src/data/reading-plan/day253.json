@@ -1,0 +1,148 @@
+[
+  {
+    "id": 253,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Bildad",
+        "paragraphs": [
+          {
+            "title": "God Is Just",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 8,
+                "verse": "1-7"
+              }
+            ]
+          },
+          {
+            "title": "Appeal to Scholarship",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 8,
+                "verse": "8-10"
+              }
+            ]
+          },
+          {
+            "title": "Security Is in God",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 8,
+                "verse": "11-19"
+              }
+            ]
+          },
+          {
+            "title": "Misery Will Be Avenged",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 8,
+                "verse": "20-22"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Job",
+        "paragraphs": [
+          {
+            "title": "God's Creative Power",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 9,
+                "verse": "1-13"
+              }
+            ]
+          },
+          {
+            "title": "No Argument Against God",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 9,
+                "verse": "14-20"
+              }
+            ]
+          },
+          {
+            "title": "Innocence No Guarantee",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 9,
+                "verse": "21-24"
+              }
+            ]
+          },
+          {
+            "title": "Suffering Remains",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 9,
+                "verse": "25-31"
+              }
+            ]
+          },
+          {
+            "title": "No Advocate for Man",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 9,
+                "verse": "32-35"
+              }
+            ]
+          },
+          {
+            "title": "Is Man's Condition Known",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 10,
+                "verse": "1-7"
+              }
+            ]
+          },
+          {
+            "title": "Should Creator Destroy",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 10,
+                "verse": "8-12"
+              }
+            ]
+          },
+          {
+            "title": "Sinfulness Not the Issue",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 10,
+                "verse": "13-17"
+              }
+            ]
+          },
+          {
+            "title": "Sorrowful Human Condition",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 10,
+                "verse": "18-22"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
