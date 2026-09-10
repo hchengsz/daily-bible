@@ -1,0 +1,108 @@
+[
+  {
+    "id": 255,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Eliphaz",
+        "paragraphs": [
+          {
+            "title": "Rebuke for Questioning God",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 15,
+                "verse": "1-13"
+              }
+            ]
+          },
+          {
+            "title": "Man Merely God's Pawn",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 15,
+                "verse": "14-16"
+              }
+            ]
+          },
+          {
+            "title": "Inevitable Fate of Wicked",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 15,
+                "verse": "17-35"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Job",
+        "paragraphs": [
+          {
+            "title": "Speeches No Relief",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 16,
+                "verse": "1-6"
+              }
+            ]
+          },
+          {
+            "title": "How God Has Devastated",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 16,
+                "verse": "7-14"
+              }
+            ]
+          },
+          {
+            "title": "Maintaining Innocence",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 16,
+                "verse": "15-17"
+              }
+            ]
+          },
+          {
+            "title": "Surely There Is Advocate",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 16,
+                "verse": "18-21"
+              }
+            ]
+          },
+          {
+            "title": "Friends Mock Curiosity",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 16,
+                "verse": "22-17:9"
+              }
+            ]
+          },
+          {
+            "title": "Limitations on Sympathy",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 17,
+                "verse": "10-16"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

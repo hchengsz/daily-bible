@@ -1,78 +1,48 @@
 [
   {
-    "id": 252,
+    "id": 254,
     "introduction": "",
     "sections": [
       {
-        "title": "Eliphaz",
+        "title": "Zophar",
         "paragraphs": [
           {
-            "title": "Believe Your Own Teaching",
+            "title": "Appeal to Zophar's Insight.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 4,
+                "chapter": 11,
                 "verse": "1-6"
               }
             ]
           },
           {
-            "title": "Only Wicked Truly Destroyed",
+            "title": "God's Wisdom Hidden.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 4,
-                "verse": "7-11"
+                "chapter": 11,
+                "verse": "7-9"
               }
             ]
           },
           {
-            "title": "Appeal to Mysticism",
+            "title": "God Recognizes Suffering.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 4,
-                "verse": "12-16"
+                "chapter": 11,
+                "verse": "10-12"
               }
             ]
           },
           {
-            "title": "Man's Vulnerability",
+            "title": "Troubles Will Pass.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 4,
-                "verse": "17-21"
-              }
-            ]
-          },
-          {
-            "title": "Everyone Has Trouble",
-            "references": [
-              {
-                "book": "Job",
-                "chapter": 5,
-                "verse": "1-7"
-              }
-            ]
-          },
-          {
-            "title": "Only God Knows Why",
-            "references": [
-              {
-                "book": "Job",
-                "chapter": 5,
-                "verse": "8-16"
-              }
-            ]
-          },
-          {
-            "title": "Blessings Follow Discipline",
-            "references": [
-              {
-                "book": "Job",
-                "chapter": 5,
-                "verse": "17-27"
+                "chapter": 11,
+                "verse": "13-20"
               }
             ]
           }
@@ -82,92 +52,132 @@
         "title": "Job",
         "paragraphs": [
           {
-            "title": "Curses Come from Anguish",
+            "title": "Truth in Arguments.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 6,
-                "verse": "1-7"
+                "chapter": 12,
+                "verse": "1-3"
               }
             ]
           },
           {
-            "title": "Fear of Sinning in Pain",
+            "title": "Wicked Scorn Others' Trouble.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 6,
-                "verse": "8-13"
+                "chapter": 12,
+                "verse": "4-6"
               }
             ]
           },
           {
-            "title": "Cannot Depend on Friends",
+            "title": "God Permits Suffering.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 6,
-                "verse": "14-23"
+                "chapter": 12,
+                "verse": "7-12"
               }
             ]
           },
           {
-            "title": "Rebuke for Chiding",
+            "title": "God's Providential Control.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 6,
-                "verse": "24-27"
+                "chapter": 12,
+                "verse": "13-25"
               }
             ]
           },
           {
-            "title": "No Malice in Curses",
+            "title": "Need for God's Answers.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 6,
-                "verse": "28-30"
-              }
-            ]
-          },
-          {
-            "title": "Expectancy of Hardship",
-            "references": [
-              {
-                "book": "Job",
-                "chapter": 7,
+                "chapter": 13,
                 "verse": "1-5"
               }
             ]
           },
           {
-            "title": "Brevity of Life",
+            "title": "Man's Answers Inadequate.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 7,
-                "verse": "6-10"
+                "chapter": 13,
+                "verse": "6-12"
               }
             ]
           },
           {
-            "title": "Bitterness of Pain",
+            "title": "Confidence in Questioning.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 7,
-                "verse": "11-16"
+                "chapter": 13,
+                "verse": "13-19"
               }
             ]
           },
           {
-            "title": "What Is Man's Significance?",
+            "title": "Job's Opening Statement.",
             "references": [
               {
                 "book": "Job",
-                "chapter": 7,
-                "verse": "17-21"
+                "chapter": 13,
+                "verse": "20-22"
+              }
+            ]
+          },
+          {
+            "title": "What Sins Merit This?",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 13,
+                "verse": "23-27"
+              }
+            ]
+          },
+          {
+            "title": "Life Is Limited.",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 13,
+                "verse": "28-14:6"
+              }
+            ]
+          },
+          {
+            "title": "Man Lives Only Once.",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 14,
+                "verse": "7-12"
+              }
+            ]
+          },
+          {
+            "title": "Only Hope Is Resurrection.",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 14,
+                "verse": "13-17"
+              }
+            ]
+          },
+          {
+            "title": "Sorrow in Meantime.",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 14,
+                "verse": "18-22"
               }
             ]
           }

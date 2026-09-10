@@ -1,0 +1,118 @@
+[
+  {
+    "id": 257,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Eliphaz",
+        "paragraphs": [
+          {
+            "title": "Man Cannot Benefit God",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 22,
+                "verse": "1-3"
+              }
+            ]
+          },
+          {
+            "title": "Less Righteous Than Believed",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 22,
+                "verse": "4-11"
+              }
+            ]
+          },
+          {
+            "title": "Wickedness Cannot Be Hidden",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 22,
+                "verse": "12-20"
+              }
+            ]
+          },
+          {
+            "title": "Job Should Repent",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 22,
+                "verse": "21-30"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Job",
+        "paragraphs": [
+          {
+            "title": "Desire for Personal Hearing",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 23,
+                "verse": "1-7"
+              }
+            ]
+          },
+          {
+            "title": "Righteousness Reasserted",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 23,
+                "verse": "8-12"
+              }
+            ]
+          },
+          {
+            "title": "God's Control Is Fearsome",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 23,
+                "verse": "13-17"
+              }
+            ]
+          },
+          {
+            "title": "Suffering Without Judgment",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 24,
+                "verse": "1-12"
+              }
+            ]
+          },
+          {
+            "title": "Deeds of Darkness",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 24,
+                "verse": "13-17"
+              }
+            ]
+          },
+          {
+            "title": "Wicked Face Death",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 24,
+                "verse": "18-25"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

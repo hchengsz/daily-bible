@@ -1,0 +1,208 @@
+[
+  {
+    "id": 256,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Bildad",
+        "paragraphs": [
+          {
+            "title": "Nonsufferers Know Something",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 18,
+                "verse": "1-4"
+              }
+            ]
+          },
+          {
+            "title": "Suffering from Wickedness",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 18,
+                "verse": "5-21"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Job",
+        "paragraphs": [
+          {
+            "title": "Even Righteous Suffer",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "1-6"
+              }
+            ]
+          },
+          {
+            "title": "Job's Destruction",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "7-12"
+              }
+            ]
+          },
+          {
+            "title": "Job's Alienation",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "13-20"
+              }
+            ]
+          },
+          {
+            "title": "Plea for Pity",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "21-22"
+              }
+            ]
+          },
+          {
+            "title": "Confidence in Resurrection",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "23-27"
+              }
+            ]
+          },
+          {
+            "title": "Arguments Cut Both Ways",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 19,
+                "verse": "28-29"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Zophar",
+        "paragraphs": [
+          {
+            "title": "Rebuke Prompts Reply",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 20,
+                "verse": "1-3"
+              }
+            ]
+          },
+          {
+            "title": "Wicked Always Fall",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 20,
+                "verse": "4-11"
+              }
+            ]
+          },
+          {
+            "title": "Repayment for Sins",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 20,
+                "verse": "12-19"
+              }
+            ]
+          },
+          {
+            "title": "Wicked Have No Defense",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 20,
+                "verse": "20-29"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Job",
+        "paragraphs": [
+          {
+            "title": "Listen Further",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "1-3"
+              }
+            ]
+          },
+          {
+            "title": "Wicked Often Prosper",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "4-18"
+              }
+            ]
+          },
+          {
+            "title": "Unfair Punishment",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "19-21"
+              }
+            ]
+          },
+          {
+            "title": "Inequities in Death",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "22-26"
+              }
+            ]
+          },
+          {
+            "title": "Death Inadequate Punishment",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "27-33"
+              }
+            ]
+          },
+          {
+            "title": "Answers Fall Short",
+            "references": [
+              {
+                "book": "Job",
+                "chapter": 21,
+                "verse": "34"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
