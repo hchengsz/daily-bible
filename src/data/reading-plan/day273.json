@@ -1,0 +1,53 @@
+[
+  {
+    "id": 273,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "Israel's Restoration After Punishment",
+            "references": [
+              {
+                "book": "Psalms",
+                "chapter": 107,
+                "verse": "1-43"
+              }
+            ]
+          },
+          {
+            "title": "Praise for Deliverance From the Chains and Death of Captivity",
+            "references": [
+              {
+                "book": "Psalms",
+                "chapter": 116,
+                "verse": "1-19"
+              }
+            ]
+          },
+          {
+            "title": "Praise for a Renewed Life",
+            "references": [
+              {
+                "book": "Psalms",
+                "chapter": 118,
+                "verse": "1-29"
+              }
+            ]
+          },
+          {
+            "title": "Prayer of Trust That Foreign Dominance Will End",
+            "references": [
+              {
+                "book": "Psalms",
+                "chapter": 125,
+                "verse": "1-5"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

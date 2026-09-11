@@ -84,5 +84,11 @@ if (-not $ExpoArgs -or $ExpoArgs.Count -eq 0) {
   $ExpoArgs = @("start", "--clear")
 }
 
-& npx expo @ExpoArgs
+$expoCli = Join-Path $projectRoot "node_modules\.bin\expo.cmd"
+
+if (-not (Test-Path -LiteralPath $expoCli)) {
+  throw "Local Expo CLI not found at $expoCli. Run npm install first."
+}
+
+& $expoCli @ExpoArgs
 exit $LASTEXITCODE
