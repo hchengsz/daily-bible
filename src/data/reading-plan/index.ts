@@ -86,6 +86,26 @@ import day250 from "./day250.json";
 import day251 from "./day251.json";
 import day252 from "./day252.json";
 import day253 from "./day253.json";
+import day254 from "./day254.json";
+import day255 from "./day255.json";
+import day256 from "./day256.json";
+import day257 from "./day257.json";
+import day258 from "./day258.json";
+import day259 from "./day259.json";
+import day260 from "./day260.json";
+import day261 from "./day261.json";
+import day262 from "./day262.json";
+import day263 from "./day263.json";
+import day264 from "./day264.json";
+import day265 from "./day265.json";
+import day266 from "./day266.json";
+import day267 from "./day267.json";
+import day268 from "./day268.json";
+import day269 from "./day269.json";
+import day270 from "./day270.json";
+import day271 from "./day271.json";
+import day272 from "./day272.json";
+import day273 from "./day273.json";
 
 const readingPlanModules = [
   day166,
@@ -176,6 +196,26 @@ const readingPlanModules = [
   day251,
   day252,
   day253,
+  day254,
+  day255,
+  day256,
+  day257,
+  day258,
+  day259,
+  day260,
+  day261,
+  day262,
+  day263,
+  day264,
+  day265,
+  day266,
+  day267,
+  day268,
+  day269,
+  day270,
+  day271,
+  day272,
+  day273,
 ] as unknown[];
 
 export const readingPlanDays = readingPlanModules.flatMap((day) =>
