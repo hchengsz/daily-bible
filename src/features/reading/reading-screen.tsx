@@ -12,7 +12,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { getScriptureText } from "../../data/bible";
 import {
   CompletionCelebrationOverlay,
   useCompletionCelebration,
@@ -31,14 +30,12 @@ import {
   getDateKey,
   getDayOfYear,
   getParagraphReferenceLabel,
+  getParagraphScripture,
   getParagraphs,
   getReadingDayForDate,
-  getReferences,
   getSections,
   hasReadingDayForDate,
   type Day,
-  type Paragraph,
-  type Reference,
 } from "./reading-plan-utils";
 
 type TranslationChunk = {
@@ -342,19 +339,6 @@ const renderInteractiveSentences = ({
   });
 };
 
-const getReferenceText = (ref: Reference) => {
-  const { book, chapter, verse } = ref;
-
-  return getScriptureText(book, chapter, verse);
-};
-
-const getParagraphScripture = (paragraph: Paragraph) =>
-  getReferences(paragraph)
-    .map(getReferenceText)
-    .map((text) => text.trim())
-    .filter(Boolean)
-    .join(" ");
-
 const getDayTitleId = () => "day.title";
 
 const getDayIntroductionId = () => "day.introduction";
@@ -466,8 +450,9 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
   signal?: AbortSignal,
+  provider: "google" | "ai" = "google",
 ): Promise<TranslationMap> => {
-  const response = await fetch(TRANSLATE_ENDPOINT, {
+  const response = await fetch(provider === "ai" ? `${TRANSLATE_API_ORIGIN}/api/ai-translate` : TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -639,6 +624,9 @@ export default function ReadingScreen() {
     [selectedDay],
   );
   const [translations, setTranslations] = useState<TranslationMap>({});
+  const translationControllerRef = useRef<AbortController | null>(null);
+  const translationCacheRef = useRef<Partial<Record<"google" | "ai", TranslationMap>>>({});
+  const [translationProvider, setTranslationProvider] = useState<"google" | "ai">("google");
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
@@ -691,6 +679,7 @@ export default function ReadingScreen() {
 
   useEffect(
     () => () => {
+      translationControllerRef.current?.abort();
       playbackRunRef.current += 1;
       Speech.stop();
       sentenceTranslationControllersRef.current.forEach((controller) =>
@@ -713,6 +702,10 @@ export default function ReadingScreen() {
 
   useEffect(() => {
     stopSpeechPlayback();
+    translationControllerRef.current?.abort();
+    translationControllerRef.current = null;
+    translationCacheRef.current = {};
+    setTranslationProvider("google");
     setTranslations({});
     setIsTranslated(false);
     setIsTranslating(false);
@@ -1075,31 +1068,45 @@ export default function ReadingScreen() {
     }
   };
 
-  const handleTranslate = async () => {
-    if (isTranslated) {
+  const handleTranslate = async (provider: "google" | "ai" = "google") => {
+    if (translationControllerRef.current) return;
+    stopSpeechPlayback();
+    setTranslationError(null);
+    if (isTranslated && translationProvider === provider) {
       setIsTranslated(false);
       return;
     }
 
-    if (Object.keys(translations).length) {
+    const cached = translationCacheRef.current[provider];
+    if (cached) {
+      setTranslations(cached);
+      setTranslationProvider(provider);
       setIsTranslated(true);
       return;
     }
 
+    const controller = new AbortController();
+    translationControllerRef.current = controller;
     setIsTranslating(true);
     setTranslationError(null);
 
     try {
-      const translatedChunks = await translateChunks(translationChunks);
-
+      const translatedChunks = await translateChunks(translationChunks, controller.signal, provider);
+      if (controller.signal.aborted) return;
+      translationCacheRef.current[provider] = translatedChunks;
+      setTranslationProvider(provider);
       setTranslations(translatedChunks);
       setIsTranslated(true);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setTranslationError(
         error instanceof Error ? error.message : "Translation failed.",
       );
     } finally {
-      setIsTranslating(false);
+      if (translationControllerRef.current === controller) {
+        translationControllerRef.current = null;
+        setIsTranslating(false);
+      }
     }
   };
 
@@ -1323,13 +1330,14 @@ export default function ReadingScreen() {
             <Pressable
               accessibilityRole="button"
               disabled={isTranslating}
-              onPress={handleTranslate}
+              accessibilityLabel="Google translation / original"
+              onPress={() => handleTranslate("google")}
               style={getHeaderToolStyle(isTranslating)}
             >
               <MaterialIcons
                 name="translate"
                 size={22}
-                color={isTranslated ? "#2db65a" : headerIconColor}
+                color={isTranslated && translationProvider === "google" ? "#2db65a" : headerIconColor}
               />
             </Pressable>
 
@@ -1471,6 +1479,23 @@ export default function ReadingScreen() {
             </Text>
           </View>
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="AI 翻译（天主教译法）"
+          accessibilityState={{ disabled: isTranslating, busy: isTranslating, selected: isTranslated && translationProvider === "ai" }}
+          disabled={isTranslating}
+          onPress={() => handleTranslate("ai")}
+          style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, marginTop: 14, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: colors.chip, opacity: isTranslating ? 0.6 : 1 }}
+        >
+          <MaterialIcons name="auto-awesome" size={18} color={colors.annotation} />
+          <Text style={{ color: colors.text, fontSize: 14 }}>
+            {isTranslating ? "翻译中…" : isTranslated && translationProvider === "ai" ? "查看英文原文" : "AI 翻译 · 天主教译法"}
+          </Text>
+        </Pressable>
+        {isTranslated && translationProvider === "ai" && (
+          <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI 译文 · 采用天主教术语，供阅读参考</Text>
+        )}
 
         {!!dayIntroduction.trim() && (
           <View
@@ -1637,6 +1662,7 @@ export default function ReadingScreen() {
                         }}
                       >
                         {getParagraphReferenceLabel(p)}
+                        {p.source ? ` · ${p.source.label}` : ""}
                       </Text>
 
                       <Text

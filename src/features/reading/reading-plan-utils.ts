@@ -1,4 +1,5 @@
 import { readingPlanDays } from "../../data/reading-plan";
+import { getScriptureText } from "../../data/bible";
 
 export type Reference = {
   book: string;
@@ -9,6 +10,12 @@ export type Reference = {
 export type Paragraph = {
   title?: string;
   references?: Reference[];
+  /** Inline scripture takes precedence over the NIV reference lookup. */
+  text?: string;
+  source?: {
+    label: string;
+    url: string;
+  };
 };
 
 export type Section = {
@@ -49,6 +56,18 @@ export const getReferenceLabel = (ref: Reference) =>
 
 export const getParagraphReferenceLabel = (paragraph: Paragraph) =>
   getReferences(paragraph).map(getReferenceLabel).join("; ");
+
+export const getParagraphScripture = (paragraph: Paragraph) => {
+  if (typeof paragraph.text === "string" && paragraph.text.trim()) {
+    return paragraph.text.trim();
+  }
+
+  return getReferences(paragraph)
+    .map(({ book, chapter, verse }) => getScriptureText(book, chapter, verse))
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .join(" ");
+};
 
 export const getReadingReferenceSummary = (day: Day) =>
   getSections(day)
