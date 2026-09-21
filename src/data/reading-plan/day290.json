@@ -1,0 +1,48 @@
+[
+  {
+    "id": 290,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "The Genealogies of Jesus",
+        "introduction": "Matthew’s account has no formal introduction, but rather begins with a genealogy tracing the descent of Jesus from his ancestor, Abraham, through the royal lineage of David the King. Matthew lists 42 of the known generations and divides these into three groups of 14 each. The genealogy is traced through Jesus’ legal father, Joseph, as the husband of the virgin Mary, to whom Jesus was born.\n\nMatthew’s genealogy contains several happy surprises. Back in Jesus’ early roots are not only such notable righteous men as Abraham and David, but also several who stand out in history as being particularly unrighteous, including wicked King Manasseh. Not only are there Jews, as would be expected, but also Gentiles, including a Canaanite and a Moabite, whose respective countrymen have been notorious enemies of God’s people. Also somewhat surprising, in view of their social status at this time, is the listing of women as well as men. Furthermore, at least two of the women are known best for sins which they had committed."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "",
+            "references": [
+              {
+                "book": "Matthew",
+                "chapter": 1,
+                "verse": "1-17"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "introduction": "Luke also provides a genealogy of Jesus, but his account traces the lineage directly through Jesus’ mother, Mary. This explains the difference in ancestors from Heli (assumed to be the father-in-law of Mary’s husband, Joseph) to David. Luke’s genealogy also goes beyond Abraham, all the way back through Noah, Enoch, Seth, and Adam to God himself, who created the human race."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "",
+            "references": [
+              {
+                "book": "Luke",
+                "chapter": 3,
+                "verse": "23b-38"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "introduction": "Perhaps the most significant aspect of these genealogies is the connection between Jesus and his ancestor, King David. The prophets of old had repeatedly foretold that the Messiah would be of the house of David, and a branch of Jesse, David’s father. Therefore, from the Jews’ perspective, Jesus is of the royal lineage and worthy to be King of Israel. While this brings comfort to many, it brings confusion to others, who are expecting the Messiah to be the same kind of political king as those who reigned before him."
+      }
+    ]
+  }
+]

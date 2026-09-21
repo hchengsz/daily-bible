@@ -1,0 +1,212 @@
+[
+  {
+    "id": 286,
+    "introduction": "",
+    "sections": [
+      {
+        "title": "Official Records of Israel",
+        "introduction": "This passage brings to an end any further account of either Ezra or Nehemiah. Presumably they both remain in Palestine exercising their respective responsibilities until their deaths. On several occasions Ezra is referred to as a scribe. Consistent with that role, it is thought that he is one of several scribes who may have compiled chronicles of Israel’s history. To a nation whose history has been so turbulent, and whose people are even now scattered throughout many nations, it is vitally important that a record of their existence be preserved. Undoubtedly a man of God such as Ezra would be particularly concerned that future generations be made aware of Israel’s unique status as a chosen nation through which God has revealed himself to the whole world.\n\nAn important part of any nation’s history is the preservation of national archives. Genealogical records are particularly vital to the division and ownership of property, to marriages and inheritance, to right of office, and to royal privilege. Perhaps one of the most important reasons for the genealogies will not be fully appreciated until the Messiah is born. At that time one of the many proofs of his messiahship will be that he is of the lineage of King David and the house of Judah, just as the prophets have foretold.\n\nTherefore it may well be that Ezra spends part of his final years recording Israel’s history, particularly through the eras of the monarchy, the divided kingdom, the exile, and the initial period of restoration. If so, one might speculate that Ezra also compiles the national archives and major genealogical lists. Although they do not make particularly exciting reading, their importance to the nation at this time cannot be overstated. Throughout these genealogies and other related records are various historical footnotes, many of which have already been included where appropriate in the historical record. Several of the genealogical lists have also been seen in the earlier Genesis accounts, but additional names often appear in the present listings.\n\nIncluded in the records are the following: genealogies from Adam to Noah to Abraham and Isaac; the descendants of Esau (the Edomites); and the 12 tribes descending from Jacob (Israel), with the exception of Dan and Zebulun. Special emphasis is given to the royal tribe of Judah, the priestly line of Levi, and the Benjamite genealogy of King Saul."
+      },
+      {
+        "title": "",
+        "paragraphs": [
+          {
+            "title": "To Noah’s Sons",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "1-4"
+              }
+            ]
+          },
+          {
+            "title": "The Japhethites",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "5-7"
+              }
+            ]
+          },
+          {
+            "title": "The Hamites",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "8-16"
+              }
+            ]
+          },
+          {
+            "title": "The Shemites",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "17-27"
+              }
+            ]
+          },
+          {
+            "title": "Abraham’s Family",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "28"
+              }
+            ]
+          },
+          {
+            "title": "Ishmael’s Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "29-31"
+              }
+            ]
+          },
+          {
+            "title": "Descendants by Keturah",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "32-33"
+              }
+            ]
+          },
+          {
+            "title": "Isaac’s Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "34-37"
+              }
+            ]
+          },
+          {
+            "title": "Esau’s Edomite Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "38-42"
+              }
+            ]
+          },
+          {
+            "title": "Rulers of Edom",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 1,
+                "verse": "43-54"
+              }
+            ]
+          },
+          {
+            "title": "Jacob’s (Israel’s) Sons",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "1-2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Judah’s Descendants Follow",
+        "paragraphs": [
+          {
+            "title": "To Hezron’s Three Sons",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "3-9"
+              }
+            ]
+          },
+          {
+            "title": "Ram’s Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "10-17"
+              }
+            ]
+          },
+          {
+            "title": "Caleb’s Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "18-24"
+              }
+            ]
+          },
+          {
+            "title": "Jerahmeel’s Descendants",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "25-41"
+              }
+            ]
+          },
+          {
+            "title": "Caleb’s Clans",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 2,
+                "verse": "42-55"
+              }
+            ]
+          },
+          {
+            "title": "Other Clans of Judah",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 4,
+                "verse": "1-23"
+              }
+            ]
+          },
+          {
+            "title": "The Kings of Judah",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 3,
+                "verse": "10-16"
+              }
+            ]
+          },
+          {
+            "title": "Royal Line After Exile",
+            "references": [
+              {
+                "book": "1 Chronicles",
+                "chapter": 3,
+                "verse": "17-24"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
