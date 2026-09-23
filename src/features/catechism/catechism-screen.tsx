@@ -107,6 +107,9 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
 ): Promise<TranslationMap> => {
+  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
+    throw new Error("本测试版本暂未开放翻译，请使用原文阅读。");
+  }
   const response = await fetch(TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

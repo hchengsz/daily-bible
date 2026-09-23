@@ -131,8 +131,8 @@ async function handlePost(request: Request) {
 
   if (!apiKey) {
     return Response.json(
-      { error: "GOOGLE_TRANSLATE_API_KEY is not configured." },
-      { status: 500 },
+      { error: "翻译暂未开放，请使用原文阅读。" },
+      { status: 503 },
     );
   }
 

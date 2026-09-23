@@ -1,4 +1,5 @@
-// Run with Node --env-file=<deployment credentials> --env-file=.env.
+// Run with Node --env-file=<deployment credentials>.
+// This release deliberately does not upload AI provider credentials.
 // Prints deployment identifiers only; never prints secret configuration.
 const mode = process.argv[2];
 if (!['configure', 'deploy', 'status'].includes(mode)) throw new Error('Expected configure, deploy or status');
@@ -15,7 +16,7 @@ async function render(path, method = 'GET', body) {
 const services = await render('/services?limit=100');
 let service = services.map(x => x.service).find(s => s.repo?.replace(/\.git$/, '') === repo && s.name === 'daily-bible-api');
 if (mode === 'configure') {
-  for (const name of ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'GEMINI_API_KEY', 'GOOGLE_TRANSLATE_API_KEY']) {
+  for (const name of ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']) {
     if (!process.env[name]) throw new Error(`Missing ${name}`);
   }
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -32,13 +33,13 @@ if (mode === 'configure') {
   }
   const values = {
     NODE_VERSION: '24.14.1', HOST: '0.0.0.0', SUPABASE_STORAGE_BUCKET: bucket,
-    ...Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'GEMINI_API_KEY', 'GOOGLE_TRANSLATE_API_KEY', 'GEMINI_VOCAB_MODEL', 'GEMINI_TRANSLATE_MODEL'].filter(k => process.env[k]).map(k => [k, process.env[k]])),
+    ...Object.fromEntries(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'].map(k => [k, process.env[k]])),
   };
   if (!service) {
     const ownerId = services.map(x => x.service).find(s => s.repo === 'https://github.com/hchengsz/daily-reading')?.ownerId;
     if (!ownerId) throw new Error('Existing workspace not found');
     const result = await render('/services', 'POST', {
-      type: 'web_service', name: 'daily-bible-api', ownerId, repo, branch: 'codex/testflight-release', autoDeploy: 'no',
+      type: 'web_service', name: 'daily-bible-api', ownerId, repo, branch: 'main', autoDeploy: 'no',
       envVars: Object.entries(values).map(([key, value]) => ({ key, value })),
       serviceDetails: { env: 'node', plan: 'free', region: 'oregon', healthCheckPath: '/healthz', envSpecificDetails: { buildCommand: 'npm ci && npm run backend:build', startCommand: 'npm run backend:start' } },
     });

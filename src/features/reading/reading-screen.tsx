@@ -451,6 +451,9 @@ const translateChunks = async (
   signal?: AbortSignal,
   provider: "google" | "ai" = "google",
 ): Promise<TranslationMap> => {
+  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
+    throw new Error("本测试版本暂未开放翻译，请使用原文阅读。");
+  }
   const response = await fetch(provider === "ai" ? `${TRANSLATE_API_ORIGIN}/api/ai-translate` : TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -477,6 +480,9 @@ const translateChunks = async (
 const analyzeVocabulary = async (
   chunks: TranslationChunk[],
 ): Promise<VocabularyMap> => {
+  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
+    throw new Error("本测试版本暂未开放 AI 词汇分析。");
+  }
   const response = await fetch(VOCABULARY_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

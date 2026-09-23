@@ -204,8 +204,8 @@ async function handlePost(request: Request) {
 
   if (!apiKey) {
     return Response.json(
-      { error: "GEMINI_API_KEY is not configured." },
-      { status: 500 },
+      { error: "AI 词汇分析暂未开放，请稍后再试。" },
+      { status: 503 },
     );
   }
 

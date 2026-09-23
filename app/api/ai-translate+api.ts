@@ -23,7 +23,7 @@ async function handlePost(request: Request) {
   }
   if (!chunks.length) return Response.json({ translations: [] });
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return Response.json({ error: "GEMINI_API_KEY is not configured." }, { status: 500 });
+  if (!apiKey) return Response.json({ error: "AI 翻译暂未开放，请使用原文阅读。" }, { status: 503 });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90000);
   let dispatcher: ProxyAgent | undefined;

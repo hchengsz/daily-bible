@@ -7,6 +7,10 @@
     "testflight": {
       "distribution": "store",
       "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_TRANSLATE_API_ORIGIN": "https://daily-bible-api-d266.onrender.com",
+        "EXPO_PUBLIC_AI_FEATURES_ENABLED": "false"
+      },
       "autoIncrement": true
     }
   },
