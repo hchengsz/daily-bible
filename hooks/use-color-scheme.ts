@@ -7,7 +7,7 @@ export function useColorScheme() {
   const hasHydrated = useAppearanceStore((state) => state.hasHydrated);
 
   if (!hasHydrated) {
-    return systemColorScheme;
+    return systemColorScheme === "dark" ? "dark" : "light";
   }
 
   return darkModeEnabled ? "dark" : "light";

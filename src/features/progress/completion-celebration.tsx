@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Animated, Easing, useWindowDimensions, View } from "react-native";
 
 // Seven colors for the seven days of creation.
@@ -32,7 +32,7 @@ const FIREWORK_SPARKS = Array.from({ length: 18 }, (_, index) => ({
 
 export const useCompletionCelebration = () => {
   const [isCelebrating, setIsCelebrating] = useState(false);
-  const celebrationProgress = useRef(new Animated.Value(0)).current;
+  const [celebrationProgress] = useState(() => new Animated.Value(0));
 
   const startCelebration = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(

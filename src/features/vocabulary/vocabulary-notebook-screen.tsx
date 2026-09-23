@@ -401,29 +401,17 @@ export default function VocabularyNotebookScreen() {
     : null;
   const knownWordsCount = Object.keys(knownWordIds).length;
 
-  useEffect(() => {
-    if (mode !== "study") {
-      return;
-    }
-
+  // Adjust the session before rendering when the available queue changes.
+  if (mode === "study") {
     if (!studyQueueIds.length && learningWords.length && !isStudySessionComplete) {
       setStudyQueueIds(learningWords.map((word) => word.id));
       setStudyIndex(0);
       setIsFlipped(false);
-      return;
-    }
-
-    if (studyIndex >= studyQueueIds.length) {
+    } else if (studyIndex > Math.max(studyQueueIds.length - 1, 0)) {
       setStudyIndex(Math.max(studyQueueIds.length - 1, 0));
       setIsFlipped(false);
     }
-  }, [
-    isStudySessionComplete,
-    learningWords,
-    mode,
-    studyIndex,
-    studyQueueIds.length,
-  ]);
+  }
 
   useEffect(
     () => () => {

@@ -2,7 +2,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
-import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, {
@@ -597,7 +596,7 @@ const getCenteredIconStyle = (size: number) => ({
 export default function ReadingScreen() {
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(() => currentDate);
-  const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView> | null>(
+  const scrollViewRef = useRef<ScrollView | null>(
     null,
   );
   const scrollY = useSharedValue(0);
@@ -655,6 +654,7 @@ export default function ReadingScreen() {
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
   const speechChunksRef = useRef<string[]>([]);
+  const [playbackChunks, setPlaybackChunks] = useState<string[]>([]);
   const currentSpeechIndexRef = useRef(0);
   const speechRateRef = useRef(speechRate);
   const speechLanguageRef = useRef(isTranslated ? "zh-CN" : "en-US");
@@ -723,7 +723,7 @@ export default function ReadingScreen() {
     setVocabularyError(null);
     lastWordPressRef.current = null;
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-    scrollY.value = 0;
+    scrollY.set(0);
   }, [scrollY, selectedDayOfYear, stopSpeechPlayback]);
 
   const pronounceWord = useCallback((word: string) => {
@@ -852,7 +852,7 @@ export default function ReadingScreen() {
     [updateSentenceTranslation],
   );
 
-  const speakFromIndex = useCallback((index: number, runId: number) => {
+  const speakFromIndex = useCallback(function speakFromIndex(index: number, runId: number) {
     const chunks = speechChunksRef.current;
     const text = chunks[index];
 
@@ -897,6 +897,7 @@ export default function ReadingScreen() {
     const runId = playbackRunRef.current;
 
     speechChunksRef.current = chunks;
+    setPlaybackChunks(chunks);
     currentSpeechIndexRef.current = 0;
     isPausedInEngineRef.current = false;
     setCurrentSpeechIndex(0);
@@ -986,7 +987,7 @@ export default function ReadingScreen() {
   }, [canGoNextDay]);
 
   const handleReadingScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
+    scrollY.set(event.contentOffset.y);
   });
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -2166,7 +2167,7 @@ export default function ReadingScreen() {
                     marginTop: 2,
                   }}
                 >
-                  {speechChunksRef.current[currentSpeechIndex] ?? ""}
+                  {playbackChunks[currentSpeechIndex] ?? ""}
                 </Text>
               </View>
 

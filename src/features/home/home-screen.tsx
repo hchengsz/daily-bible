@@ -249,7 +249,7 @@ export default function HomeScreen() {
   useEffect(() => () => stopReadAll(), [stopReadAll]);
 
   const speakReadAllChunk = useCallback(
-    (index: number, runId: number) => {
+    function speakReadAllChunk(index: number, runId: number) {
       const chunk = readAllChunksRef.current[index];
 
       if (!chunk) {

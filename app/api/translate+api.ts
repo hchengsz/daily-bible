@@ -1,3 +1,5 @@
+import { withResponseCache } from "../../src/server/response-cache";
+
 type TranslationChunk = {
   id: string;
   text: string;
@@ -122,7 +124,9 @@ const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
   return message;
 };
 
-export async function POST(request: Request) {
+export const POST = withResponseCache("translate", handlePost);
+
+async function handlePost(request: Request) {
   const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
 
   if (!apiKey) {

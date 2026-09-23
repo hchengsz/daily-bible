@@ -1,8 +1,12 @@
+import { withResponseCache } from "../../src/server/response-cache";
+
 import { ProxyAgent } from "undici";
 
 type Chunk = { id: string; text: string };
 
-export async function POST(request: Request) {
+export const POST = withResponseCache("ai-translate", handlePost);
+
+async function handlePost(request: Request) {
   let chunks: Chunk[];
   try {
     const body = await request.json();

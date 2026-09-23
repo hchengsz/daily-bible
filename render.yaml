@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: daily-bible-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run backend:build
+    startCommand: npm run backend:start
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: HOST
+        value: 0.0.0.0
+      - key: SUPABASE_STORAGE_BUCKET
+        value: daily-bible-cache
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_TRANSLATE_API_KEY
+        sync: false

@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "version": ">= 23.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "testflight": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "testflight": {}
+  }
+}

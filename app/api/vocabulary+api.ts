@@ -1,3 +1,5 @@
+import { withResponseCache } from "../../src/server/response-cache";
+
 import { ProxyAgent } from "undici";
 
 type VocabularyChunk = {
@@ -195,7 +197,9 @@ const getGeminiRequestInit = (
   return init;
 };
 
-export async function POST(request: Request) {
+export const POST = withResponseCache("vocabulary", handlePost);
+
+async function handlePost(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {

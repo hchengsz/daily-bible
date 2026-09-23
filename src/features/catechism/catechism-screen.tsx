@@ -1,9 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
-import type { ComponentRef } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View, type ScrollView } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -209,7 +208,7 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
 export default function CatechismScreen() {
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(currentDate);
-  const scrollViewRef = useRef<ComponentRef<typeof Animated.ScrollView>>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const scrollY = useSharedValue(0);
   const selectedDateKey = getDateKey(selectedDate);
   const currentDateKey = getDateKey(currentDate);
@@ -249,6 +248,7 @@ export default function CatechismScreen() {
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
   const speechChunksRef = useRef<string[]>([]);
+  const [playbackChunks, setPlaybackChunks] = useState<string[]>([]);
   const currentSpeechIndexRef = useRef(0);
   const speechRateRef = useRef(speechRate);
   const playbackRunRef = useRef(0);
@@ -294,7 +294,7 @@ export default function CatechismScreen() {
     setIsTranslating(false);
     setTranslationError(null);
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-    scrollY.value = 0;
+    scrollY.set(0);
   }, [scrollY, selectedDateKey, stopSpeechPlayback]);
 
   const handlePreviousDay = () => {
@@ -310,7 +310,7 @@ export default function CatechismScreen() {
   };
 
   const handleCatechismScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
+    scrollY.set(event.contentOffset.y);
   });
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -375,7 +375,7 @@ export default function CatechismScreen() {
   );
 
   const speakFromIndex = useCallback(
-    (index: number, runId: number) => {
+    function speakFromIndex(index: number, runId: number) {
       const chunks = speechChunksRef.current;
       const text = chunks[index];
 
@@ -420,6 +420,7 @@ export default function CatechismScreen() {
     const runId = playbackRunRef.current;
 
     speechChunksRef.current = chunks;
+    setPlaybackChunks(chunks);
     currentSpeechIndexRef.current = 0;
     isPausedInEngineRef.current = false;
     setCurrentSpeechIndex(0);
@@ -929,7 +930,7 @@ export default function CatechismScreen() {
                     marginTop: 2,
                   }}
                 >
-                  {speechChunksRef.current[currentSpeechIndex] ?? ""}
+                  {playbackChunks[currentSpeechIndex] ?? ""}
                 </Text>
               </View>
 
