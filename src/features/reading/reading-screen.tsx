@@ -20,6 +20,7 @@ import {
   useTaskCompletion,
 } from "../progress/daily-progress-store";
 import { useAppearanceStore } from "../settings/appearance-store";
+import { useBibleVersionStore } from "./bible-version-store";
 import {
   getVocabularyWordId,
   useVocabularyNotebookStore,
@@ -600,6 +601,9 @@ const getCenteredIconStyle = (size: number) => ({
 });
 
 export default function ReadingScreen() {
+  const bibleVersion = useBibleVersionStore((state) => state.version);
+  const setBibleVersion = useBibleVersionStore((state) => state.setVersion);
+  const isCuv = bibleVersion === "cuv";
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(() => currentDate);
   const scrollViewRef = useRef<ScrollView | null>(
@@ -730,7 +734,7 @@ export default function ReadingScreen() {
     lastWordPressRef.current = null;
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     scrollY.set(0);
-  }, [scrollY, selectedDayOfYear, stopSpeechPlayback]);
+  }, [scrollY, selectedDayOfYear, bibleVersion, stopSpeechPlayback]);
 
   const pronounceWord = useCallback((word: string) => {
     const runId = playbackRunRef.current + 1;
@@ -876,7 +880,7 @@ export default function ReadingScreen() {
     setPlaybackStatus("playing");
 
     Speech.speak(text, {
-      language: speechLanguageRef.current,
+      language: /[\u3400-\u9fff]/.test(text) ? "zh-CN" : speechLanguageRef.current,
       rate: speechRateRef.current,
       pitch: 1.0,
       onDone: () => {
@@ -891,7 +895,9 @@ export default function ReadingScreen() {
   }, []);
 
   const handlePlay = () => {
-    const chunks = getSpeechChunks(
+    const chunks = isCuv ? getSections(selectedDay).flatMap((section) =>
+      getParagraphs(section).map((paragraph) => getParagraphScripture(paragraph, "cuv")),
+    ).filter(Boolean) : getSpeechChunks(
       translationChunks,
       translations,
       isTranslated,
@@ -1076,6 +1082,10 @@ export default function ReadingScreen() {
   };
 
   const handleTranslate = async (provider: "google" | "ai" = "google") => {
+    if (isCuv) {
+      setTranslationError("当前为本地和合本，无需翻译。请切换至 NIV 使用在线翻译。");
+      return;
+    }
     if (translationControllerRef.current) return;
     stopSpeechPlayback();
     setTranslationError(null);
@@ -1118,6 +1128,10 @@ export default function ReadingScreen() {
   };
 
   const handleAnalyzeVocabulary = async () => {
+    if (isCuv) {
+      setVocabularyError("英文词汇分析仅在 NIV 版本中使用。");
+      return;
+    }
     if (isVocabularyVisible) {
       setIsVocabularyNotebookPanelVisible((value) => !value);
       return;
@@ -1487,7 +1501,25 @@ export default function ReadingScreen() {
           </View>
         </View>
 
-        <Pressable
+        <View style={{ marginTop: 14, gap: 8 }}>
+          <Text style={{ color: colors.text, fontSize: 14 }}>
+            {isCuv ? "经文版本：中文 · 和合本 CUV" : "经文版本：English · NIV"}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={isCuv ? "切换到英文 NIV" : "切换到中文和合本"}
+            disabled={isTranslating || isAnalyzingVocabulary}
+            accessibilityState={{ disabled: isTranslating || isAnalyzingVocabulary }}
+            onPress={() => { stopSpeechPlayback(); setBibleVersion(isCuv ? "niv" : "cuv"); }}
+            style={{ alignSelf: "flex-start", backgroundColor: colors.chip, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12 }}
+          >
+            <Text style={{ color: colors.annotation, fontSize: 15 }}>{isCuv ? "切换到英文 NIV" : "切换到中文和合本"}</Text>
+          </Pressable>
+          {isCuv && <Text style={{ color: colors.label, fontSize: 12, lineHeight: 18 }}>
+            本地和合本 · 离线可读，无需 API。标题和导读保留原文；a/b 分节显示完整经节，增补经文保留其原文。
+          </Text>}
+        </View>
+        {!isCuv && <Pressable
           accessibilityRole="button"
           accessibilityLabel="AI 翻译（天主教译法）"
           accessibilityState={{ disabled: isTranslating, busy: isTranslating, selected: isTranslated && translationProvider === "ai" }}
@@ -1499,8 +1531,8 @@ export default function ReadingScreen() {
           <Text style={{ color: colors.text, fontSize: 14 }}>
             {isTranslating ? "翻译中…" : isTranslated && translationProvider === "ai" ? "查看英文原文" : "AI 翻译 · 天主教译法"}
           </Text>
-        </Pressable>
-        {isTranslated && translationProvider === "ai" && (
+        </Pressable>}
+        {!isCuv && isTranslated && translationProvider === "ai" && (
           <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI 译文 · 采用天主教术语，供阅读参考</Text>
         )}
 
@@ -1633,7 +1665,7 @@ export default function ReadingScreen() {
                 );
                 const paragraphScripture = getDisplayText(
                   getParagraphScriptureId(sectionIndex, pIndex),
-                  getParagraphScripture(p),
+                  getParagraphScripture(p, bibleVersion),
                   translations,
                   isTranslated,
                 );
@@ -1668,8 +1700,9 @@ export default function ReadingScreen() {
                           userSelect: "none",
                         }}
                       >
-                        {getParagraphReferenceLabel(p)}
+                        {getParagraphReferenceLabel(p, p.text ? "niv" : bibleVersion)}
                         {p.source ? ` · ${p.source.label}` : ""}
+                        {isCuv && p.text ? " · 和合本无对应文本，保留原文" : ""}
                       </Text>
 
                       <Text
@@ -1680,7 +1713,7 @@ export default function ReadingScreen() {
                         }}
                       >
                         {paragraphScripture
-                          ? renderInteractiveSentences({
+                          ? isCuv ? paragraphScripture : renderInteractiveSentences({
                               annotationColor: colors.annotation,
                               chunkId: getParagraphScriptureId(
                                 sectionIndex,

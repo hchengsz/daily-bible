@@ -1,5 +1,8 @@
 import { readingPlanDays } from "../../data/reading-plan";
 import { getScriptureText } from "../../data/bible";
+import { getCuvBookName, getCuvScriptureText } from "../../data/bible/cuv";
+
+export type BibleVersion = "niv" | "cuv";
 
 export type Reference = {
   book: string;
@@ -54,16 +57,20 @@ export const getReferences = (paragraph?: Paragraph | null) =>
 export const getReferenceLabel = (ref: Reference) =>
   `${ref.book} ${ref.chapter}:${ref.verse}`;
 
-export const getParagraphReferenceLabel = (paragraph: Paragraph) =>
-  getReferences(paragraph).map(getReferenceLabel).join("; ");
+export const getParagraphReferenceLabel = (paragraph: Paragraph, version: BibleVersion = "niv") =>
+  getReferences(paragraph).map((ref) => version === "cuv"
+    ? `${getCuvBookName(ref.book)} ${ref.chapter}${ref.verse ? `:${ref.verse.replace(/[ab]/gi, "")}` : "章"}`
+    : getReferenceLabel(ref)).join("; ");
 
-export const getParagraphScripture = (paragraph: Paragraph) => {
+export const getParagraphScripture = (paragraph: Paragraph, version: BibleVersion = "niv") => {
   if (typeof paragraph.text === "string" && paragraph.text.trim()) {
     return paragraph.text.trim();
   }
 
   return getReferences(paragraph)
-    .map(({ book, chapter, verse }) => getScriptureText(book, chapter, verse))
+    .map(({ book, chapter, verse }) => version === "cuv"
+      ? getCuvScriptureText(book, chapter, verse) || `〔${getCuvBookName(book)} ${chapter}:${verse}：本地和合本暂无对应经文。〕`
+      : getScriptureText(book, chapter, verse))
     .map((text) => text.trim())
     .filter(Boolean)
     .join(" ");
@@ -72,7 +79,7 @@ export const getParagraphScripture = (paragraph: Paragraph) => {
 export const getReadingReferenceSummary = (day: Day) =>
   getSections(day)
     .flatMap((section) =>
-      getParagraphs(section).map(getParagraphReferenceLabel),
+      getParagraphs(section).map((paragraph) => getParagraphReferenceLabel(paragraph)),
     )
     .filter(Boolean)
     .join("; ");

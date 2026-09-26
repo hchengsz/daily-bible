@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
+    "bible:import-cuv": "node scripts/import-cuv.cjs",
     "backend:build": "expo export --platform web --api-only --max-workers 2",
     "backend:start": "node scripts/serve-backend.cjs",
     "start": "expo start",

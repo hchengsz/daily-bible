@@ -8,7 +8,7 @@ import {
   useDailyProgressStore,
   useTaskCompletion,
 } from "../progress/daily-progress-store";
-import { getScriptureText } from "../../data/bible";
+import { useBibleVersionStore } from "../reading/bible-version-store";
 import {
   formatDate,
   getDateKey,
@@ -16,10 +16,10 @@ import {
   getParagraphs,
   getReadingDayForDate,
   getReadingReferenceSummary,
-  getReferences,
+  getParagraphScripture,
   getSections,
   type Day,
-  type Paragraph,
+  type BibleVersion,
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
 import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
@@ -35,16 +35,7 @@ type TodoItemProps = {
 
 const normalizeText = (text: string) => text.replace(/\s+/g, " ").trim();
 
-const getParagraphScripture = (paragraph: Paragraph) =>
-  getReferences(paragraph)
-    .map((reference) =>
-      getScriptureText(reference.book, reference.chapter, reference.verse),
-    )
-    .map((text) => text.trim())
-    .filter(Boolean)
-    .join(" ");
-
-const buildReadingAloudChunks = (day: Day) =>
+const buildReadingAloudChunks = (day: Day, version: BibleVersion) =>
   [
     day.title,
     day.introduction,
@@ -53,8 +44,8 @@ const buildReadingAloudChunks = (day: Day) =>
       section.introduction,
       ...getParagraphs(section).flatMap((paragraph) => [
         paragraph.title,
-        getParagraphReferenceLabel(paragraph),
-        getParagraphScripture(paragraph),
+        getParagraphReferenceLabel(paragraph, version),
+        getParagraphScripture(paragraph, version),
       ]),
     ]),
   ]
@@ -217,13 +208,14 @@ export default function HomeScreen() {
   );
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const [isReadingAll, setIsReadingAll] = useState(false);
+  const bibleVersion = useBibleVersionStore((state) => state.version);
   const readAllRunRef = useRef(0);
   const readAllChunksRef = useRef<
     { language: "en-US" | "zh-CN"; text: string }[]
   >([]);
   const readAllChunks = useMemo(() => {
-    const readingChunks = buildReadingAloudChunks(readingDay).map((text) => ({
-      language: "en-US" as const,
+    const readingChunks = buildReadingAloudChunks(readingDay, bibleVersion).map((text) => ({
+      language: /[\u3400-\u9fff]/.test(text) ? "zh-CN" as const : "en-US" as const,
       text,
     }));
     const catechismChunks = buildCatechismAloudChunks(catechismDay.entries).map(
@@ -234,7 +226,7 @@ export default function HomeScreen() {
     );
 
     return [...readingChunks, ...catechismChunks];
-  }, [catechismDay.entries, readingDay]);
+  }, [catechismDay.entries, readingDay, bibleVersion]);
   const estimatedReadingMinutes = useMemo(
     () => getEstimatedReadingMinutes(readAllChunks),
     [readAllChunks],
