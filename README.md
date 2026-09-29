@@ -82,9 +82,9 @@ The Catechism tab presents a balanced daily section from the Simplified Chinese 
 
 ## Tech Stack
 
-- Expo SDK 54
-- React 19
-- React Native 0.81
+- Expo SDK 57 (`expo` `^57.0.24`; use the matching [versioned documentation](https://docs.expo.dev/versions/v57.0.0/))
+- React 19.2.3
+- React Native 0.86.3
 - Expo Router
 - Zustand
 - Expo Speech
@@ -127,6 +127,14 @@ npx tsc --noEmit
 ```
 
 ## Environment Variables
+
+### Personal API keys
+
+Open **API 设置 · 翻译与 AI** on the Today screen. Enter a Gemini API key for AI translation and vocabulary analysis, and/or a Google Cloud Translation API key for reading and catechism translation. Each key works independently. Save applies the settings; the provider validates the key on the first request. Clear the fields and save to remove personal keys.
+
+Native apps store keys with Expo SecureStore. Web keeps them in memory until refresh. Requests pass the relevant key through the app backend to the provider, bypassing the shared response cache. Personal keys take precedence over server environment keys and enable their service even when `EXPO_PUBLIC_AI_FEATURES_ENABLED=false`; without personal keys, existing server configuration still applies. Native releases need a new build for SecureStore and Expo UI, and the backend must be updated to accept the key headers. Production API origins must use HTTPS.
+
+Run `node --test scripts/test-api-keys.cjs` for mocked credential routing, cache isolation, and storage failure tests (no paid API calls).
 
 Translation and vocabulary analysis require external API credentials. The core reading, catechism, and progress features can still run without these keys, but translation and vocabulary analysis will show configuration errors until the keys are set.
 

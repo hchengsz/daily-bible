@@ -5,6 +5,13 @@ import { createHash } from "node:crypto";
 export function withResponseCache(name: string, handler: (request: Request) => Promise<Response>) {
   const pending = new Map<string, Promise<Response>>();
   return async (request: Request): Promise<Response> => {
+    // Personal credentials must be validated upstream, never served from the
+    // shared cache or retained in its pending-request map.
+    if (request.headers.has("X-Gemini-Api-Key") || request.headers.has("X-Google-Translate-Api-Key")) {
+      const response = await handler(request);
+      response.headers.set("Cache-Control", "no-store");
+      return response;
+    }
     const origin = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!origin || !key) return handler(request);

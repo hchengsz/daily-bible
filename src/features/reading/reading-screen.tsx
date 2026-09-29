@@ -20,6 +20,7 @@ import {
   useTaskCompletion,
 } from "../progress/daily-progress-store";
 import { useAppearanceStore } from "../settings/appearance-store";
+import { getApiKeyHeaders, useApiKeyStore } from "../settings/api-key-store";
 import { useBibleVersionStore } from "./bible-version-store";
 import {
   getVocabularyWordId,
@@ -452,12 +453,10 @@ const translateChunks = async (
   signal?: AbortSignal,
   provider: "google" | "ai" = "google",
 ): Promise<TranslationMap> => {
-  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
-    throw new Error("本测试版本暂未开放翻译，请使用原文阅读。");
-  }
+  const keyHeaders = await getApiKeyHeaders(provider);
   const response = await fetch(provider === "ai" ? `${TRANSLATE_API_ORIGIN}/api/ai-translate` : TRANSLATE_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
       targetLanguage: TARGET_LANGUAGE,
       chunks,
@@ -481,12 +480,10 @@ const translateChunks = async (
 const analyzeVocabulary = async (
   chunks: TranslationChunk[],
 ): Promise<VocabularyMap> => {
-  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
-    throw new Error("本测试版本暂未开放 AI 词汇分析。");
-  }
+  const keyHeaders = await getApiKeyHeaders("ai");
   const response = await fetch(VOCABULARY_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({ chunks }),
   });
   const data = await parseTranslationResponse(response);
@@ -601,6 +598,7 @@ const getCenteredIconStyle = (size: number) => ({
 });
 
 export default function ReadingScreen() {
+  const apiKeyRevision = useApiKeyStore(state => state.revision);
   const bibleVersion = useBibleVersionStore((state) => state.version);
   const setBibleVersion = useBibleVersionStore((state) => state.setVersion);
   const isCuv = bibleVersion === "cuv";
@@ -734,7 +732,7 @@ export default function ReadingScreen() {
     lastWordPressRef.current = null;
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     scrollY.set(0);
-  }, [scrollY, selectedDayOfYear, bibleVersion, stopSpeechPlayback]);
+  }, [scrollY, selectedDayOfYear, bibleVersion, stopSpeechPlayback, apiKeyRevision]);
 
   const pronounceWord = useCallback((word: string) => {
     const runId = playbackRunRef.current + 1;
@@ -1152,16 +1150,18 @@ export default function ReadingScreen() {
 
     try {
       const analyzedVocabulary = await analyzeVocabulary(vocabularyChunks);
+      if (apiKeyRevision !== useApiKeyStore.getState().revision) return;
 
       setVocabulary(analyzedVocabulary);
       setIsVocabularyVisible(true);
       setIsVocabularyNotebookPanelVisible(true);
     } catch (error) {
+      if (apiKeyRevision !== useApiKeyStore.getState().revision) return;
       setVocabularyError(
         error instanceof Error ? error.message : "Vocabulary analysis failed.",
       );
     } finally {
-      setIsAnalyzingVocabulary(false);
+      if (apiKeyRevision === useApiKeyStore.getState().revision) setIsAnalyzingVocabulary(false);
     }
   };
 

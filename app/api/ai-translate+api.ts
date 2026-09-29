@@ -1,4 +1,5 @@
 import { withResponseCache } from "../../src/server/response-cache";
+import { getRequestApiKey } from "../../src/server/api-keys";
 
 import { ProxyAgent } from "undici";
 
@@ -22,8 +23,8 @@ async function handlePost(request: Request) {
     return Response.json({ error: "Translation request is too large." }, { status: 413 });
   }
   if (!chunks.length) return Response.json({ translations: [] });
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return Response.json({ error: "AI 翻译暂未开放，请使用原文阅读。" }, { status: 503 });
+  const apiKey = getRequestApiKey(request, "ai");
+  if (!apiKey) return Response.json({ error: "请先到首页的 API 设置中填写 Gemini API Key。" }, { status: 503 });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90000);
   let dispatcher: ProxyAgent | undefined;

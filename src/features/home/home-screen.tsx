@@ -22,6 +22,7 @@ import {
   type BibleVersion,
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
+import { ApiKeySettings } from "../settings/api-key-settings";
 import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
 
 type TodoItemProps = {
@@ -496,6 +497,7 @@ export default function HomeScreen() {
           About {estimatedReadingMinutes} min
         </Text>
       </View>
+      <ApiKeySettings dark={darkModeEnabled} />
     </ScrollView>
   );
 }

@@ -1,4 +1,5 @@
 import { withResponseCache } from "../../src/server/response-cache";
+import { getRequestApiKey } from "../../src/server/api-keys";
 
 import { ProxyAgent } from "undici";
 
@@ -122,21 +123,6 @@ const readJsonResponse = async <T,>(response: Response): Promise<T | null> => {
   }
 };
 
-const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) {
-    const cause =
-      error.cause instanceof Error
-        ? error.cause.message
-        : typeof error.cause === "string"
-          ? error.cause
-          : "";
-
-    return [error.message, cause].filter(Boolean).join(": ");
-  }
-
-  return String(error);
-};
-
 const extractResponseText = (payload: GeminiResponsePayload | null) => {
   if (payload?.output_text) {
     return payload.output_text;
@@ -200,11 +186,11 @@ const getGeminiRequestInit = (
 export const POST = withResponseCache("vocabulary", handlePost);
 
 async function handlePost(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = getRequestApiKey(request, "ai");
 
   if (!apiKey) {
     return Response.json(
-      { error: "AI 词汇分析暂未开放，请稍后再试。" },
+      { error: "请先到首页的 API 设置中填写 Gemini API Key。" },
       { status: 503 },
     );
   }
@@ -283,12 +269,10 @@ async function handlePost(request: Request) {
         },
       }),
     );
-  } catch (error) {
+  } catch {
     return Response.json(
       {
-        error: `Expo server could not connect to Gemini API. If your VPN uses a local or browser proxy, set DEV_PROXY_URL in .env or restart Expo with npm run start:proxy. ${getErrorMessage(
-          error,
-        )}`,
+        error: "无法连接翻译服务，请检查网络后重试。",
       },
       { status: 502 },
     );
@@ -298,7 +282,7 @@ async function handlePost(request: Request) {
 
   if (!geminiResponse.ok) {
     return Response.json(
-      { error: payload?.error?.message ?? "Gemini vocabulary analysis failed." },
+      { error: `AI 词汇分析失败（${geminiResponse.status}），请检查首页的 Gemini API Key、权限或配额后重试。` },
       { status: geminiResponse.status },
     );
   }

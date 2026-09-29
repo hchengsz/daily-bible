@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getApiKeyHeaders, useApiKeyStore } from "../settings/api-key-store";
 import { Platform, Pressable, Text, View, type ScrollView } from "react-native";
 import Animated, {
   Extrapolation,
@@ -107,12 +108,10 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
 ): Promise<TranslationMap> => {
-  if (process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED === "false") {
-    throw new Error("本测试版本暂未开放翻译，请使用原文阅读。");
-  }
+  const keyHeaders = await getApiKeyHeaders("google");
   const response = await fetch(TRANSLATE_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
       chunks,
       targetLanguage: TARGET_LANGUAGE,
@@ -209,6 +208,7 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
     : "You're caught up on this day. Keep going.";
 
 export default function CatechismScreen() {
+  const apiKeyRevision = useApiKeyStore(state => state.revision);
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -298,7 +298,7 @@ export default function CatechismScreen() {
     setTranslationError(null);
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     scrollY.set(0);
-  }, [scrollY, selectedDateKey, stopSpeechPlayback]);
+  }, [scrollY, selectedDateKey, stopSpeechPlayback, apiKeyRevision]);
 
   const handlePreviousDay = () => {
     if (canGoPreviousDay) {
@@ -532,16 +532,18 @@ export default function CatechismScreen() {
 
     try {
       const translatedChunks = await translateChunks(translationChunks);
+      if (apiKeyRevision !== useApiKeyStore.getState().revision) return;
 
       setTranslations(translatedChunks);
       setIsTranslated(true);
       stopSpeechPlayback();
     } catch (error) {
+      if (apiKeyRevision !== useApiKeyStore.getState().revision) return;
       setTranslationError(
         error instanceof Error ? error.message : "Translation failed.",
       );
     } finally {
-      setIsTranslating(false);
+      if (apiKeyRevision === useApiKeyStore.getState().revision) setIsTranslating(false);
     }
   };
 

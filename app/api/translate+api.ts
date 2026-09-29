@@ -1,4 +1,5 @@
 import { withResponseCache } from "../../src/server/response-cache";
+import { getRequestApiKey } from "../../src/server/api-keys";
 
 type TranslationChunk = {
   id: string;
@@ -67,21 +68,6 @@ const readJsonResponse = async <T,>(response: Response): Promise<T | null> => {
   }
 };
 
-const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) {
-    const cause =
-      error.cause instanceof Error
-        ? error.cause.message
-        : typeof error.cause === "string"
-          ? error.cause
-          : "";
-
-    return [error.message, cause].filter(Boolean).join(": ");
-  }
-
-  return String(error);
-};
-
 const normalizeTargetLanguage = (targetLanguage?: string) => {
   const normalized = targetLanguage?.trim().toLowerCase();
 
@@ -103,7 +89,7 @@ const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
     message.includes("API key not valid") ||
     message.includes("API_KEY_INVALID")
   ) {
-    return "Google Translate API key is invalid. Check GOOGLE_TRANSLATE_API_KEY.";
+    return "Google 翻译 API Key 无效，请到首页的 API 设置中检查密钥。";
   }
 
   if (
@@ -121,17 +107,17 @@ const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
     return "Billing is not enabled for this Google Cloud project. Cloud Translation API requires billing to be enabled.";
   }
 
-  return message;
+  return "Google 翻译请求失败，请检查密钥权限或配额后重试。";
 };
 
 export const POST = withResponseCache("translate", handlePost);
 
 async function handlePost(request: Request) {
-  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  const apiKey = getRequestApiKey(request, "google");
 
   if (!apiKey) {
     return Response.json(
-      { error: "翻译暂未开放，请使用原文阅读。" },
+      { error: "请先到首页的 API 设置中填写 Google 翻译 API Key。" },
       { status: 503 },
     );
   }
@@ -156,12 +142,12 @@ async function handlePost(request: Request) {
 
   try {
     const url = new URL(GOOGLE_TRANSLATE_URL);
-    url.searchParams.set("key", apiKey);
 
     googleResponse = await fetch(url.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
       },
       body: JSON.stringify({
         q: chunks.map((chunk) => chunk.text),
@@ -169,12 +155,10 @@ async function handlePost(request: Request) {
         format: "text",
       }),
     });
-  } catch (error) {
+  } catch {
     return Response.json(
       {
-        error: `Expo server could not connect to Google Translate API. If your VPN uses a local or browser proxy, stop the current Expo server and start it with npm run start:proxy. ${getErrorMessage(
-          error,
-        )}`,
+        error: "无法连接翻译服务，请检查网络后重试。",
       },
       { status: 502 },
     );
