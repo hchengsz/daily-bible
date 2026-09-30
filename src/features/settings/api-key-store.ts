@@ -27,7 +27,10 @@ export function loadApiKeys(): Promise<void> {
 export async function saveApiKeys(draft: ApiKeys) {
   await loadApiKeys();
   const keys = { gemini: draft.gemini.trim(), google: draft.google.trim() };
-  if (Object.values(keys).some(key => key && !/^[A-Za-z0-9_-]{10,256}$/.test(key))) {
+  // Gemini API keys can contain dots in addition to the characters used by
+  // older Google API key formats. Keep rejecting whitespace and other
+  // punctuation while accepting both formats.
+  if (Object.values(keys).some(key => key && !/^[A-Za-z0-9._-]{10,256}$/.test(key))) {
     throw new Error("API Key 格式不正确，请粘贴完整密钥，不要包含空格。");
   }
   await writeApiKeys(keys.gemini || keys.google ? JSON.stringify(keys) : null);

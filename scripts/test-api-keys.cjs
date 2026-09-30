@@ -87,6 +87,9 @@ test('settings support independent keys, disabled shared service, failed save re
   await assert.rejects(store.getApiKeyHeaders('ai'), /首页/);
   await store.saveApiKeys({ gemini: '  personal-gemini-placeholder  ', google: '' });
   assert.deepEqual(await store.getApiKeyHeaders('ai'), { 'X-Gemini-Api-Key': 'personal-gemini-placeholder' });
+  await store.saveApiKeys({ gemini: 'AQ.example-gemini-key_123', google: '' });
+  assert.deepEqual(await store.getApiKeyHeaders('ai'), { 'X-Gemini-Api-Key': 'AQ.example-gemini-key_123' });
+  await store.saveApiKeys({ gemini: 'personal-gemini-placeholder', google: '' });
   await assert.rejects(store.getApiKeyHeaders('google'), /首页/);
   await assert.rejects(store.saveApiKeys({ gemini: 'contains spaces', google: '' }), /格式/);
   const revision = store.useApiKeyStore.getState().revision;

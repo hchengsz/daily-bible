@@ -13,6 +13,7 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
   const savingRef = useRef(false);
   const [error, setError] = useState("");
   const [visible, setVisible] = useState(false);
+  const [inputWidth, setInputWidth] = useState<number>();
   const color = dark ? "#f5f5f5" : "#111";
   const muted = dark ? "#a5a5a5" : "#666";
 
@@ -56,19 +57,28 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
             <Text accessibilityRole="header" style={{ color, fontSize: 24, fontWeight: "700" }}>API 设置</Text>
             <Text style={{ color: muted, lineHeight: 22 }}>分别填写需要使用的服务。Gemini 用于 AI 翻译和词汇分析，Google Cloud Translation 用于普通翻译。</Text>
             <Text style={{ color, fontWeight: "600" }}>AI API Key（Gemini）</Text>
-            <Host matchContents colorScheme={dark ? "dark" : "light"}>
+            {/* Match only height so long keys cannot expand the native host horizontally. */}
+            <Host matchContents={{ vertical: true }} style={{ width: "100%", overflow: "hidden" }}
+              onLayout={(event) => setInputWidth(event.nativeEvent.layout.width)} colorScheme={dark ? "dark" : "light"}>
               <TextInput value={gemini} onChangeText={(text) => { "worklet"; gemini.value = text; }}
                 placeholder="粘贴 Gemini API Key" secureTextEntry={!visible} editable={ready && !saving}
+                multiline={visible} numberOfLines={visible ? 5 : 1}
                 autoCapitalize="none" autoCorrect={false} autoComplete="off" maxLength={256}
-                style={{ borderWidth: 1, borderColor: dark ? "#555" : "#ccc", borderRadius: 8, padding: 12, height: 48 }} />
+                textStyle={{ color, fontSize: 16, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
+                style={{ width: inputWidth, backgroundColor: dark ? "#171717" : "#fff", borderWidth: 1, borderColor: dark ? "#555" : "#ccc", borderRadius: 8, padding: 12, height: visible ? 144 : 48 }} />
             </Host>
             <Text style={{ color, fontWeight: "600" }}>Google 翻译 API Key</Text>
-            <Host matchContents colorScheme={dark ? "dark" : "light"}>
+            <Host matchContents={{ vertical: true }} style={{ width: "100%", overflow: "hidden" }} colorScheme={dark ? "dark" : "light"}>
               <TextInput value={google} onChangeText={(text) => { "worklet"; google.value = text; }}
                 placeholder="粘贴 Google Cloud Translation API Key" secureTextEntry={!visible} editable={ready && !saving}
+                multiline={visible} numberOfLines={visible ? 5 : 1}
                 autoCapitalize="none" autoCorrect={false} autoComplete="off" maxLength={256}
-                style={{ borderWidth: 1, borderColor: dark ? "#555" : "#ccc", borderRadius: 8, padding: 12, height: 48 }} />
+                textStyle={{ color, fontSize: 16, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
+                style={{ width: inputWidth, backgroundColor: dark ? "#171717" : "#fff", borderWidth: 1, borderColor: dark ? "#555" : "#ccc", borderRadius: 8, padding: 12, height: visible ? 144 : 48 }} />
             </Host>
+            <Text style={{ color: muted, lineHeight: 20, fontSize: 13 }}>
+              {visible ? "密钥已显示，可在输入框内滚动查看并修改中间字符。自动换行不会改变密钥内容。" : "点击“显示密钥”可展开多行输入框，核对和修改完整密钥。"}
+            </Text>
             <Text style={{ color: muted, lineHeight: 20, fontSize: 13 }}>
               {Platform.OS === "web" ? "网页端仅在当前页面会话中保存，刷新后需要重新填写。" : "密钥加密保存在此设备上。"}
               {"使用功能时，密钥会经应用服务器发送到对应服务。保存不会发起付费请求，首次使用时验证密钥。清空并保存可移除个人密钥。"}
