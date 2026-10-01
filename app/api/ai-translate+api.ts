@@ -1,5 +1,6 @@
 import { withResponseCache } from "../../src/server/response-cache";
 import { getRequestApiKey } from "../../src/server/api-keys";
+import { providerError } from "../../src/server/provider-errors";
 
 import { ProxyAgent } from "undici";
 
@@ -58,7 +59,10 @@ async function handlePost(request: Request) {
       }),
     };
     const response = await fetch(process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/interactions", init);
-    if (!response.ok) return Response.json({ error: `AI translation failed (${response.status}). Please retry.` }, { status: 502 });
+    if (!response.ok) {
+      const errorPayload: unknown = await response.json().catch(() => null);
+      return Response.json({ error: providerError("ai", response.status, errorPayload) }, { status: response.status });
+    }
     const payload = await response.json();
     try {
       const text = payload.output_text || payload.steps?.flatMap((step: { content?: { text?: string }[] }) => step.content ?? []).map((part: { text?: string }) => part.text ?? "").join("");

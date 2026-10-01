@@ -1,5 +1,6 @@
 import { withResponseCache } from "../../src/server/response-cache";
 import { getRequestApiKey } from "../../src/server/api-keys";
+import { providerError } from "../../src/server/provider-errors";
 
 import { ProxyAgent } from "undici";
 
@@ -282,7 +283,7 @@ async function handlePost(request: Request) {
 
   if (!geminiResponse.ok) {
     return Response.json(
-      { error: `AI 词汇分析失败（${geminiResponse.status}），请检查首页的 Gemini API Key、权限或配额后重试。` },
+      { error: providerError("ai", geminiResponse.status, payload) },
       { status: geminiResponse.status },
     );
   }

@@ -44,6 +44,27 @@ for (const [name, handler, header, payload] of [
   ['AI translation', ai.POST, 'X-Gemini-Api-Key', { output_text: JSON.stringify({ translations: [{ id: 'one', text: '起初' }] }) }],
   ['Vocabulary', vocabulary.POST, 'X-Gemini-Api-Key', { output_text: JSON.stringify({ results: [{ id: 'one', terms: [] }] }) }],
 ]) {
+  for (const [status, error, expected] of [
+    [503, null, /服务暂时不可用（503）/],
+    [429, { message: 'personal-key-placeholder' }, /配额/],
+    [403, { details: [{ reason: 'SERVICE_DISABLED' }] }, /启用.*API/],
+    [403, { details: [{ reason: 'BILLING_DISABLED' }] }, /结算/],
+    [403, { details: [{ reason: 'API_KEY_SERVICE_BLOCKED' }] }, /权限/],
+    [400, { message: 'API key not valid: personal-key-placeholder' }, /API Key 无效/],
+  ]) {
+    test(`${name}: classifies provider error ${status} safely (${expected.source})`, async t => {
+      t.mock.method(global, 'fetch', async () => error
+        ? Response.json({ error }, { status })
+        : new Response('Service unavailable personal-key-placeholder', { status }));
+      const response = await handler(request(header, 'personal-key-placeholder'));
+      assert.equal(response.status, status);
+      const body = await response.json();
+      assert.match(body.error, expected);
+      assert.ok(!body.error.includes('personal-key-placeholder'));
+      if (status === 503) assert.ok(!body.error.includes('密钥'));
+    });
+  }
+
   test(`${name}: personal keys reach only the provider and bypass shared cache`, async t => {
     let calls = 0;
     t.mock.method(global, 'fetch', async (url, init) => {

@@ -1,5 +1,6 @@
 import { withResponseCache } from "../../src/server/response-cache";
 import { getRequestApiKey } from "../../src/server/api-keys";
+import { providerError } from "../../src/server/provider-errors";
 
 type TranslationChunk = {
   id: string;
@@ -78,38 +79,6 @@ const normalizeTargetLanguage = (targetLanguage?: string) => {
   return targetLanguage?.trim() || DEFAULT_TARGET_LANGUAGE;
 };
 
-const translateGoogleError = (payload: GoogleTranslatePayload | null) => {
-  const message = payload?.error?.message;
-
-  if (!message) {
-    return "Google Translate request failed.";
-  }
-
-  if (
-    message.includes("API key not valid") ||
-    message.includes("API_KEY_INVALID")
-  ) {
-    return "Google 翻译 API Key 无效，请到首页的 API 设置中检查密钥。";
-  }
-
-  if (
-    message.includes("has not been used") ||
-    message.includes("is disabled") ||
-    message.includes("SERVICE_DISABLED")
-  ) {
-    return "Google Cloud Translation API is not enabled. Enable Cloud Translation API for this project in Google Cloud Console.";
-  }
-
-  if (
-    message.toLowerCase().includes("billing") ||
-    message.includes("BILLING_DISABLED")
-  ) {
-    return "Billing is not enabled for this Google Cloud project. Cloud Translation API requires billing to be enabled.";
-  }
-
-  return "Google 翻译请求失败，请检查密钥权限或配额后重试。";
-};
-
 export const POST = withResponseCache("translate", handlePost);
 
 async function handlePost(request: Request) {
@@ -168,7 +137,7 @@ async function handlePost(request: Request) {
 
   if (!googleResponse.ok) {
     return Response.json(
-      { error: translateGoogleError(payload) },
+      { error: providerError("google", googleResponse.status, payload) },
       { status: googleResponse.status },
     );
   }
