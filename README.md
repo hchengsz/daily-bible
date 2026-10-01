@@ -73,7 +73,7 @@ The Catechism tab presents a balanced daily section from the Simplified Chinese 
 - Daily checklist for Scripture and catechism tasks. 中文：每日读经和教理任务清单。
 - Date-based Bible reading plan with section titles and Scripture references. 中文：按日期组织的读经计划。
 - Built-in English Scripture text and lookup helpers. 中文：内置英文圣经文本。
-- Chinese translation through an Expo API route backed by Google Cloud Translation. 中文：通过 Google 翻译生成中文译文。
+- AI Chinese translation through Gemini. 中文：通过 Gemini 生成中文译文。
 - Gemini-powered vocabulary annotations for Chinese-speaking English Bible readers. 中文：Gemini 辅助英文难词中文注释。
 - Text-to-speech playback with passage navigation and speed controls. 中文：支持朗读、跳段和语速调整。
 - Local progress storage for completed daily tasks. 中文：本地保存每日完成进度。
@@ -82,14 +82,13 @@ The Catechism tab presents a balanced daily section from the Simplified Chinese 
 
 ## Tech Stack
 
-- Expo SDK 57 (`expo` `^57.0.24`; use the matching [versioned documentation](https://docs.expo.dev/versions/v57.0.0/))
+- Expo SDK 57 (`expo` `^57.0.26`; use the matching [versioned documentation](https://docs.expo.dev/versions/v57.0.0/))
 - React 19.2.3
 - React Native 0.86.3
 - Expo Router
 - Zustand
 - Expo Speech
 - Expo SQLite
-- Google Cloud Translation API
 - Gemini API
 - Undici for server-side proxy support
 
@@ -130,21 +129,18 @@ npx tsc --noEmit
 
 ### Personal API keys
 
-Open **API 设置 · 翻译与 AI** on the Today screen. Enter a Gemini API key for AI translation and vocabulary analysis, and/or a Google Cloud Translation API key for reading and catechism translation. Each key works independently. Save applies the settings; the provider validates the key on the first request. Clear the fields and save to remove personal keys.
+Open **API 设置 · 翻译与 AI** on the Today screen and enter a Gemini API key for AI translation and vocabulary analysis. Save applies the setting; Gemini validates the key on the first request. Clear the field and save to remove the personal key.
 
 Native apps store keys with Expo SecureStore. Web keeps them in memory until refresh. Requests pass the relevant key through the app backend to the provider, bypassing the shared response cache. Personal keys take precedence over server environment keys and enable their service even when `EXPO_PUBLIC_AI_FEATURES_ENABLED=false`; without personal keys, existing server configuration still applies. Native releases need a new build for SecureStore and Expo UI, and the backend must be updated to accept the key headers. Production API origins must use HTTPS.
 
 Run `node --test scripts/test-api-keys.cjs` for mocked credential routing, cache isolation, and storage failure tests (no paid API calls).
 
-Translation and vocabulary analysis require external API credentials. The core reading, catechism, and progress features can still run without these keys, but translation and vocabulary analysis will show configuration errors until the keys are set.
+AI translation and vocabulary analysis require a Gemini API credential. The core reading, catechism, and progress features can still run without this key, but AI features will show configuration errors until it is set.
 
 中文：翻译和词汇分析需要外部 API Key；基础读经、教理和进度功能不依赖这些 Key。
 
 ```env
-GOOGLE_TRANSLATE_API_KEY=
-GOOGLE_TRANSLATE_BASE_URL=https://translation.googleapis.com/language/translate/v2
-GOOGLE_TRANSLATE_TARGET_LANGUAGE=zh-CN
-EXPO_PUBLIC_TRANSLATE_API_ORIGIN=
+EXPO_PUBLIC_API_ORIGIN=
 DEV_PROXY_URL=
 GEMINI_API_KEY=
 GEMINI_VOCAB_MODEL=gemini-3.5-flash
@@ -155,7 +151,7 @@ GEMINI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/interaction
 
 - `app/`: Expo Router routes and API routes.
 - `app/(tabs)/`: Today, Reading, and Catechism tabs.
-- `app/api/translate+api.ts`: Google Cloud Translation route.
+- `app/api/ai-translate+api.ts`: Gemini AI translation route.
 - `app/api/vocabulary+api.ts`: Gemini vocabulary analysis route.
 - `src/features/home/`: Today checklist experience.
 - `src/features/reading/`: Daily reading screen, date plan logic, translation, vocabulary, and audio playback.

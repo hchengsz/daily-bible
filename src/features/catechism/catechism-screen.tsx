@@ -34,14 +34,9 @@ const SPEECH_RATE_STEP = 0.1;
 const HEADER_EXPANDED_HEIGHT = 112;
 const HEADER_COMPACT_HEIGHT = 80;
 const HEADER_COLLAPSE_DISTANCE = 72;
-const TARGET_LANGUAGE = "en";
-const TRANSLATE_PATH = "/api/translate";
-const TRANSLATE_API_ORIGIN = (
-  process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
-).replace(/\/$/, "");
-const TRANSLATE_ENDPOINT = TRANSLATE_API_ORIGIN
-  ? `${TRANSLATE_API_ORIGIN}${TRANSLATE_PATH}`
-  : TRANSLATE_PATH;
+const AI_TRANSLATE_PATH = "/api/ai-translate";
+const API_ORIGIN = (process.env.EXPO_PUBLIC_API_ORIGIN ?? "").replace(/\/$/, "");
+const AI_TRANSLATE_ENDPOINT = API_ORIGIN ? `${API_ORIGIN}${AI_TRANSLATE_PATH}` : AI_TRANSLATE_PATH;
 const HEADER_MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "long",
@@ -97,7 +92,7 @@ const parseTranslationResponse = async (
     if (response.status === 404) {
       return {
         error:
-          "Translation API route was not found. Restart the Expo dev server so app/api/translate+api.ts is registered.",
+          "AI translation route was not found. Restart the Expo dev server and try again.",
       };
     }
 
@@ -108,13 +103,12 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
 ): Promise<TranslationMap> => {
-  const keyHeaders = await getApiKeyHeaders("google");
-  const response = await fetch(TRANSLATE_ENDPOINT, {
+  const keyHeaders = await getApiKeyHeaders();
+  const response = await fetch(AI_TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
       chunks,
-      targetLanguage: TARGET_LANGUAGE,
     }),
   });
   const data = await parseTranslationResponse(response);

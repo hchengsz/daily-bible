@@ -7,7 +7,7 @@ export function withResponseCache(name: string, handler: (request: Request) => P
   return async (request: Request): Promise<Response> => {
     // Personal credentials must be validated upstream, never served from the
     // shared cache or retained in its pending-request map.
-    if (request.headers.has("X-Gemini-Api-Key") || request.headers.has("X-Google-Translate-Api-Key")) {
+    if (request.headers.has("X-Gemini-Api-Key")) {
       const response = await handler(request);
       response.headers.set("Cache-Control", "no-store");
       return response;
@@ -17,9 +17,7 @@ export function withResponseCache(name: string, handler: (request: Request) => P
     if (!origin || !key) return handler(request);
     const raw = await request.clone().text();
     if (raw.length > 200000) return Response.json({ error: "Request too large." }, { status: 413 });
-    const model = name === "translate"
-      ? `${process.env.GOOGLE_TRANSLATE_BASE_URL || "google"}:${process.env.GOOGLE_TRANSLATE_TARGET_LANGUAGE || "zh-CN"}`
-      : (name === "ai-translate" ? process.env.GEMINI_TRANSLATE_MODEL : undefined) || process.env.GEMINI_VOCAB_MODEL || "gemini-3.5-flash";
+    const model = (name === "ai-translate" ? process.env.GEMINI_TRANSLATE_MODEL : undefined) || process.env.GEMINI_VOCAB_MODEL || "gemini-3.5-flash";
     const hash = createHash("sha256").update(`v1:${name}:${model}:${raw}`).digest("hex");
     const bucket = process.env.SUPABASE_STORAGE_BUCKET || "daily-bible-cache";
     const url = `${origin.replace(/\/$/, "")}/storage/v1/object/${encodeURIComponent(bucket)}/${name}/${hash}.json`;

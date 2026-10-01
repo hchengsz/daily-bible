@@ -13,13 +13,10 @@ require.extensions['.ts'] = (module, filename) => {
 
 delete process.env.DEV_PROXY_URL;
 delete process.env.GEMINI_API_BASE_URL;
-delete process.env.GOOGLE_TRANSLATE_BASE_URL;
 process.env.GEMINI_API_KEY = 'server-gemini-placeholder';
-process.env.GOOGLE_TRANSLATE_API_KEY = 'server-google-placeholder';
 process.env.SUPABASE_URL = 'https://cache.example.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'cache-placeholder';
 
-const google = require('../app/api/translate+api.ts');
 const ai = require('../app/api/ai-translate+api.ts');
 const vocabulary = require('../app/api/vocabulary+api.ts');
 const { getRequestApiKey } = require('../src/server/api-keys.ts');
@@ -33,20 +30,19 @@ const request = (header, key) => new Request('https://app.example.test/api', {
 });
 
 test('request credentials override server keys without changing shared configuration', () => {
-  assert.equal(getRequestApiKey(request('X-Gemini-Api-Key', 'personal'), 'ai'), 'personal');
-  assert.equal(getRequestApiKey(request(), 'ai'), 'server-gemini-placeholder');
-  assert.equal(getRequestApiKey(request('X-Gemini-Api-Key', ''), 'ai'), '');
-  assert.equal(getRequestApiKey(request(), 'google'), 'server-google-placeholder');
+  assert.equal(getRequestApiKey(request('X-Gemini-Api-Key', 'personal')), 'personal');
+  assert.equal(getRequestApiKey(request()), 'server-gemini-placeholder');
+  assert.equal(getRequestApiKey(request('X-Gemini-Api-Key', '')), '');
 });
 
 for (const [name, handler, header, payload] of [
-  ['Google translation', google.POST, 'X-Google-Translate-Api-Key', { data: { translations: [{ translatedText: '起初' }] } }],
   ['AI translation', ai.POST, 'X-Gemini-Api-Key', { output_text: JSON.stringify({ translations: [{ id: 'one', text: '起初' }] }) }],
   ['Vocabulary', vocabulary.POST, 'X-Gemini-Api-Key', { output_text: JSON.stringify({ results: [{ id: 'one', terms: [] }] }) }],
 ]) {
   for (const [status, error, expected] of [
     [503, null, /服务暂时不可用（503）/],
     [429, { message: 'personal-key-placeholder' }, /配额/],
+    [403, { errors: [{ reason: 'userRateLimitExceeded' }] }, /配额/],
     [403, { details: [{ reason: 'SERVICE_DISABLED' }] }, /启用.*API/],
     [403, { details: [{ reason: 'BILLING_DISABLED' }] }, /结算/],
     [403, { details: [{ reason: 'API_KEY_SERVICE_BLOCKED' }] }, /权限/],
@@ -105,25 +101,21 @@ for (const [name, handler, header, payload] of [
 test('settings support independent keys, disabled shared service, failed save retry, and removal', async t => {
   process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED = 'false';
   await store.loadApiKeys();
-  await assert.rejects(store.getApiKeyHeaders('ai'), /首页/);
-  await store.saveApiKeys({ gemini: '  personal-gemini-placeholder  ', google: '' });
-  assert.deepEqual(await store.getApiKeyHeaders('ai'), { 'X-Gemini-Api-Key': 'personal-gemini-placeholder' });
-  await store.saveApiKeys({ gemini: 'AQ.example-gemini-key_123', google: '' });
-  assert.deepEqual(await store.getApiKeyHeaders('ai'), { 'X-Gemini-Api-Key': 'AQ.example-gemini-key_123' });
-  await store.saveApiKeys({ gemini: 'personal-gemini-placeholder', google: '' });
-  await assert.rejects(store.getApiKeyHeaders('google'), /首页/);
-  await assert.rejects(store.saveApiKeys({ gemini: 'contains spaces', google: '' }), /格式/);
+  await assert.rejects(store.getApiKeyHeaders(), /首页/);
+  await store.saveApiKeys({ gemini: '  personal-gemini-placeholder  ' });
+  assert.deepEqual(await store.getApiKeyHeaders(), { 'X-Gemini-Api-Key': 'personal-gemini-placeholder' });
+  await store.saveApiKeys({ gemini: 'AQ.example-gemini-key_123' });
+  assert.deepEqual(await store.getApiKeyHeaders(), { 'X-Gemini-Api-Key': 'AQ.example-gemini-key_123' });
+  await store.saveApiKeys({ gemini: 'personal-gemini-placeholder' });
+  await assert.rejects(store.saveApiKeys({ gemini: 'contains spaces' }), /格式/);
   const revision = store.useApiKeyStore.getState().revision;
   const failedWrite = t.mock.method(storage, 'writeApiKeys', async () => { throw new Error('disk failure'); });
-  await assert.rejects(store.saveApiKeys({ gemini: '', google: 'personal-google-placeholder' }), /disk failure/);
+  await assert.rejects(store.saveApiKeys({ gemini: '' }), /disk failure/);
   assert.equal(store.useApiKeyStore.getState().revision, revision);
   assert.equal(store.useApiKeyStore.getState().gemini, 'personal-gemini-placeholder');
   failedWrite.mock.restore();
-  await store.saveApiKeys({ gemini: '', google: 'personal-google-placeholder' });
-  assert.deepEqual(await store.getApiKeyHeaders('google'), { 'X-Google-Translate-Api-Key': 'personal-google-placeholder' });
-  await store.saveApiKeys({ gemini: '', google: '' });
+  await store.saveApiKeys({ gemini: '' });
   assert.equal(await storage.readApiKeys(), null);
-  assert.equal(store.useApiKeyStore.getState().google, '');
   process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED = 'true';
-  assert.deepEqual(await store.getApiKeyHeaders('google'), {});
+  assert.deepEqual(await store.getApiKeyHeaders(), {});
 });

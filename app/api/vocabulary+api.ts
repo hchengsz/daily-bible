@@ -187,7 +187,7 @@ const getGeminiRequestInit = (
 export const POST = withResponseCache("vocabulary", handlePost);
 
 async function handlePost(request: Request) {
-  const apiKey = getRequestApiKey(request, "ai");
+  const apiKey = getRequestApiKey(request);
 
   if (!apiKey) {
     return Response.json(
@@ -283,7 +283,7 @@ async function handlePost(request: Request) {
 
   if (!geminiResponse.ok) {
     return Response.json(
-      { error: providerError("ai", geminiResponse.status, payload) },
+      { error: providerError(geminiResponse.status, payload) },
       { status: geminiResponse.status },
     );
   }

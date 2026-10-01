@@ -7,7 +7,6 @@ import { loadApiKeys, saveApiKeys, useApiKeyStore } from "./api-key-store";
 /* eslint-disable react-hooks/immutability */
 function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean) => void }) {
   const gemini = useNativeState("");
-  const google = useNativeState("");
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -23,13 +22,12 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
       if (!mounted) return;
       const keys = useApiKeyStore.getState();
       gemini.value = keys.gemini;
-      google.value = keys.google;
       setReady(true);
     }).catch(() => {
       if (mounted) setError("无法读取已保存的密钥，请关闭后重试。");
     });
     return () => { mounted = false; };
-  }, [gemini, google]);
+  }, [gemini]);
 
   const save = async () => {
     if (!ready || savingRef.current) return;
@@ -37,7 +35,7 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
     setSaving(true);
     setError("");
     try {
-      await saveApiKeys({ gemini: gemini.value, google: google.value });
+      await saveApiKeys({ gemini: gemini.value });
       onClose(true);
     } catch (cause) {
       setError(cause instanceof Error && cause.message.startsWith("API Key")
@@ -55,22 +53,13 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
         <View accessibilityViewIsModal style={{ width: "100%", maxWidth: 520, maxHeight: "90%", alignSelf: "center", borderRadius: 20, backgroundColor: dark ? "#171717" : "#fff" }}>
           <ScrollView keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 24, gap: 16 }}>
             <Text accessibilityRole="header" style={{ color, fontSize: 24, fontWeight: "700" }}>API 设置</Text>
-            <Text style={{ color: muted, lineHeight: 22 }}>分别填写需要使用的服务。Gemini 用于 AI 翻译和词汇分析，Google Cloud Translation 用于普通翻译。</Text>
+            <Text style={{ color: muted, lineHeight: 22 }}>Gemini 用于 AI 翻译和词汇分析。</Text>
             <Text style={{ color, fontWeight: "600" }}>AI API Key（Gemini）</Text>
             {/* Match only height so long keys cannot expand the native host horizontally. */}
             <Host matchContents={{ vertical: true }} style={{ width: "100%", overflow: "hidden" }}
               onLayout={(event) => setInputWidth(event.nativeEvent.layout.width)} colorScheme={dark ? "dark" : "light"}>
               <TextInput value={gemini} onChangeText={(text) => { "worklet"; gemini.value = text; }}
                 placeholder="粘贴 Gemini API Key" secureTextEntry={!visible} editable={ready && !saving}
-                multiline={visible} numberOfLines={visible ? 5 : 1}
-                autoCapitalize="none" autoCorrect={false} autoComplete="off" maxLength={256}
-                textStyle={{ color, fontSize: 16, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
-                style={{ width: inputWidth, backgroundColor: dark ? "#171717" : "#fff", borderWidth: 1, borderColor: dark ? "#555" : "#ccc", borderRadius: 8, padding: 12, height: visible ? 144 : 48 }} />
-            </Host>
-            <Text style={{ color, fontWeight: "600" }}>Google 翻译 API Key</Text>
-            <Host matchContents={{ vertical: true }} style={{ width: "100%", overflow: "hidden" }} colorScheme={dark ? "dark" : "light"}>
-              <TextInput value={google} onChangeText={(text) => { "worklet"; google.value = text; }}
-                placeholder="粘贴 Google Cloud Translation API Key" secureTextEntry={!visible} editable={ready && !saving}
                 multiline={visible} numberOfLines={visible ? 5 : 1}
                 autoCapitalize="none" autoCorrect={false} autoComplete="off" maxLength={256}
                 textStyle={{ color, fontSize: 16, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
@@ -87,7 +76,7 @@ function ApiKeyForm({ dark, onClose }: { dark: boolean; onClose: (saved: boolean
             <Host matchContents colorScheme={dark ? "dark" : "light"}>
               <Column spacing={10}>
                 <Button label={visible ? "隐藏密钥" : "显示密钥"} variant="text" disabled={saving} onPress={() => setVisible(!visible)} />
-                <Button label="清空输入" variant="text" disabled={!ready || saving} onPress={() => { gemini.value = ""; google.value = ""; }} />
+                <Button label="清空输入" variant="text" disabled={!ready || saving} onPress={() => { gemini.value = ""; }} />
                 <Button label={saving ? "正在保存…" : "保存设置"} disabled={!ready || saving} onPress={() => { void save(); }} />
                 <Button label="取消" variant="outlined" disabled={saving} onPress={() => onClose(false)} />
               </Column>
@@ -103,7 +92,6 @@ export function ApiKeySettings({ dark }: { dark: boolean }) {
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const hasGemini = useApiKeyStore(state => Boolean(state.gemini));
-  const hasGoogle = useApiKeyStore(state => Boolean(state.google));
   useEffect(() => { void loadApiKeys().catch(() => {}); }, []);
   return (
     <View style={{ gap: 8 }}>
@@ -111,7 +99,7 @@ export function ApiKeySettings({ dark }: { dark: boolean }) {
         <Button label="API 设置 · 翻译与 AI" variant="outlined" onPress={() => { setSaved(false); setOpen(true); }} />
       </Host>
       <Text accessibilityLiveRegion="polite" style={{ color: dark ? "#a5a5a5" : "#666", textAlign: "center", fontSize: 13 }}>
-        {saved ? "设置已保存 · " : ""}{`Gemini ${hasGemini ? "已配置" : "未配置"} · Google 翻译 ${hasGoogle ? "已配置" : "未配置"}`}
+        {saved ? "设置已保存 · " : ""}{`Gemini ${hasGemini ? "已配置" : "未配置"}`}
       </Text>
       {open && <ApiKeyForm dark={dark} onClose={(didSave) => { setOpen(false); setSaved(didSave); }} />}
     </View>

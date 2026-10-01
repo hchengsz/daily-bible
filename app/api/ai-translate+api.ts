@@ -24,7 +24,7 @@ async function handlePost(request: Request) {
     return Response.json({ error: "Translation request is too large." }, { status: 413 });
   }
   if (!chunks.length) return Response.json({ translations: [] });
-  const apiKey = getRequestApiKey(request, "ai");
+  const apiKey = getRequestApiKey(request);
   if (!apiKey) return Response.json({ error: "请先到首页的 API 设置中填写 Gemini API Key。" }, { status: 503 });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90000);
@@ -61,7 +61,7 @@ async function handlePost(request: Request) {
     const response = await fetch(process.env.GEMINI_API_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/interactions", init);
     if (!response.ok) {
       const errorPayload: unknown = await response.json().catch(() => null);
-      return Response.json({ error: providerError("ai", response.status, errorPayload) }, { status: response.status });
+      return Response.json({ error: providerError(response.status, errorPayload) }, { status: response.status });
     }
     const payload = await response.json();
     try {

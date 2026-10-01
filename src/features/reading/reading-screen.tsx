@@ -88,20 +88,17 @@ const WORD_PRONUNCIATION_HINT =
     : "Double-tap any English word to hear it.";
 const SENTENCE_TRANSLATION_HINT =
   "Press and hold any sentence for a Chinese translation.";
-const TARGET_LANGUAGE = "zh-CN";
-const TRANSLATE_PATH = "/api/translate";
 const VOCABULARY_PATH = "/api/vocabulary";
+const AI_TRANSLATE_PATH = "/api/ai-translate";
 const HEADER_EXPANDED_HEIGHT = 112;
 const HEADER_COMPACT_HEIGHT = 80;
 const HEADER_COLLAPSE_DISTANCE = 72;
-const TRANSLATE_API_ORIGIN = (
-  process.env.EXPO_PUBLIC_TRANSLATE_API_ORIGIN ?? ""
-).replace(/\/$/, "");
-const TRANSLATE_ENDPOINT = TRANSLATE_API_ORIGIN
-  ? `${TRANSLATE_API_ORIGIN}${TRANSLATE_PATH}`
-  : TRANSLATE_PATH;
-const VOCABULARY_ENDPOINT = TRANSLATE_API_ORIGIN
-  ? `${TRANSLATE_API_ORIGIN}${VOCABULARY_PATH}`
+const API_ORIGIN = (process.env.EXPO_PUBLIC_API_ORIGIN ?? "").replace(/\/$/, "");
+const AI_TRANSLATE_ENDPOINT = API_ORIGIN
+  ? `${API_ORIGIN}${AI_TRANSLATE_PATH}`
+  : AI_TRANSLATE_PATH;
+const VOCABULARY_ENDPOINT = API_ORIGIN
+  ? `${API_ORIGIN}${VOCABULARY_PATH}`
   : VOCABULARY_PATH;
 const HEADER_MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
@@ -438,7 +435,7 @@ const parseTranslationResponse = async (
     if (response.status === 404) {
       return {
         error:
-          "Translation API route was not found. Restart the Expo dev server so app/api/translate+api.ts is registered.",
+          "AI translation route was not found. Restart the Expo dev server and try again.",
       };
     }
 
@@ -451,14 +448,12 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
   signal?: AbortSignal,
-  provider: "google" | "ai" = "google",
 ): Promise<TranslationMap> => {
-  const keyHeaders = await getApiKeyHeaders(provider);
-  const response = await fetch(provider === "ai" ? `${TRANSLATE_API_ORIGIN}/api/ai-translate` : TRANSLATE_ENDPOINT, {
+  const keyHeaders = await getApiKeyHeaders();
+  const response = await fetch(AI_TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
-      targetLanguage: TARGET_LANGUAGE,
       chunks,
     }),
     signal,
@@ -480,7 +475,7 @@ const translateChunks = async (
 const analyzeVocabulary = async (
   chunks: TranslationChunk[],
 ): Promise<VocabularyMap> => {
-  const keyHeaders = await getApiKeyHeaders("ai");
+  const keyHeaders = await getApiKeyHeaders();
   const response = await fetch(VOCABULARY_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...keyHeaders },
@@ -632,8 +627,7 @@ export default function ReadingScreen() {
   );
   const [translations, setTranslations] = useState<TranslationMap>({});
   const translationControllerRef = useRef<AbortController | null>(null);
-  const translationCacheRef = useRef<Partial<Record<"google" | "ai", TranslationMap>>>({});
-  const [translationProvider, setTranslationProvider] = useState<"google" | "ai">("google");
+  const translationCacheRef = useRef<TranslationMap | null>(null);
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
@@ -712,8 +706,7 @@ export default function ReadingScreen() {
     stopSpeechPlayback();
     translationControllerRef.current?.abort();
     translationControllerRef.current = null;
-    translationCacheRef.current = {};
-    setTranslationProvider("google");
+    translationCacheRef.current = null;
     setTranslations({});
     setIsTranslated(false);
     setIsTranslating(false);
@@ -1079,7 +1072,7 @@ export default function ReadingScreen() {
     }
   };
 
-  const handleTranslate = async (provider: "google" | "ai" = "google") => {
+  const handleTranslate = async () => {
     if (isCuv) {
       setTranslationError("当前为本地和合本，无需翻译。请切换至 NIV 使用在线翻译。");
       return;
@@ -1087,15 +1080,14 @@ export default function ReadingScreen() {
     if (translationControllerRef.current) return;
     stopSpeechPlayback();
     setTranslationError(null);
-    if (isTranslated && translationProvider === provider) {
+    if (isTranslated) {
       setIsTranslated(false);
       return;
     }
 
-    const cached = translationCacheRef.current[provider];
+    const cached = translationCacheRef.current;
     if (cached) {
       setTranslations(cached);
-      setTranslationProvider(provider);
       setIsTranslated(true);
       return;
     }
@@ -1106,10 +1098,9 @@ export default function ReadingScreen() {
     setTranslationError(null);
 
     try {
-      const translatedChunks = await translateChunks(translationChunks, controller.signal, provider);
+      const translatedChunks = await translateChunks(translationChunks, controller.signal);
       if (controller.signal.aborted) return;
-      translationCacheRef.current[provider] = translatedChunks;
-      setTranslationProvider(provider);
+      translationCacheRef.current = translatedChunks;
       setTranslations(translatedChunks);
       setIsTranslated(true);
     } catch (error) {
@@ -1351,14 +1342,14 @@ export default function ReadingScreen() {
             <Pressable
               accessibilityRole="button"
               disabled={isTranslating}
-              accessibilityLabel="Google translation / original"
-              onPress={() => handleTranslate("google")}
+              accessibilityLabel="AI translation / original"
+              onPress={handleTranslate}
               style={getHeaderToolStyle(isTranslating)}
             >
               <MaterialIcons
                 name="translate"
                 size={22}
-                color={isTranslated && translationProvider === "google" ? "#2db65a" : headerIconColor}
+                color={isTranslated ? "#2db65a" : headerIconColor}
               />
             </Pressable>
 
@@ -1522,17 +1513,17 @@ export default function ReadingScreen() {
         {!isCuv && <Pressable
           accessibilityRole="button"
           accessibilityLabel="AI 翻译（天主教译法）"
-          accessibilityState={{ disabled: isTranslating, busy: isTranslating, selected: isTranslated && translationProvider === "ai" }}
+          accessibilityState={{ disabled: isTranslating, busy: isTranslating, selected: isTranslated }}
           disabled={isTranslating}
-          onPress={() => handleTranslate("ai")}
+          onPress={handleTranslate}
           style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, marginTop: 14, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: colors.chip, opacity: isTranslating ? 0.6 : 1 }}
         >
           <MaterialIcons name="auto-awesome" size={18} color={colors.annotation} />
           <Text style={{ color: colors.text, fontSize: 14 }}>
-            {isTranslating ? "翻译中…" : isTranslated && translationProvider === "ai" ? "查看英文原文" : "AI 翻译 · 天主教译法"}
+            {isTranslating ? "翻译中…" : isTranslated ? "查看英文原文" : "AI 翻译 · 天主教译法"}
           </Text>
         </Pressable>}
-        {!isCuv && isTranslated && translationProvider === "ai" && (
+        {!isCuv && isTranslated && (
           <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI 译文 · 采用天主教术语，供阅读参考</Text>
         )}
 
