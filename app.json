@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "daily-bible",
+    "name": "Daily Bible",
     "slug": "daily-bible",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/daily-bible-forest-white-icon.png",
     "scheme": "dailybible",
     "userInterfaceStyle": "automatic",
     "ios": {

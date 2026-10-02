@@ -1,0 +1,3 @@
+Edited using the built-in image_gen tool; exported as 1024x1024 opaque RGB PNG.
+
+Edit this app icon. Change ONLY the cream/off-white background outside the cross to perfectly flat pure white #FFFFFF. Preserve the exact centered Latin cross silhouette, its size, proportions, location, and the green forest photograph visible inside it. No cream tint, texture, gradient, border, shadows, or rounded corners. Opaque square final app-icon artwork, 1024x1024. Keep all forest content unchanged.

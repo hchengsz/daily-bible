@@ -76,7 +76,7 @@ type SentenceLongPressHandler = (sentenceId: string, text: string) => void;
 type WordPressHandler = (word: string) => void;
 
 const FONT = 20;
-const LINE_HEIGHT = 30;
+const LINE_HEIGHT = 32;
 const DOUBLE_PRESS_DELAY = 350;
 const MIN_SPEECH_RATE = 0.6;
 const MAX_SPEECH_RATE = 1.4;
@@ -147,6 +147,7 @@ const renderPronounceableText = (
         onLongPress={onLongPress}
         onPress={() => onWordPress(part)}
         suppressHighlighting={Boolean(onLongPress)}
+        style={{ lineHeight: LINE_HEIGHT }}
       >
         {part}
       </Text>
@@ -200,7 +201,7 @@ const renderTextWithVocabulary = (
       <Text
         key={`${part}:${index}`}
         onLongPress={onLongPress}
-        style={{ color: annotationColor }}
+        style={{ color: annotationColor, lineHeight: LINE_HEIGHT }}
       >
         {renderPronounceableText(part, onWordPress, onLongPress)} ({definition})
       </Text>
@@ -308,6 +309,7 @@ const renderInteractiveSentences = ({
         key={sentenceId}
         onLongPress={handleLongPress}
         suppressHighlighting
+        style={{ lineHeight: LINE_HEIGHT }}
       >
         {renderTextWithVocabulary(
           sentence.text,
@@ -317,16 +319,16 @@ const renderInteractiveSentences = ({
           handleLongPress,
         )}
         {translation?.status === "loading" && (
-          <Text style={{ color: loadingColor }}> 〔Translating…〕</Text>
+          <Text style={{ color: loadingColor, lineHeight: LINE_HEIGHT }}> 〔Translating…〕</Text>
         )}
         {translation?.status === "success" && (
-          <Text style={{ color: translationColor }}>
+          <Text style={{ color: translationColor, lineHeight: LINE_HEIGHT }}>
             {" "}
             〔{translation.text}〕
           </Text>
         )}
         {translation?.status === "error" && (
-          <Text style={{ color: errorColor }}>
+          <Text style={{ color: errorColor, lineHeight: LINE_HEIGHT }}>
             {" "}
             〔{translation.message} Long-press to retry.〕
           </Text>
@@ -1448,7 +1450,7 @@ export default function ReadingScreen() {
         )}
 
         {!!dayTitle.trim() && (
-          <Text style={{ color: colors.text, fontSize: 24, fontWeight: "700" }}>
+          <Text style={{ color: colors.text, fontSize: 24, lineHeight: 30, fontWeight: "700", includeFontPadding: false }}>
             {renderPronounceableText(dayTitle, handleWordPress)}
           </Text>
         )}
@@ -1510,19 +1512,6 @@ export default function ReadingScreen() {
             本地和合本 · 离线可读，无需 API。标题和导读保留原文；a/b 分节显示完整经节，增补经文保留其原文。
           </Text>}
         </View>
-        {!isCuv && <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="AI 翻译（天主教译法）"
-          accessibilityState={{ disabled: isTranslating, busy: isTranslating, selected: isTranslated }}
-          disabled={isTranslating}
-          onPress={handleTranslate}
-          style={{ alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, marginTop: 14, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 16, backgroundColor: colors.chip, opacity: isTranslating ? 0.6 : 1 }}
-        >
-          <MaterialIcons name="auto-awesome" size={18} color={colors.annotation} />
-          <Text style={{ color: colors.text, fontSize: 14 }}>
-            {isTranslating ? "翻译中…" : isTranslated ? "查看英文原文" : "AI 翻译 · 天主教译法"}
-          </Text>
-        </Pressable>}
         {!isCuv && isTranslated && (
           <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI 译文 · 采用天主教术语，供阅读参考</Text>
         )}
@@ -1543,6 +1532,7 @@ export default function ReadingScreen() {
                 fontSize: FONT,
                 lineHeight: LINE_HEIGHT,
                 color: colors.textSecondary,
+                includeFontPadding: false,
               }}
             >
               {renderInteractiveSentences({
@@ -1582,8 +1572,10 @@ export default function ReadingScreen() {
                       style={{
                         color: colors.text,
                         fontSize: 22,
+                        lineHeight: 28,
                         fontWeight: "600",
                         marginBottom: 8,
+                        includeFontPadding: false,
                       }}
                     >
                       {renderPronounceableText(
@@ -1623,6 +1615,7 @@ export default function ReadingScreen() {
                           fontSize: FONT,
                           lineHeight: LINE_HEIGHT,
                           color: colors.textSecondary,
+                          includeFontPadding: false,
                         }}
                       >
                         {renderInteractiveSentences({
@@ -1671,8 +1664,10 @@ export default function ReadingScreen() {
                       style={{
                         color: colors.text,
                         fontSize: FONT,
+                        lineHeight: LINE_HEIGHT,
                         fontWeight: "500",
                         marginBottom: 6,
+                        includeFontPadding: false,
                       }}
                     >
                       {renderPronounceableText(
@@ -1701,6 +1696,7 @@ export default function ReadingScreen() {
                           color: colors.text,
                           fontSize: FONT,
                           lineHeight: LINE_HEIGHT,
+                          includeFontPadding: false,
                         }}
                       >
                         {paragraphScripture
