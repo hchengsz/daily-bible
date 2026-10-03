@@ -70,6 +70,8 @@ The Catechism tab presents a balanced daily section from the Simplified Chinese 
 
 ## Features
 
+- Successful AI passage and sentence translations are saved on-device. Tap translation again after reopening the app to reuse saved text offline, without an API key or another AI request. Only missing source passages are sent for translation; changing the source or translation scope avoids reusing unrelated text. Failed responses are never cached. Uninstalling the app or clearing its data removes these local translations. Storage failures keep generated text in memory and show a warning; reopening the translation retries saving. Tests: `node --test scripts/test-translation-cache.cjs`.
+
 - First-launch choice of Catholic or Protestant reading tradition, editable in the Today screen's 信仰与阅读设置. Catholic readers retain the existing catechism plan; Protestant readers receive the offline English Westminster Confession (33 chapters, 172 sections), one section per day on a repeating annual plan. Bible content is currently shared. Each tradition has separate formation-reading completion records.
 - The status bar follows the in-app appearance setting: white time and system icons in night mode, dark icons in day mode.
 

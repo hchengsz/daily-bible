@@ -3,6 +3,7 @@ import { BlurView } from "expo-blur";
 import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiKeyHeaders, useApiKeyStore } from "../settings/api-key-store";
+import { translateWithLocalCache, useTranslationCacheStatus } from "../reading/translation-cache";
 import { Platform, Pressable, Text, View, type ScrollView } from "react-native";
 import Animated, {
   Extrapolation,
@@ -103,12 +104,13 @@ const parseTranslationResponse = async (
 const translateChunks = async (
   chunks: TranslationChunk[],
 ): Promise<TranslationMap> => {
+  return translateWithLocalCache("catechism-ai-v1", chunks, async (missing) => {
   const keyHeaders = await getApiKeyHeaders();
   const response = await fetch(AI_TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
-      chunks,
+      chunks: missing,
     }),
   });
   const data = await parseTranslationResponse(response);
@@ -123,6 +125,7 @@ const translateChunks = async (
       translation.text,
     ]),
   );
+  });
 };
 
 const clampSpeechRate = (rate: number) =>
@@ -202,6 +205,7 @@ const getCompletionMessage = (isSelectedToday: boolean) =>
     : "You're caught up on this day. Keep going.";
 
 export default function CatechismScreen() {
+  const cacheWarning = useTranslationCacheStatus(state => state.warning);
   const apiKeyRevision = useApiKeyStore(state => state.revision);
   const currentDate = useMemo(() => new Date(), []);
   const [selectedDate, setSelectedDate] = useState(currentDate);
@@ -515,12 +519,6 @@ export default function CatechismScreen() {
       return;
     }
 
-    if (Object.keys(translations).length) {
-      setIsTranslated(true);
-      stopSpeechPlayback();
-      return;
-    }
-
     setIsTranslating(true);
     setTranslationError(null);
 
@@ -715,6 +713,7 @@ export default function CatechismScreen() {
         scrollEventThrottle={16}
         style={{ backgroundColor: colors.background }}
       >
+        {!!cacheWarning && <Text accessibilityRole="alert" style={{ color: colors.label, lineHeight: 22, marginBottom: 12 }}>{cacheWarning}</Text>}
         {!!translationError && (
           <Text
             style={{

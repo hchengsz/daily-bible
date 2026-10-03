@@ -21,6 +21,7 @@ import {
 } from "../progress/daily-progress-store";
 import { useAppearanceStore } from "../settings/appearance-store";
 import { getApiKeyHeaders, useApiKeyStore } from "../settings/api-key-store";
+import { translateWithLocalCache, useTranslationCacheStatus } from "./translation-cache";
 import { useBibleVersionStore } from "./bible-version-store";
 import {
   getVocabularyWordId,
@@ -451,12 +452,13 @@ const translateChunks = async (
   chunks: TranslationChunk[],
   signal?: AbortSignal,
 ): Promise<TranslationMap> => {
+  return translateWithLocalCache("scripture-zh-CN-catholic-v1", chunks, async (missing) => {
   const keyHeaders = await getApiKeyHeaders();
   const response = await fetch(AI_TRANSLATE_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...keyHeaders },
     body: JSON.stringify({
-      chunks,
+      chunks: missing,
     }),
     signal,
   });
@@ -472,6 +474,7 @@ const translateChunks = async (
       translation.text,
     ]),
   );
+  }, signal);
 };
 
 const analyzeVocabulary = async (
@@ -629,7 +632,7 @@ export default function ReadingScreen() {
   );
   const [translations, setTranslations] = useState<TranslationMap>({});
   const translationControllerRef = useRef<AbortController | null>(null);
-  const translationCacheRef = useRef<TranslationMap | null>(null);
+  const cacheWarning = useTranslationCacheStatus(state => state.warning);
   const [isTranslated, setIsTranslated] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
@@ -708,7 +711,6 @@ export default function ReadingScreen() {
     stopSpeechPlayback();
     translationControllerRef.current?.abort();
     translationControllerRef.current = null;
-    translationCacheRef.current = null;
     setTranslations({});
     setIsTranslated(false);
     setIsTranslating(false);
@@ -1087,13 +1089,6 @@ export default function ReadingScreen() {
       return;
     }
 
-    const cached = translationCacheRef.current;
-    if (cached) {
-      setTranslations(cached);
-      setIsTranslated(true);
-      return;
-    }
-
     const controller = new AbortController();
     translationControllerRef.current = controller;
     setIsTranslating(true);
@@ -1102,7 +1097,6 @@ export default function ReadingScreen() {
     try {
       const translatedChunks = await translateChunks(translationChunks, controller.signal);
       if (controller.signal.aborted) return;
-      translationCacheRef.current = translatedChunks;
       setTranslations(translatedChunks);
       setIsTranslated(true);
     } catch (error) {
@@ -1423,6 +1417,7 @@ export default function ReadingScreen() {
           width: "100%",
         }}
       >
+        {!!cacheWarning && <Text accessibilityRole="alert" style={{ color: colors.label, lineHeight: 22, marginBottom: 12 }}>{cacheWarning}</Text>}
         {!!translationError && (
           <Text
             style={{
