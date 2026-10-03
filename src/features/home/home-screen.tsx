@@ -23,6 +23,9 @@ import {
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
 import { ApiKeySettings } from "../settings/api-key-settings";
+import { TraditionSettings } from "../settings/tradition-settings";
+import { useTraditionStore } from "../settings/tradition-store";
+import { getConfessionDayForDate } from "../catechism/confession-data";
 import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
 
 type TodoItemProps = {
@@ -170,6 +173,9 @@ function TodoItem({
 }
 
 export default function HomeScreen() {
+  const tradition = useTraditionStore(state => state.tradition);
+  const isProtestant = tradition === "protestant";
+  const formationTask = isProtestant ? "confession" : "catechism";
   const currentDate = useMemo(() => new Date(), []);
   const dateKey = getDateKey(currentDate);
   const readingDay = useMemo(
@@ -181,8 +187,8 @@ export default function HomeScreen() {
     [readingDay],
   );
   const catechismDay = useMemo(
-    () => getCatechismDayForDate(currentDate),
-    [currentDate],
+    () => isProtestant ? getConfessionDayForDate(currentDate) : getCatechismDayForDate(currentDate),
+    [currentDate, isProtestant],
   );
   const catechismReference =
     catechismDay.startNumber === catechismDay.endNumber
@@ -194,7 +200,7 @@ export default function HomeScreen() {
     [vocabularyWords],
   );
   const readingCompleted = useTaskCompletion(dateKey, "reading");
-  const catechismCompleted = useTaskCompletion(dateKey, "catechism");
+  const catechismCompleted = useTaskCompletion(dateKey, formationTask);
   const vocabularyCompleted = useTaskCompletion(dateKey, "vocabulary");
   const vocabularyTodoCompleted =
     vocabularyCompleted || learningVocabularyWords.length === 0;
@@ -219,15 +225,15 @@ export default function HomeScreen() {
       language: /[\u3400-\u9fff]/.test(text) ? "zh-CN" as const : "en-US" as const,
       text,
     }));
-    const catechismChunks = buildCatechismAloudChunks(catechismDay.entries).map(
+    const catechismChunks = (isProtestant ? catechismDay.entries.map(entry => entry.text) : buildCatechismAloudChunks(catechismDay.entries)).map(
       (text) => ({
-        language: "zh-CN" as const,
+        language: isProtestant ? "en-US" as const : "zh-CN" as const,
         text,
       }),
     );
 
     return [...readingChunks, ...catechismChunks];
-  }, [catechismDay.entries, readingDay, bibleVersion]);
+  }, [catechismDay.entries, readingDay, bibleVersion, isProtestant]);
   const estimatedReadingMinutes = useMemo(
     () => getEstimatedReadingMinutes(readAllChunks),
     [readAllChunks],
@@ -240,6 +246,7 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => () => stopReadAll(), [stopReadAll]);
+  useEffect(() => { stopReadAll(); }, [tradition, stopReadAll]);
 
   const speakReadAllChunk = useCallback(
     function speakReadAllChunk(index: number, runId: number) {
@@ -248,7 +255,7 @@ export default function HomeScreen() {
       if (!chunk) {
         if (runId === readAllRunRef.current) {
           completeTask(dateKey, "reading");
-          completeTask(dateKey, "catechism");
+          completeTask(dateKey, formationTask);
           setIsReadingAll(false);
         }
 
@@ -269,7 +276,7 @@ export default function HomeScreen() {
         onStopped: () => undefined,
       });
     },
-    [completeTask, dateKey],
+    [completeTask, dateKey, formationTask],
   );
 
   const handleReadAllToday = useCallback(() => {
@@ -363,8 +370,8 @@ export default function HomeScreen() {
             .map((entry) => entry.text)
             .join(" ")}
           href="/catechism"
-          label="Catechism"
-          meta={`CCC ${catechismReference}`}
+          label={isProtestant ? "西敏信条 · Westminster Confession" : "Catechism"}
+          meta={isProtestant ? `WCF ${getConfessionDayForDate(currentDate).reference}` : `CCC ${catechismReference}`}
         />
 
         <TodoItem
@@ -429,8 +436,8 @@ export default function HomeScreen() {
         <Pressable
           accessibilityLabel={
             isReadingAll
-              ? "Stop reading today's Bible and catechism"
-              : "Read today's Bible and catechism aloud"
+              ? "Stop reading today's texts"
+              : "Read today's texts aloud"
           }
           accessibilityRole="button"
           onPress={handleReadAllToday}
@@ -498,6 +505,7 @@ export default function HomeScreen() {
         </Text>
       </View>
       <ApiKeySettings dark={darkModeEnabled} />
+      <View style={{ marginTop: 28 }}><TraditionSettings dark={darkModeEnabled} /></View>
     </ScrollView>
   );
 }

@@ -70,6 +70,11 @@ The Catechism tab presents a balanced daily section from the Simplified Chinese 
 
 ## Features
 
+- First-launch choice of Catholic or Protestant reading tradition, editable in the Today screen's 信仰与阅读设置. Catholic readers retain the existing catechism plan; Protestant readers receive the offline English Westminster Confession (33 chapters, 172 sections), one section per day on a repeating annual plan. Bible content is currently shared. Each tradition has separate formation-reading completion records.
+- The status bar follows the in-app appearance setting: white time and system icons in night mode, dark icons in day mode.
+
+Westminster text provenance and scheduling details: [source notes](src/data/WESTMINSTER-SOURCE.md). Run `node --test scripts/test-tradition.cjs` to check preference persistence, failure recovery, progress separation and content coverage.
+
 - Daily checklist for Scripture and catechism tasks. 中文：每日读经和教理任务清单。
 - Date-based Bible reading plan with section titles and Scripture references. 中文：按日期组织的读经计划。
 - Built-in English Scripture text and lookup helpers. 中文：内置英文圣经文本。

@@ -5,9 +5,11 @@ import { HapticTabButton } from "@/components/haptic-tab-button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Colors } from "@/theme/colors";
+import { useTraditionStore } from "@/src/features/settings/tradition-store";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const tradition = useTraditionStore(state => state.tradition);
 
   return (
     <Tabs
@@ -47,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="catechism"
         options={{
-          title: "Catechism",
+          title: tradition === "protestant" ? "Confession" : "Catechism",
           tabBarIcon: ({ color }) => (
             <IconSymbol
               size={28}
