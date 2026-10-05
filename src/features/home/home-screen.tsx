@@ -22,8 +22,7 @@ import {
   type BibleVersion,
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
-import { ApiKeySettings } from "../settings/api-key-settings";
-import { TraditionSettings } from "../settings/tradition-settings";
+import { SettingsMenu } from "../settings/settings-menu";
 import { useTraditionStore } from "../settings/tradition-store";
 import { getConfessionDayForDate } from "../catechism/confession-data";
 import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
@@ -317,6 +316,7 @@ export default function HomeScreen() {
         width: "100%",
       }}
     >
+      <View style={{ alignItems: "flex-end" }}><SettingsMenu dark={darkModeEnabled} /></View>
       <View style={{ gap: 8 }}>
         <Text
           style={{
@@ -370,7 +370,7 @@ export default function HomeScreen() {
             .map((entry) => entry.text)
             .join(" ")}
           href="/catechism"
-          label={isProtestant ? "西敏信条 · Westminster Confession" : "Catechism"}
+          label={isProtestant ? "Westminster Confession" : "Catechism"}
           meta={isProtestant ? `WCF ${getConfessionDayForDate(currentDate).reference}` : `CCC ${catechismReference}`}
         />
 
@@ -504,8 +504,6 @@ export default function HomeScreen() {
           About {estimatedReadingMinutes} min
         </Text>
       </View>
-      <ApiKeySettings dark={darkModeEnabled} />
-      <View style={{ marginTop: 28 }}><TraditionSettings dark={darkModeEnabled} /></View>
     </ScrollView>
   );
 }

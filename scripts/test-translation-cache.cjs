@@ -14,6 +14,15 @@ const fresh = () => {
   return require(path);
 };
 
+test('React Native signals without throwIfAborted support translation and cancellation', async () => {
+  const cache = fresh();
+  const signal = { aborted: false };
+  const chunks = [{ id: 'native', text: 'Native runtime test' }];
+  assert.deepEqual(await cache.translateWithLocalCache('native', chunks, async () => ({ native: '译文' }), signal), { native: '译文' });
+  signal.aborted = true;
+  await assert.rejects(cache.translateWithLocalCache('native', chunks, async () => { throw new Error('must not fetch'); }, signal), { name: 'AbortError' });
+});
+
 test('persistent translations survive reload, work offline, and only fetch missing source text', async () => {
   let apiCalls = 0;
   const request = async chunks => {
@@ -37,7 +46,7 @@ test('persistent translations survive reload, work offline, and only fetch missi
 test('invalid upstream responses and cancellation do not become saved translations', async () => {
   const cache = fresh();
   const chunks = [{ id: 'bad', text: 'Uncached text' }];
-  await assert.rejects(cache.translateWithLocalCache('invalid', chunks, async () => ({})), /不完整/);
+  await assert.rejects(cache.translateWithLocalCache('invalid', chunks, async () => ({})), /incomplete/);
   await assert.rejects(fresh().translateWithLocalCache('invalid', chunks, async () => { throw new Error('offline'); }), /offline/);
   const controller = new AbortController(); controller.abort();
   let called = false;
@@ -64,7 +73,7 @@ test('unreadable storage stops before a paid request; duplicate passages share o
   const failure = t.mock.method(progressStorage, 'getItem', async () => { throw new Error('read error'); });
   let calls = 0;
   const request = async parts => { calls++; assert.equal(parts.length, 1); return { [parts[0].id]: '相同译文' }; };
-  await assert.rejects(cache.translateWithLocalCache('dedup', chunks, request), /无法读取/);
+  await assert.rejects(cache.translateWithLocalCache('dedup', chunks, request), /Could not read/);
   assert.equal(calls, 0);
   failure.mock.restore();
   assert.deepEqual(await cache.translateWithLocalCache('dedup', chunks, request), { a: '相同译文', b: '相同译文' });

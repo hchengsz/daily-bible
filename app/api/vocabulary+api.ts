@@ -191,7 +191,7 @@ async function handlePost(request: Request) {
 
   if (!apiKey) {
     return Response.json(
-      { error: "请先到首页的 API 设置中填写 Gemini API Key。" },
+      { error: "Add your Gemini API key in Settings first." },
       { status: 503 },
     );
   }
@@ -273,7 +273,7 @@ async function handlePost(request: Request) {
   } catch {
     return Response.json(
       {
-        error: "无法连接翻译服务，请检查网络后重试。",
+        error: "Could not connect to the translation service. Check your connection and try again.",
       },
       { status: 502 },
     );

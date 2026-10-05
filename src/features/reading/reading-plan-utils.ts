@@ -69,7 +69,7 @@ export const getParagraphScripture = (paragraph: Paragraph, version: BibleVersio
 
   return getReferences(paragraph)
     .map(({ book, chapter, verse }) => version === "cuv"
-      ? getCuvScriptureText(book, chapter, verse) || `〔${getCuvBookName(book)} ${chapter}:${verse}：本地和合本暂无对应经文。〕`
+      ? getCuvScriptureText(book, chapter, verse) || `[${getCuvBookName(book)} ${chapter}:${verse}: No local CUV text available.]`
       : getScriptureText(book, chapter, verse))
     .map((text) => text.trim())
     .filter(Boolean)

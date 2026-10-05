@@ -19,7 +19,7 @@ export function loadTradition() {
       const tradition = value === "catholic" || value === "protestant" ? value : null;
       useTraditionStore.setState({ tradition, hydrated: true, error: null });
     } catch {
-      useTraditionStore.setState({ error: "无法读取设置，请重试。" });
+      useTraditionStore.setState({ error: "Could not load your settings. Please try again." });
     }
   })().finally(() => { loading = undefined; });
   return loading;

@@ -49,14 +49,14 @@ const getNotebookColors = (darkModeEnabled: boolean): NotebookColors => ({
 
 const getModeLabel = (mode: NotebookMode) => {
   if (mode === "screening") {
-    return "初筛";
+    return "Review";
   }
 
   if (mode === "library") {
-    return "单词本";
+    return "Vocabulary";
   }
 
-  return "学习";
+  return "Practice";
 };
 
 const getModeCount = (
@@ -222,7 +222,7 @@ function ScreeningWordCard({
               fontWeight: "800",
             }}
           >
-            留下学习
+            Keep for practice
           </Text>
         </Pressable>
 
@@ -244,7 +244,7 @@ function ScreeningWordCard({
         >
           <MaterialIcons name="check-circle" size={18} color={colors.success} />
           <Text style={{ color: colors.text, fontSize: 14, fontWeight: "800" }}>
-            已熟知
+            Already known
           </Text>
         </Pressable>
       </View>
@@ -336,7 +336,7 @@ function LibraryWordCard({
               fontWeight: "800",
             }}
           >
-            学习
+            Practice
           </Text>
         </Pressable>
         <Pressable
@@ -357,7 +357,7 @@ function LibraryWordCard({
         >
           <MaterialIcons name="delete-outline" size={17} color={colors.muted} />
           <Text style={{ color: colors.text, fontSize: 13, fontWeight: "800" }}>
-            移除
+            Remove
           </Text>
         </Pressable>
       </View>
@@ -505,7 +505,7 @@ export default function VocabularyNotebookScreen() {
           AI Vocabulary
         </Text>
         <Text style={{ color: colors.text, fontSize: 30, fontWeight: "800" }}>
-          单词本
+          Vocabulary
         </Text>
         <Text
           style={{
@@ -514,24 +514,24 @@ export default function VocabularyNotebookScreen() {
             lineHeight: 23,
           }}
         >
-          先筛掉已经熟知的词，再用卡片模式练到连续猜对 7 次。
+          Filter out familiar words, then practice with flashcards until you get each word right 7 times in a row.
         </Text>
       </View>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
         <Metric
           colors={colors}
-          label="待初筛"
+          label="To review"
           value={String(screeningWords.length)}
         />
         <Metric
           colors={colors}
-          label="学习中"
+          label="Learning"
           value={String(learningWords.length)}
         />
         <Metric
           colors={colors}
-          label="已掌握"
+          label="Mastered"
           value={String(knownWordsCount)}
         />
       </View>
@@ -623,7 +623,7 @@ export default function VocabularyNotebookScreen() {
                   fontWeight: "800",
                 }}
               >
-                全部留下学习
+                Keep all for practice
               </Text>
             </Pressable>
           )}
@@ -642,8 +642,8 @@ export default function VocabularyNotebookScreen() {
             <EmptyState
               colors={colors}
               icon="filter-alt"
-              title="没有待初筛词汇"
-              text="在 Reading 页面完成 AI 难词分析后，可以把词加入这里。"
+              title="No words to review"
+              text="Analyze vocabulary on the Reading page, then add words here."
             />
           )}
         </View>
@@ -665,8 +665,8 @@ export default function VocabularyNotebookScreen() {
             <EmptyState
               colors={colors}
               icon="menu-book"
-              title="单词本还是空的"
-              text="完成初筛后，留下的词会出现在这里。"
+              title="Your notebook is empty"
+              text="Words you keep after review will appear here."
             />
           )}
         </View>
@@ -717,8 +717,8 @@ export default function VocabularyNotebookScreen() {
                 }}
               >
                 {vocabularyCompleted
-                  ? "今日单词复习已完成"
-                  : "完成今日单词复习"}
+                  ? "Today's practice is complete"
+                  : "Complete today's practice"}
               </Text>
               <Text
                 style={{
@@ -732,7 +732,7 @@ export default function VocabularyNotebookScreen() {
                   textAlign: "center",
                 }}
               >
-                已完成本轮每个学习中单词的猜测。
+                You have practiced every word in this round.
               </Text>
             </Pressable>
           ) : currentStudyWord ? (
@@ -824,7 +824,7 @@ export default function VocabularyNotebookScreen() {
                   }}
                 >
                   {currentStudyWord.correctStreak}/{REQUIRED_CORRECT_STREAK} ·
-                  点击卡片翻面
+                  Tap the card to reveal
                 </Text>
               </View>
 
@@ -860,7 +860,7 @@ export default function VocabularyNotebookScreen() {
                         fontWeight: "800",
                       }}
                     >
-                      我猜错了
+                      Got it wrong
                     </Text>
                   </Pressable>
 
@@ -888,7 +888,7 @@ export default function VocabularyNotebookScreen() {
                     <Text
                       style={{ color: "#fff", fontSize: 16, fontWeight: "800" }}
                     >
-                      我猜对了
+                      Got it right
                     </Text>
                   </Pressable>
                 </View>
@@ -898,8 +898,8 @@ export default function VocabularyNotebookScreen() {
             <EmptyState
               colors={colors}
               icon="school"
-              title="没有可学习词汇"
-              text="先在初筛中留下几个词，再进入学习模式。"
+              title="No words to practice"
+              text="Keep a few words during review, then start practicing."
             />
           )}
         </View>

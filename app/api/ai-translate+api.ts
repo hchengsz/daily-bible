@@ -25,7 +25,7 @@ async function handlePost(request: Request) {
   }
   if (!chunks.length) return Response.json({ translations: [] });
   const apiKey = getRequestApiKey(request);
-  if (!apiKey) return Response.json({ error: "请先到首页的 API 设置中填写 Gemini API Key。" }, { status: 503 });
+  if (!apiKey) return Response.json({ error: "Add your Gemini API key in Settings first." }, { status: 503 });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90000);
   let dispatcher: ProxyAgent | undefined;

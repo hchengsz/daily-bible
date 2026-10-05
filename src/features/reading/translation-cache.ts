@@ -5,6 +5,14 @@ type Chunk = { id: string; text: string };
 type Entry = { source: string; scope: string; text: string };
 const memory = new Map<string, Entry>();
 const dirty = new Set<string>();
+function checkAborted(signal?: AbortSignal) {
+  // React Native's AbortSignal does not implement throwIfAborted on all runtimes.
+  if (signal?.aborted) {
+    const error = new Error("Translation cancelled");
+    error.name = "AbortError";
+    throw error;
+  }
+}
 export const useTranslationCacheStatus = create<{ warning: string | null }>(() => ({ warning: null }));
 
 // A compact filename; the full source and scope are also checked on every hit.
@@ -26,7 +34,7 @@ async function persist(key: string, entry: Entry) {
     if (!dirty.size) useTranslationCacheStatus.setState({ warning: null });
   } catch {
     dirty.add(key);
-    useTranslationCacheStatus.setState({ warning: "译文已生成，但本地保存失败。请留在应用中，稍后再次打开译文以重试保存。" });
+    useTranslationCacheStatus.setState({ warning: "Translation is ready, but could not be saved locally. Keep the app open and reopen the translation to retry saving." });
   }
 }
 
@@ -36,7 +44,7 @@ async function read(scope: string, source: string) {
   if (!entry) {
     let raw: string | null;
     try { raw = await progressStorage.getItem(key); }
-    catch { throw new Error("无法读取本地译文。请重试，以免重复消耗 AI 配额。"); }
+    catch { throw new Error("Could not read saved translations. Please retry to avoid using AI quota again."); }
     try { entry = raw ? JSON.parse(raw) : undefined; } catch { entry = undefined; }
   }
   if (!entry || entry.scope !== scope || entry.source !== source || typeof entry.text !== "string" || !entry.text.trim()) return undefined;
@@ -54,18 +62,18 @@ export async function translateWithLocalCache(
   const result: Record<string, string> = {};
   const missing: Chunk[] = [];
   for (const chunk of chunks) {
-    signal?.throwIfAborted();
+    checkAborted(signal);
     const cached = await read(scope, chunk.text);
     if (cached !== undefined) result[chunk.id] = cached;
     else missing.push(chunk);
   }
-  signal?.throwIfAborted();
+  checkAborted(signal);
   if (!missing.length) return result;
   // Identical source passages need only one upstream translation.
   const unique = [...new Map(missing.map(chunk => [chunk.text, chunk])).values()];
   const translated = await request(unique);
   if (unique.some(chunk => typeof translated[chunk.id] !== "string" || !translated[chunk.id].trim())) {
-    throw new Error("AI 返回的译文不完整，请重试。");
+    throw new Error("The AI translation is incomplete. Please try again.");
   }
   const bySource = new Map<string, string>();
   for (const chunk of unique) {
@@ -77,7 +85,7 @@ export async function translateWithLocalCache(
     bySource.set(chunk.text, text);
   }
   // Save successful responses even if the reader navigated away during storage.
-  signal?.throwIfAborted();
+  checkAborted(signal);
   for (const chunk of missing) result[chunk.id] = bySource.get(chunk.text)!;
   return result;
 }

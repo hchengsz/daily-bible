@@ -749,7 +749,7 @@ export default function CatechismScreen() {
             nonSelectableTextStyle,
           ]}
         >
-          天主教教理 · CCC {reference} · {selectedDay.entryCount} 条
+          Catholic Catechism · CCC {reference} · {selectedDay.entryCount} entries
         </Text>
 
         <View style={{ gap: 24, marginTop: 24 }}>

@@ -44,7 +44,7 @@ export function getCuvScriptureText(bookName: string, chapter: number, reference
     const last = c === endChapter ? endVerse : Math.max(...Object.keys(verses).map(Number));
     for (let v = first; v <= last; v++) {
       if (verses[v] === undefined) return '';
-      result.push(verses[v].trim() || `〔${book.name} ${c}:${v}：此节在本地和合本中未单独列文，可能与相邻经节合并。〕`);
+      result.push(verses[v].trim() || `[${book.name} ${c}:${v}: This verse is not listed separately in the local CUV text and may be combined with an adjacent verse.]`);
     }
   }
   return result.join(' ');

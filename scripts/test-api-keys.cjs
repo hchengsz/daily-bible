@@ -40,13 +40,13 @@ for (const [name, handler, header, payload] of [
   ['Vocabulary', vocabulary.POST, 'X-Gemini-Api-Key', { output_text: JSON.stringify({ results: [{ id: 'one', terms: [] }] }) }],
 ]) {
   for (const [status, error, expected] of [
-    [503, null, /服务暂时不可用（503）/],
-    [429, { message: 'personal-key-placeholder' }, /配额/],
-    [403, { errors: [{ reason: 'userRateLimitExceeded' }] }, /配额/],
-    [403, { details: [{ reason: 'SERVICE_DISABLED' }] }, /启用.*API/],
-    [403, { details: [{ reason: 'BILLING_DISABLED' }] }, /结算/],
-    [403, { details: [{ reason: 'API_KEY_SERVICE_BLOCKED' }] }, /权限/],
-    [400, { message: 'API key not valid: personal-key-placeholder' }, /API Key 无效/],
+    [503, null, /temporarily unavailable \(503\)/],
+    [429, { message: 'personal-key-placeholder' }, /quota/],
+    [403, { errors: [{ reason: 'userRateLimitExceeded' }] }, /quota/],
+    [403, { details: [{ reason: 'SERVICE_DISABLED' }] }, /Enable.*API/],
+    [403, { details: [{ reason: 'BILLING_DISABLED' }] }, /billing/],
+    [403, { details: [{ reason: 'API_KEY_SERVICE_BLOCKED' }] }, /permissions/],
+    [400, { message: 'API key not valid: personal-key-placeholder' }, /API Key is invalid/],
   ]) {
     test(`${name}: classifies provider error ${status} safely (${expected.source})`, async t => {
       t.mock.method(global, 'fetch', async () => error
@@ -57,7 +57,7 @@ for (const [name, handler, header, payload] of [
       const body = await response.json();
       assert.match(body.error, expected);
       assert.ok(!body.error.includes('personal-key-placeholder'));
-      if (status === 503) assert.ok(!body.error.includes('密钥'));
+      if (status === 503) assert.ok(!body.error.includes('API Key'));
     });
   }
 
@@ -101,13 +101,13 @@ for (const [name, handler, header, payload] of [
 test('settings support independent keys, disabled shared service, failed save retry, and removal', async t => {
   process.env.EXPO_PUBLIC_AI_FEATURES_ENABLED = 'false';
   await store.loadApiKeys();
-  await assert.rejects(store.getApiKeyHeaders(), /首页/);
+  await assert.rejects(store.getApiKeyHeaders(), /Settings/);
   await store.saveApiKeys({ gemini: '  personal-gemini-placeholder  ' });
   assert.deepEqual(await store.getApiKeyHeaders(), { 'X-Gemini-Api-Key': 'personal-gemini-placeholder' });
   await store.saveApiKeys({ gemini: 'AQ.example-gemini-key_123' });
   assert.deepEqual(await store.getApiKeyHeaders(), { 'X-Gemini-Api-Key': 'AQ.example-gemini-key_123' });
   await store.saveApiKeys({ gemini: 'personal-gemini-placeholder' });
-  await assert.rejects(store.saveApiKeys({ gemini: 'contains spaces' }), /格式/);
+  await assert.rejects(store.saveApiKeys({ gemini: 'contains spaces' }), /format/);
   const revision = store.useApiKeyStore.getState().revision;
   const failedWrite = t.mock.method(storage, 'writeApiKeys', async () => { throw new Error('disk failure'); });
   await assert.rejects(store.saveApiKeys({ gemini: '' }), /disk failure/);

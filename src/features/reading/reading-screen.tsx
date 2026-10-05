@@ -1078,7 +1078,7 @@ export default function ReadingScreen() {
 
   const handleTranslate = async () => {
     if (isCuv) {
-      setTranslationError("当前为本地和合本，无需翻译。请切换至 NIV 使用在线翻译。");
+      setTranslationError("CUV is already in Chinese. Switch to NIV to use AI translation.");
       return;
     }
     if (translationControllerRef.current) return;
@@ -1114,7 +1114,7 @@ export default function ReadingScreen() {
 
   const handleAnalyzeVocabulary = async () => {
     if (isCuv) {
-      setVocabularyError("英文词汇分析仅在 NIV 版本中使用。");
+      setVocabularyError("Vocabulary analysis is available for NIV only.");
       return;
     }
     if (isVocabularyVisible) {
@@ -1491,24 +1491,24 @@ export default function ReadingScreen() {
 
         <View style={{ marginTop: 14, gap: 8 }}>
           <Text style={{ color: colors.text, fontSize: 14 }}>
-            {isCuv ? "经文版本：中文 · 和合本 CUV" : "经文版本：English · NIV"}
+            {isCuv ? "Bible version: Chinese · CUV" : "Bible version: English · NIV"}
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={isCuv ? "切换到英文 NIV" : "切换到中文和合本"}
+            accessibilityLabel={isCuv ? "Switch to English NIV" : "Switch to Chinese CUV"}
             disabled={isTranslating || isAnalyzingVocabulary}
             accessibilityState={{ disabled: isTranslating || isAnalyzingVocabulary }}
             onPress={() => { stopSpeechPlayback(); setBibleVersion(isCuv ? "niv" : "cuv"); }}
             style={{ alignSelf: "flex-start", backgroundColor: colors.chip, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12 }}
           >
-            <Text style={{ color: colors.annotation, fontSize: 15 }}>{isCuv ? "切换到英文 NIV" : "切换到中文和合本"}</Text>
+            <Text style={{ color: colors.annotation, fontSize: 15 }}>{isCuv ? "Switch to English NIV" : "Switch to Chinese CUV"}</Text>
           </Pressable>
           {isCuv && <Text style={{ color: colors.label, fontSize: 12, lineHeight: 18 }}>
-            本地和合本 · 离线可读，无需 API。标题和导读保留原文；a/b 分节显示完整经节，增补经文保留其原文。
+            CUV is available offline. Headings and introductions retain their original text. Partial verses show the full verse; supplementary passages retain their original text.
           </Text>}
         </View>
         {!isCuv && isTranslated && (
-          <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI 译文 · 采用天主教术语，供阅读参考</Text>
+          <Text style={{ color: colors.label, fontSize: 12, marginTop: 6 }}>AI translation · Catholic terminology · For reading reference</Text>
         )}
 
         {!!dayIntroduction.trim() && (
@@ -1683,7 +1683,7 @@ export default function ReadingScreen() {
                       >
                         {getParagraphReferenceLabel(p, p.text ? "niv" : bibleVersion)}
                         {p.source ? ` · ${p.source.label}` : ""}
-                        {isCuv && p.text ? " · 和合本无对应文本，保留原文" : ""}
+                        {isCuv && p.text ? " · No CUV text available; showing the original" : ""}
                       </Text>
 
                       <Text
@@ -1868,7 +1868,7 @@ export default function ReadingScreen() {
                     lineHeight: 18,
                   }}
                 >
-                  加入后会先进入单词本初筛。
+                  Added words go to your notebook for review.
                 </Text>
               </View>
 
@@ -1922,7 +1922,7 @@ export default function ReadingScreen() {
                         fontWeight: "800",
                       }}
                     >
-                      全部加入
+                      Add all
                     </Text>
                   </Pressable>
                 )}
@@ -2033,7 +2033,7 @@ export default function ReadingScreen() {
                                 fontWeight: "800",
                               }}
                             >
-                              {isAdded ? "已加入单词本" : "加入单词本"}
+                              {isAdded ? "Added to notebook" : "Add to notebook"}
                             </Text>
                           </Pressable>
 
@@ -2067,7 +2067,7 @@ export default function ReadingScreen() {
                                 fontWeight: "800",
                               }}
                             >
-                              已熟知
+                              Already known
                             </Text>
                           </Pressable>
                         </View>
@@ -2100,7 +2100,7 @@ export default function ReadingScreen() {
                     textAlign: "center",
                   }}
                 >
-                  没有新的难词
+                  No new vocabulary
                 </Text>
                 <Text
                   style={{
@@ -2110,7 +2110,7 @@ export default function ReadingScreen() {
                     textAlign: "center",
                   }}
                 >
-                  已加入、已熟知或已掌握的词会自动过滤。
+                  Added, known, and mastered words are filtered automatically.
                 </Text>
               </View>
             )}
