@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
+import { useReadingKeepAwake } from "./use-reading-keep-awake";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, {
@@ -658,6 +659,7 @@ export default function ReadingScreen() {
     useCompletionCelebration();
   const [isPlayerVisible, setIsPlayerVisible] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>("idle");
+  useReadingKeepAwake(playbackStatus === "playing");
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState(0);
   const [speechRate, setSpeechRate] = useState(0.95);
   const speechChunksRef = useRef<string[]>([]);
@@ -885,7 +887,12 @@ export default function ReadingScreen() {
 
         speakFromIndex(index + 1, runId);
       },
-      onStopped: () => undefined,
+      onStopped: () => {
+        if (runId === playbackRunRef.current) setPlaybackStatus("idle");
+      },
+      onError: () => {
+        if (runId === playbackRunRef.current) setPlaybackStatus("idle");
+      },
     });
   }, []);
 

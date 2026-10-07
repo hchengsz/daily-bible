@@ -2,6 +2,7 @@ import { Button, Column, Host } from "@expo/ui";
 import { useEffect, useMemo, useState } from "react";
 import { Linking, ScrollView, Text, View } from "react-native";
 import * as Speech from "expo-speech";
+import { useReadingKeepAwake } from "../reading/use-reading-keep-awake";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppearanceStore } from "../settings/appearance-store";
 import { addDays, formatDate, getDateKey } from "../reading/reading-plan-utils";
@@ -17,6 +18,7 @@ export default function ConfessionScreen() {
   const complete = useDailyProgressStore(state => state.completeTask);
   const completed = useTaskCompletion(getDateKey(date), "confession");
   const [speaking, setSpeaking] = useState(false);
+  useReadingKeepAwake(speaking);
   const [speechError, setSpeechError] = useState("");
   const color = dark ? "#f5f5f5" : "#111";
   useEffect(() => () => { void Speech.stop(); }, []);

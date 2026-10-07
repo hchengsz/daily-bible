@@ -23,6 +23,7 @@ import {
 } from "../reading/reading-plan-utils";
 import { useAppearanceStore } from "../settings/appearance-store";
 import { SettingsMenu } from "../settings/settings-menu";
+import { useReadingKeepAwake } from "../reading/use-reading-keep-awake";
 import { useTraditionStore } from "../settings/tradition-store";
 import { getConfessionDayForDate } from "../catechism/confession-data";
 import { useVocabularyNotebookStore } from "../vocabulary/vocabulary-notebook-store";
@@ -215,6 +216,7 @@ export default function HomeScreen() {
   );
   const completeTask = useDailyProgressStore((state) => state.completeTask);
   const [isReadingAll, setIsReadingAll] = useState(false);
+  useReadingKeepAwake(isReadingAll);
   const bibleVersion = useBibleVersionStore((state) => state.version);
   const readAllRunRef = useRef(0);
   const readAllChunksRef = useRef<
@@ -273,7 +275,12 @@ export default function HomeScreen() {
 
           speakReadAllChunk(index + 1, runId);
         },
-        onStopped: () => undefined,
+        onStopped: () => {
+          if (runId === readAllRunRef.current) setIsReadingAll(false);
+        },
+        onError: () => {
+          if (runId === readAllRunRef.current) setIsReadingAll(false);
+        },
       });
     },
     [completeTask, dateKey, formationTask, hasFormation],
