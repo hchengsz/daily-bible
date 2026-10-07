@@ -50,6 +50,7 @@ export default function TabLayout() {
         name="catechism"
         options={{
           title: tradition === "protestant" ? "Confession" : "Catechism",
+          href: tradition === "exploring" ? null : "/catechism",
           tabBarIcon: ({ color }) => (
             <IconSymbol
               size={28}

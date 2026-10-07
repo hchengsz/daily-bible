@@ -38,6 +38,12 @@ test('first launch, persistence, switching and failed save preserve the correct 
   await faith.loadTradition();
   assert.equal(faith.useTraditionStore.getState().tradition, 'protestant');
   assert.equal(faith.useTraditionStore.getState().error, null);
+  await faith.saveTradition('exploring');
+  faith.useTraditionStore.setState({ tradition: null, hydrated: false });
+  await faith.loadTradition();
+  assert.equal(faith.useTraditionStore.getState().tradition, 'exploring');
+  await faith.saveTradition('catholic');
+  assert.equal(faith.useTraditionStore.getState().tradition, 'catholic');
 });
 
 test('Catholic and Protestant completions are independent', () => {

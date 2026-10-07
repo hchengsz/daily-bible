@@ -31,6 +31,7 @@ export function TraditionSettings({ dark, firstLaunch = false }: { dark: boolean
         {([
           { id: "catholic", title: "Catholic", description: "Bible & Catholic Catechism" },
           { id: "protestant", title: "Protestant", description: "Bible & Westminster Confession" },
+          { id: "exploring", title: "Other / Exploring", description: "Bible reading & vocabulary" },
         ] as const).map(option => <Button key={option.id} variant="outlined" disabled={saving} onPress={() => setDraft(option.id)} style={{ width: "100%", paddingVertical: 28, paddingHorizontal: 20, borderRadius: 24, borderWidth: draft === option.id ? 2 : 1, borderColor: draft === option.id ? "#3c7659" : dark ? "#354139" : "#dce5df", backgroundColor: draft === option.id ? dark ? "#203b2e" : "#edf5ef" : dark ? "#151e19" : "#fafcfb" }}>
           <Column spacing={8}>
             <NativeText textStyle={{ fontSize: 28, fontWeight: "700", color }}>{`${draft === option.id ? "✓  " : ""}${option.title}`}</NativeText>
@@ -40,7 +41,7 @@ export function TraditionSettings({ dark, firstLaunch = false }: { dark: boolean
         <Button label={saving ? "Saving…" : firstLaunch ? "Start reading" : "Save selection"} disabled={!draft || saving || (!firstLaunch && draft === current)} onPress={() => { void save(); }} />
       </Column>
     </Host>
-    {!firstLaunch && <Text accessibilityLiveRegion="polite" style={{ color }}>Current: {current === "protestant" ? "Protestant" : "Catholic"}</Text>}
+    {!firstLaunch && <Text accessibilityLiveRegion="polite" style={{ color }}>Current: {current === "exploring" ? "Other / Exploring" : current === "protestant" ? "Protestant" : "Catholic"}</Text>}
     {!!error && <Text accessibilityRole="alert" style={{ color: dark ? "#ff9292" : "#b42318" }}>{error}</Text>}
   </View>;
 }

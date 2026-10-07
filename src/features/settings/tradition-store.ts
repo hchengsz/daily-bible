@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { progressStorage } from "../progress/progress-storage";
 
-export type Tradition = "catholic" | "protestant";
+export type Tradition = "catholic" | "protestant" | "exploring";
 const STORAGE_KEY = "faith-tradition";
 export const useTraditionStore = create<{
   tradition: Tradition | null;
@@ -16,7 +16,7 @@ export function loadTradition() {
     try {
       const raw = await progressStorage.getItem(STORAGE_KEY);
       const value = raw ? JSON.parse(raw) : null;
-      const tradition = value === "catholic" || value === "protestant" ? value : null;
+      const tradition = value === "catholic" || value === "protestant" || value === "exploring" ? value : null;
       useTraditionStore.setState({ tradition, hydrated: true, error: null });
     } catch {
       useTraditionStore.setState({ error: "Could not load your settings. Please try again." });

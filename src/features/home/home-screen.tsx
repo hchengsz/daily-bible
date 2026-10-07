@@ -174,6 +174,7 @@ function TodoItem({
 export default function HomeScreen() {
   const tradition = useTraditionStore(state => state.tradition);
   const isProtestant = tradition === "protestant";
+  const hasFormation = tradition !== "exploring";
   const formationTask = isProtestant ? "confession" : "catechism";
   const currentDate = useMemo(() => new Date(), []);
   const dateKey = getDateKey(currentDate);
@@ -203,10 +204,10 @@ export default function HomeScreen() {
   const vocabularyCompleted = useTaskCompletion(dateKey, "vocabulary");
   const vocabularyTodoCompleted =
     vocabularyCompleted || learningVocabularyWords.length === 0;
-  const totalTodoCount = 3;
+  const totalTodoCount = hasFormation ? 3 : 2;
   const completedCount =
     Number(readingCompleted) +
-    Number(catechismCompleted) +
+    Number(hasFormation && catechismCompleted) +
     Number(vocabularyTodoCompleted);
   const darkModeEnabled = useAppearanceStore((state) => state.darkModeEnabled);
   const setDarkModeEnabled = useAppearanceStore(
@@ -231,8 +232,8 @@ export default function HomeScreen() {
       }),
     );
 
-    return [...readingChunks, ...catechismChunks];
-  }, [catechismDay.entries, readingDay, bibleVersion, isProtestant]);
+    return hasFormation ? [...readingChunks, ...catechismChunks] : readingChunks;
+  }, [catechismDay.entries, readingDay, bibleVersion, isProtestant, hasFormation]);
   const estimatedReadingMinutes = useMemo(
     () => getEstimatedReadingMinutes(readAllChunks),
     [readAllChunks],
@@ -254,7 +255,7 @@ export default function HomeScreen() {
       if (!chunk) {
         if (runId === readAllRunRef.current) {
           completeTask(dateKey, "reading");
-          completeTask(dateKey, formationTask);
+          if (hasFormation) completeTask(dateKey, formationTask);
           setIsReadingAll(false);
         }
 
@@ -275,7 +276,7 @@ export default function HomeScreen() {
         onStopped: () => undefined,
       });
     },
-    [completeTask, dateKey, formationTask],
+    [completeTask, dateKey, formationTask, hasFormation],
   );
 
   const handleReadAllToday = useCallback(() => {
@@ -363,7 +364,7 @@ export default function HomeScreen() {
           meta={`Day ${readingDay.id || ""}`}
         />
 
-        <TodoItem
+        {hasFormation && <TodoItem
           completed={catechismCompleted}
           darkModeEnabled={darkModeEnabled}
           description={catechismDay.entries
@@ -372,7 +373,7 @@ export default function HomeScreen() {
           href="/catechism"
           label={isProtestant ? "Westminster Confession" : "Catechism"}
           meta={isProtestant ? `WCF ${getConfessionDayForDate(currentDate).reference}` : `CCC ${catechismReference}`}
-        />
+        />}
 
         <TodoItem
           completed={vocabularyTodoCompleted}
